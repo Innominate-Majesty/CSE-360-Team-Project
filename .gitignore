@@ -1,0 +1,39 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Java build output
+*.class
+bin/
+build/
+out/
+target/
+.gradle/
+
+# IDE-local files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.metadata/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
