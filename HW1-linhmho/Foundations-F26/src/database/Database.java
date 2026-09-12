@@ -24,9 +24,12 @@ import entityClasses.User;
  * 
  * @author Lynn Robert Carter
  * 
+ * @author Alan G. Shimp
+ * 
  * @version 2.00		2025-04-29 Updated and expanded from the version produce by Pravalika 
  * 							Mukkiri and Ishwarya Hidkimath Basavaraj
  * @version 2.01		2025-12-17 Minor updates for Spring 2026
+ * @version 2.02		2026-09-12 Added deleteUser() method for TP1
  */
 
 /*
@@ -913,6 +916,27 @@ public class Database {
 			}
 		}
 		return false;
+	}
+
+	/*******
+	 * <p> Method: User deleteUser(String username) </p>
+	 * 
+	 * <p> Description: Delete a user given a username.</p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @author Alan G. Shimp
+	 * 
+	 */
+	public void deleteUser(String username) {
+		String query = "DELETE FROM userDB WHERE username = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			pstmt.executeUpdate();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	
