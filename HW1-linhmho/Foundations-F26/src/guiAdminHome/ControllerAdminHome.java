@@ -123,15 +123,13 @@ public class ControllerAdminHome {
 	 * 
 	 * Title: deleteUser () Method. </p>
 	 * 
-	 * <p> Description: Protected method that is currently a stub informing the user that
-	 * this function has not yet been implemented. </p>
+	 * <p> Description: Protected method that allows an admin to delete any user currently in the
+	 * system except themself. This is done by invoking the DeleteUser Page. There is no need to
+	 * specify the home page for the return as this can only be initiated by an Admin. </p>
 	 */
 	protected static void deleteUser() {
-		System.out.println("\n*** WARNING ***: Delete User Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
-		ViewAdminHome.alertNotImplemented.setHeaderText("Delete User Issue");
-		ViewAdminHome.alertNotImplemented.setContentText("Delete User Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.showAndWait();
+		guiDeleteUser.ViewDeleteUser.displayDeleteUser(ViewAdminHome.theStage,
+			ViewAdminHome.theUser);
 	}
 	
 	/**********
