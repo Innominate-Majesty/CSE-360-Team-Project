@@ -56,6 +56,7 @@ public class ControllerDeleteUser {
 		ViewDeleteUser.theSelectedUser = 
 				(String) ViewDeleteUser.combobox_SelectUser.getValue();
 		theDatabase.getUserAccountDetails(ViewDeleteUser.theSelectedUser);
+		repaintTheWindow();
 	}
 	
 	
@@ -70,7 +71,7 @@ public class ControllerDeleteUser {
 		// Clear what had been displayed
 		ViewDeleteUser.theRootPane.getChildren().clear();
 		
-		// Defermine which of the two views to show to the user
+		// Determine which of the three views to show to the user
 		if (ViewDeleteUser.theSelectedUser.compareTo("<Select a User>") == 0) {
 			// Only show the request to select a user to be updated and the ComboBox
 			ViewDeleteUser.theRootPane.getChildren().addAll(
@@ -112,7 +113,7 @@ public class ControllerDeleteUser {
 		// Add the list of widgets to the stage and show it
 		
 		// Set the title for the window
-		ViewDeleteUser.theStage.setTitle("CSE 360 Foundation Code: Admin Opertaions Page");
+		ViewDeleteUser.theStage.setTitle("CSE 360 Foundation Code: Admin Operations Page");
 		ViewDeleteUser.theStage.setScene(ViewDeleteUser.theDeleteUserScene);
 		ViewDeleteUser.theStage.show();
 	}
@@ -124,7 +125,7 @@ public class ControllerDeleteUser {
      * <p> Description: This method deletes the selected user and resets the ComboBox. </p>
      * 
      */
-    private static void performDeleteUser() {
+    protected static void performDeleteUser() {
         // Delete the user from the database.
         theDatabase.deleteUser(ViewDeleteUser.theSelectedUser);
 
@@ -141,11 +142,11 @@ public class ControllerDeleteUser {
         ViewDeleteUser.userList = theDatabase.getUserList();
 
         // Given the above actions, populate the related widgets with the new values
-        ViewDeleteUser.setupComboBoxUI(combobox_SelectUser, "Dialog", 16, 250, 280, 125);
+        ViewDeleteUser.setupComboBoxUI(ViewDeleteUser.combobox_SelectUser, "Dialog", 16, 250, 280, 125);
         ViewDeleteUser.combobox_SelectUser.setItems(FXCollections.
 				observableArrayList(ViewDeleteUser.userList));
 		ViewDeleteUser.combobox_SelectUser.getSelectionModel().clearAndSelect(0);
-        repaintTheWindow();
+        doSelectUser();
     }
 	
 	

@@ -6,6 +6,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -63,18 +65,18 @@ public class ViewDeleteUser {
 	// not need to push a button to make this happen.
 	protected static Label label_SelectUser = new Label("Select a user to be deleted:");
 	protected static ComboBox <String> combobox_SelectUser = new ComboBox <String>();
+	protected static List<String> userList = new ArrayList<String>();
 	
 	// Area 2b: When the current user has selected themself, this widget is shown
     protected static Label label_SelectSelf = new Label("You cannot delete yourself. Please select"
-        + "another user");
+        + " another user");
 
     // Area 2c: When a user has been selected these widgets are shown and can be used
     protected static Label label_AreYouSure = new Label("Are you sure?");
     protected static Button button_Yes = new Button("Yes");
-    protected static Alert alertDeleted = new Alert(AlertType.INFORMATION);
 
     // Popup: This prepares a popup that will appear if a user is deleted.
-    protected static 
+    protected static Alert alertDeleted = new Alert(AlertType.INFORMATION);
 		
 	// This is a separator and it is used to partition the GUI for various tasks
 	protected static Line line_Separator4 = new Line(20, 525, width-20,525);
@@ -190,7 +192,7 @@ public class ViewDeleteUser {
 		setupLabelUI(label_SelectUser, "Arial", 20, 300, Pos.BASELINE_LEFT, 20, 130);
 		
 		setupComboBoxUI(combobox_SelectUser, "Dialog", 16, 250, 280, 125);
-		List<String> userList = theDatabase.getUserList();	
+		userList = theDatabase.getUserList();	
 		combobox_SelectUser.setItems(FXCollections.observableArrayList(userList));
 		combobox_SelectUser.getSelectionModel().select(0);
 		combobox_SelectUser.getSelectionModel().selectedItemProperty()
@@ -202,7 +204,7 @@ public class ViewDeleteUser {
         setupLabelUI(label_SelectSelf, "Arial", 16, 300, Pos.BASELINE_LEFT, 50, 170);
         // GUI Area 2c
         setupLabelUI(label_AreYouSure, "Arial", 16, 300, Pos.BASELINE_LEFT, 20, 210);
-        setupButtonUI(button_Yes, "Dialog", 16, 150, Pos.CENTER, 460, 205);
+        setupButtonUI(button_Yes, "Dialog", 16, 150, Pos.CENTER, 280, 205);
         ViewDeleteUser.button_Yes.setOnAction((_) ->
             {ControllerDeleteUser.performDeleteUser(); });
         alertDeleted.setTitle("Success");
