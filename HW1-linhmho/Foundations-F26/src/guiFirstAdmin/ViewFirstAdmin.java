@@ -11,6 +11,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.scene.paint.Color;
 
 
 /*******
@@ -25,7 +26,9 @@ import javafx.stage.Stage;
  * 
  * @author Lynn Robert Carter
  * 
- * @version 1.00		2025-08-15 Initial version
+ * @version 1.1		2026-09-14 Altered by Alexander Robert Murray to add password validation
+ *   
+ *   1.0 2025-08-15 Initial version
  *  
  */
 
@@ -76,6 +79,16 @@ public class ViewFirstAdmin {
 	private static Pane theRootPane;
 	private static Scene theFirstAdminScene = null;
 	private static final int theRole = 1;		// Admin: 1; Role1: 2; Role2: 3
+	
+	// Password feedback widgets
+	protected static Label validPassword = new Label();
+	protected static Label label_Requirements = 
+    		new Label("A valid password must satisfy the following requirements:");
+	protected static Label label_UpperCase = new Label();
+	protected static Label label_LowerCase = new Label();
+	protected static Label label_NumericDigit = new Label();
+	protected static Label label_SpecialChar = new Label();
+	protected static Label label_CorrectLength = new Label();
 		
 	
 	/*-********************************************************************************************
@@ -169,6 +182,16 @@ public class ViewFirstAdmin {
 		text_AdminPassword1.setPromptText("Enter Admin Password");
 		text_AdminPassword1.textProperty().addListener((_, _, _)
 				-> {ControllerFirstAdmin.setAdminPassword1(); });
+		
+		// Visual layout configuration for password validation.
+		setupLabelUI(label_Requirements, "Arial", 13, 400, Pos.BASELINE_LEFT, 50, 260);
+		setupLabelUI(label_UpperCase, "Arial", 12, 350, Pos.BASELINE_LEFT, 65, 280);
+		setupLabelUI(label_LowerCase, "Arial", 12, 350, Pos.BASELINE_LEFT, 65, 300);
+		setupLabelUI(label_NumericDigit, "Arial", 12, 350, Pos.BASELINE_LEFT, 65, 320);
+		setupLabelUI(label_SpecialChar, "Arial", 12, 350, Pos.BASELINE_LEFT, 65, 340);
+		setupLabelUI(label_CorrectLength, "Arial", 12, 400, Pos.BASELINE_LEFT, 65, 360);
+		setupLabelUI(validPassword, "Arial", 13, 350, Pos.BASELINE_LEFT, 50, 385);
+		resetAssessments();
 
 		// If the username is invalid, this alert will show up
 		alertUsernameError.setTitle("Invalid Username");
@@ -176,20 +199,21 @@ public class ViewFirstAdmin {
 
 
 		// Establish the text input operand field for the password
-		setupTextUI(text_AdminPassword2, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 260, 
+		setupTextUI(text_AdminPassword2, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 415, 
 				true);
 		text_AdminPassword2.setPromptText("Enter Admin Password Again");
 		text_AdminPassword2.textProperty().addListener((_, _, _) 
 				-> {ControllerFirstAdmin.setAdminPassword2(); });
+		text_AdminPassword2.focusedProperty().addListener((_, _, isNowFocused) 
+				-> {ControllerFirstAdmin.handlePassword2FocusChange(isNowFocused);});
 
+		// Label to display whether the two passwords match
+		setupLabelUI(label_PasswordsDoNotMatch, "Arial", 13, 300, Pos.BASELINE_LEFT, 50, 450);
+		
 		// Set up the Log In button
 		setupButtonUI(button_AdminSetup, "Dialog", 18, 200, Pos.CENTER, 475, 210);
 		button_AdminSetup.setOnAction((_) -> {
-			ControllerFirstAdmin.doSetupAdmin(theStage,1); 
-			});
-
-		// Label to display the Passwords do not match error message
-		setupLabelUI(label_PasswordsDoNotMatch, "Arial", 18, width, Pos.CENTER, 0, 300);
+			ControllerFirstAdmin.doSetupAdmin(theStage,1); });
 
 		setupButtonUI(button_Quit, "Dialog", 18, 250, Pos.CENTER, 300, 520);
 		button_Quit.setOnAction((_) -> {ControllerFirstAdmin.performQuit(); });
@@ -197,6 +221,8 @@ public class ViewFirstAdmin {
 		// Place all of the just-initialized GUI elements into the pane
 		theRootPane.getChildren().addAll(label_ApplicationTitle, label_TitleLine1,
 				label_TitleLine2, text_AdminUsername, text_AdminPassword1, 
+				label_Requirements, label_UpperCase, label_LowerCase, label_NumericDigit, 
+				label_SpecialChar, label_CorrectLength, validPassword,
 				text_AdminPassword2, button_AdminSetup, label_PasswordsDoNotMatch,
 				button_Quit);
 	}
@@ -207,6 +233,29 @@ public class ViewFirstAdmin {
 	Helper methods to reduce code length
 
 	 */
+	
+	/*******
+	 * <p> Title: resetAssessments - Resets widgets to their default state</p>
+	 * 
+	 * Added by Alexander Robert Murray - 9/14/2026
+	 */
+	public static void resetAssessments() {
+		label_UpperCase.setText("At least one upper case letter - Not yet satisfied");
+		label_UpperCase.setTextFill(Color.RED);
+			
+		label_LowerCase.setText("At least one lower case letter - Not yet satisfied");
+		label_LowerCase.setTextFill(Color.RED);
+			
+		label_NumericDigit.setText("At least one numeric digit - Not yet satisfied");
+		label_NumericDigit.setTextFill(Color.RED);
+			
+		label_SpecialChar.setText("At least one special character - Not yet satisfied");
+		label_SpecialChar.setTextFill(Color.RED);
+			
+		label_CorrectLength.setText("Between 8 and 58 characters - Not yet satisfied");
+		label_CorrectLength.setTextFill(Color.RED);
+	}
+	
 	
 	/**********
 	 * Private local method to initialize the standard fields for a label
@@ -219,7 +268,6 @@ public class ViewFirstAdmin {
 	 * @param x		The location from the left edge (x axis)
 	 * @param y		The location from the top (y axis)
 	 */
-
 	private void setupLabelUI(Label l, String ff, double f, double w, Pos p, double x, double y){
 		l.setFont(Font.font(ff, f));
 		l.setMinWidth(w);

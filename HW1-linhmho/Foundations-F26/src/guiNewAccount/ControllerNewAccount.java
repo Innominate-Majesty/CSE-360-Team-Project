@@ -5,6 +5,10 @@ import java.sql.SQLException;
 import database.Database;
 import entityClasses.User;
 import userNameRecognizer.UserNameRecognizer;
+import javafx.scene.paint.Color;
+import passwordValidator.PasswordValidator;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 /*******
  * <p> Title: ControllerNewAccount Class. </p>
@@ -24,10 +28,11 @@ import userNameRecognizer.UserNameRecognizer;
  * 
  * @author Lynn Robert Carter
  * 
- * @version 1.00		2025-08-17 Initial version
+ * @version 1.1		2026-09-16 Updated version to add support for password validation - Alexander Robert Murray
  *  
  */
 
+@SuppressWarnings("unused")
 public class ControllerNewAccount {
 	
 	/*-********************************************************************************************
@@ -49,6 +54,118 @@ public class ControllerNewAccount {
 	
 	// Reference for the in-memory database so this package has access
 	private static Database theDatabase = applicationMain.FoundationsMain.database;
+	
+	// Cached input strings and 3-second debounce timer
+	private static String password1 = "";
+	private static String password2 = "";
+
+	private static PauseTransition password2InactivityTimer = new PauseTransition(Duration.seconds(3));
+	static {
+		password2InactivityTimer.setOnFinished(event -> checkPasswordMatch());
+	}	
+	
+	/**********
+	 * <p> Method: setPassword1() </p>
+	 * 
+	 * <p> Description: Handles real-time updates when text is entered into the first password field.
+	 * Runs password validation and updates the matching status if the second field has text.</p>
+	 */
+	protected static void setPassword1() {
+		password1 = ViewNewAccount.text_Password1.getText();
+		ViewNewAccount.label_PasswordsDoNotMatch.setText("");
+		validatePassword();
+	}
+	
+	/**********
+	 * <p> Method: setPassword2() </p>
+	 * 
+	 * <p> Description: Handles text input in the confirmation password field by restarting
+	 * the 3-second debounce timer.</p>
+	 */
+	protected static void setPassword2() {
+		password2 = ViewNewAccount.text_Password2.getText();
+		password2InactivityTimer.playFromStart();
+	}
+	
+	/**********
+	 * <p> Method: handlePassword2FocusChange() </p>
+	 * 
+	 * <p> Description: When focus shifts away from the second password field, stops any active timer
+	 * and checks for matching passwords immediately.</p>
+	 */
+	protected static void handlePassword2FocusChange(boolean isFocused) {
+		if (!isFocused) {
+			password2InactivityTimer.stop();
+			checkPasswordMatch();
+		}
+	}
+	
+	/*****
+	 * <p> Method: checkPasswordMatch() </p>
+	 * <p> Description: Checks if the two password fields match and updates ViewNewAccount.label_PasswordsDoNotMatch.</p>
+	 */
+	private static void checkPasswordMatch() {
+		if (password2.isEmpty()) {
+			ViewNewAccount.label_PasswordsDoNotMatch.setText("");
+			return;
+		}
+		if (password1.compareTo(password2) == 0) {
+			ViewNewAccount.label_PasswordsDoNotMatch.setTextFill(Color.GREEN);
+			ViewNewAccount.label_PasswordsDoNotMatch.setText("The two passwords match.");
+		} else {
+			ViewNewAccount.label_PasswordsDoNotMatch.setTextFill(Color.RED);
+			ViewNewAccount.label_PasswordsDoNotMatch.setText("The two passwords do not match. Please try again!");
+		}
+	}
+	
+	/*****
+	 * <p> Method: validatePassword() </p>
+	 * <p> Description: Runs PasswordValidator.evaluatePassword() on password1 and updates the checklist.</p>
+	 */
+	private static void validatePassword() {
+		ViewNewAccount.resetAssessments();
+		if (password1.isEmpty()) {
+			ViewNewAccount.validPassword.setText("");
+			return;
+		}
+		String errMessage = PasswordValidator.evaluatePassword(password1);
+		updateFlags();
+
+		if (!errMessage.equals("")) {
+			ViewNewAccount.validPassword.setTextFill(Color.RED);
+			ViewNewAccount.validPassword.setText("Failure! The password does not meet all requirements.");
+		} else {
+			ViewNewAccount.validPassword.setTextFill(Color.GREEN);
+			ViewNewAccount.validPassword.setText("Success! The password satisfies the requirements.");
+		}
+	}
+	
+	/**********
+	 * <p> Method: updateFlags() </p>
+	 * <p> Description: Updates the visual requirement labels based on PasswordValidator results.</p>
+	 */
+	private static void updateFlags() {
+		if (PasswordValidator.foundUpperCase) {
+			ViewNewAccount.label_UpperCase.setText("At least one upper case letter - Satisfied");
+			ViewNewAccount.label_UpperCase.setTextFill(Color.GREEN);
+		}
+		if (PasswordValidator.foundLowerCase) {
+			ViewNewAccount.label_LowerCase.setText("At least one lower case letter - Satisfied");
+			ViewNewAccount.label_LowerCase.setTextFill(Color.GREEN);
+		}
+		if (PasswordValidator.foundNumericDigit) {
+			ViewNewAccount.label_NumericDigit.setText("At least one numeric digit - Satisfied");
+			ViewNewAccount.label_NumericDigit.setTextFill(Color.GREEN);
+		}
+		if (PasswordValidator.foundSpecialChar) {
+			ViewNewAccount.label_SpecialChar.setText("At least one special character - Satisfied");
+			ViewNewAccount.label_SpecialChar.setTextFill(Color.GREEN);
+		}
+		if (PasswordValidator.foundCorrectLength) {
+			ViewNewAccount.label_CorrectLength.setText("Between 8 and 58 characters - Satisfied");
+			ViewNewAccount.label_CorrectLength.setTextFill(Color.GREEN);
+		}
+	}
 	
 	/**********
 	 * <p> Method: public doCreateUser() </p>
@@ -80,6 +197,16 @@ public class ControllerNewAccount {
 			// stop account creation
 			return;
 		}
+		
+		// Guard clause ensures password meets validation requirements before proceeding
+		String passwordErr = PasswordValidator.evaluatePassword(password);
+		if (!passwordErr.equals("")) {
+			ViewNewAccount.label_PasswordsDoNotMatch.setTextFill(Color.RED);
+			ViewNewAccount.label_PasswordsDoNotMatch.setText("Password does not meet all requirements.");
+			return;
+		}
+		
+		password2InactivityTimer.stop();
 		
 		// Display key information to the log
 		System.out.println("** Account for Username: " + username + "; theInvitationCode: "+
@@ -142,6 +269,8 @@ public class ControllerNewAccount {
 			// must be the same, and clear the message as soon as the first character is typed.
 			ViewNewAccount.text_Password1.setText("");
 			ViewNewAccount.text_Password2.setText("");
+			ViewNewAccount.label_PasswordsDoNotMatch.setTextFill(Color.RED);
+			ViewNewAccount.label_PasswordsDoNotMatch.setText("The two passwords must match. Please try again!");
 			ViewNewAccount.alertUsernamePasswordError.showAndWait();
 		}
 	}

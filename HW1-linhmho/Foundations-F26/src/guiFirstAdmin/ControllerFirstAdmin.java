@@ -5,7 +5,11 @@ import java.sql.SQLException;
 import database.Database;
 import entityClasses.User;
 import javafx.stage.Stage;
+import javafx.scene.paint.Color;
 import userNameRecognizer.UserNameRecognizer;
+import passwordValidator.PasswordValidator;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 /*******
  * <p> Title: ControllerFirstAdmin Class. </p>
@@ -26,10 +30,11 @@ import userNameRecognizer.UserNameRecognizer;
  * 
  * @author Lynn Robert Carter
  * 
- * @version 1.00		2025-08-17 Initial version
+ * @version 1.1		2026-09-13 Updated version to add password validation - Alexander Robert Murray
  *  
  */
 
+@SuppressWarnings("unused")
 public class ControllerFirstAdmin {
 	/*-********************************************************************************************
 
@@ -44,7 +49,12 @@ public class ControllerFirstAdmin {
 	private static String adminUsername = "";
 	private static String adminPassword1 = "";
 	private static String adminPassword2 = "";		
-	protected static Database theDatabase = applicationMain.FoundationsMain.database;		
+	protected static Database theDatabase = applicationMain.FoundationsMain.database;	
+	
+	private static PauseTransition password2InactivityTimer = new PauseTransition(Duration.seconds(3));
+	static {
+		password2InactivityTimer.setOnFinished(event -> checkPasswordMatch());
+	}
 
 	/*-********************************************************************************************
 
@@ -80,6 +90,7 @@ public class ControllerFirstAdmin {
 	protected static void setAdminPassword1() {
 		adminPassword1 = ViewFirstAdmin.text_AdminPassword1.getText();
 		ViewFirstAdmin.label_PasswordsDoNotMatch.setText("");
+		validatePassword();
 	}
 	
 	
@@ -92,7 +103,39 @@ public class ControllerFirstAdmin {
 	 */
 	protected static void setAdminPassword2() {
 		adminPassword2 = ViewFirstAdmin.text_AdminPassword2.getText();		
-		ViewFirstAdmin.label_PasswordsDoNotMatch.setText("");
+		password2InactivityTimer.playFromStart();	
+	}
+	
+	/**********
+	* <p> Method: handlePassword2FocusChange() </p>
+	* <p> Description: Handles focus changes on password field 2. When the field loses focus
+	* (user exits the field), any pending 3-second timer is stopped and checkPasswordMatch()
+	* runs immediately.</p>
+	*/
+	protected static void handlePassword2FocusChange(boolean isFocused) {
+		if (!isFocused) {
+			password2InactivityTimer.stop();
+			checkPasswordMatch();
+		}
+	}
+	
+	/*****
+	 *  <p> Method: checkPasswordMatch() </p>
+	 *  <p> Description: Verifies whether the confirmation password matches the primary
+	 *  password and updates ViewFirstAdmin.label_PasswordsDoNotMatch accordingly.</p>
+	 */
+	private static void checkPasswordMatch() {
+		if (adminPassword2.isEmpty()) {
+			ViewFirstAdmin.label_PasswordsDoNotMatch.setText("");
+			return;
+		}
+		if (adminPassword1.compareTo(adminPassword2) == 0) {
+			ViewFirstAdmin.label_PasswordsDoNotMatch.setTextFill(Color.GREEN);
+			ViewFirstAdmin.label_PasswordsDoNotMatch.setText("The two passwords match.");
+		} else {
+			ViewFirstAdmin.label_PasswordsDoNotMatch.setTextFill(Color.RED);
+			ViewFirstAdmin.label_PasswordsDoNotMatch.setText("The two passwords do not match. Please try again!");
+		}
 	}
 	
 	
@@ -106,19 +149,28 @@ public class ControllerFirstAdmin {
 	 */
 	protected static void doSetupAdmin(Stage ps, int r) {
 		
-		// checking username setup
+		// Checking username setup
 		String usernameErrorMessage = UserNameRecognizer.checkForValidUserName(adminUsername);
 
 		if (!usernameErrorMessage.isEmpty()) {
 
-			// show the username error message
+			// Show the username error message
 			ViewFirstAdmin.alertUsernameError.setContentText(usernameErrorMessage);
 			ViewFirstAdmin.alertUsernameError.showAndWait();
 
-			// stop account creation 
+			// Stop account creation 
 			return;
 		}
-
+		// Verify password satisfies PasswordValidator requirements before proceeding
+		String passwordErr = PasswordValidator.evaluatePassword(adminPassword1);
+		if (!passwordErr.equals("")) {
+			ViewFirstAdmin.label_PasswordsDoNotMatch.setTextFill(Color.RED);
+			ViewFirstAdmin.label_PasswordsDoNotMatch.setText("Password does not meet all requirements.");
+			return;
+		}
+		
+		password2InactivityTimer.stop();
+		
 		// Make sure the two passwords are the same
 		if (adminPassword1.compareTo(adminPassword2) == 0) {
         	// Create the passwords and proceed to the user home page
@@ -138,16 +190,58 @@ public class ControllerFirstAdmin {
             // User was established in the database, so navigate to the User Update Page
         	guiUserUpdate.ViewUserUpdate.displayUserUpdate(ViewFirstAdmin.theStage, user);
 		}
-		else {
-			// The two passwords are NOT the same, so clear the passwords, explain the passwords
-			// must be the same, and clear the message as soon as the first character is typed.
-			ViewFirstAdmin.text_AdminPassword1.setText("");
-			ViewFirstAdmin.text_AdminPassword2.setText("");
-			ViewFirstAdmin.label_PasswordsDoNotMatch.setText(
-					"The two passwords must match. Please try again!");
+	}
+	
+	/*****
+	 *  <p> Method: validatePassword() </p>
+	 *  <p> Description: Performs password validation by calling PasswordValidator.evaluatePassword()
+	 *  and updating labels and error messages on ViewFirstAdmin.</p>
+	 */
+	private static void validatePassword() {
+		ViewFirstAdmin.resetAssessments();
+		if (adminPassword1.isEmpty()) {
+			ViewFirstAdmin.validPassword.setText("");
+			return;
+		}
+		String errMessage = PasswordValidator.evaluatePassword(adminPassword1);
+		updateFlags();
+		
+		if (!errMessage.equals("")) {
+			ViewFirstAdmin.validPassword.setTextFill(Color.RED);
+			ViewFirstAdmin.validPassword.setText("Failure! The password does not meet all requirements.");
+		} else {
+			ViewFirstAdmin.validPassword.setTextFill(Color.GREEN);
+			ViewFirstAdmin.validPassword.setText("Success! The password satisfies the requirements.");
 		}
 	}
 	
+	/**********
+	 * <p> Method: updateFlags() </p>
+	 * <p> Description: Reads boolean flags from PasswordValidator and updates the checklist
+	 * in ViewFirstAdmin with green text.</p>
+	 */
+	private static void updateFlags() {
+		if (PasswordValidator.foundUpperCase) {
+			ViewFirstAdmin.label_UpperCase.setText("At least one upper case letter - Satisfied");
+			ViewFirstAdmin.label_UpperCase.setTextFill(Color.GREEN);
+		}
+		if (PasswordValidator.foundLowerCase) {
+			ViewFirstAdmin.label_LowerCase.setText("At least one lower case letter - Satisfied");
+			ViewFirstAdmin.label_LowerCase.setTextFill(Color.GREEN);
+		}
+		if (PasswordValidator.foundNumericDigit) {
+			ViewFirstAdmin.label_NumericDigit.setText("At least one numeric digit - Satisfied");
+			ViewFirstAdmin.label_NumericDigit.setTextFill(Color.GREEN);
+		}
+		if (PasswordValidator.foundSpecialChar) {
+			ViewFirstAdmin.label_SpecialChar.setText("At least one special character - Satisfied");
+			ViewFirstAdmin.label_SpecialChar.setTextFill(Color.GREEN);
+		}
+		if (PasswordValidator.foundCorrectLength) {
+			ViewFirstAdmin.label_CorrectLength.setText("Between 8 and 58 characters - Satisfied");
+			ViewFirstAdmin.label_CorrectLength.setTextFill(Color.GREEN);
+		}
+	}	
 	
 	/**********
 	 * <p> Method: performQuit() </p>

@@ -13,6 +13,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.scene.paint.Color;
 
 /*******
  * <p> Title: ViewNewAccount Class. </p>
@@ -25,7 +26,7 @@ import javafx.stage.Stage;
  * 
  * @author Lynn Robert Carter
  * 
- * @version 1.00		2025-08-19 Initial version
+ * @version 1.1		2026-09-13 Updated version to add password validation - Alexander Robert Murray
  *  
  */
 
@@ -82,6 +83,16 @@ public class ViewNewAccount {
     protected static String theRole;			// Established here for use by the controller
 	public static Scene theNewAccountScene = null;	// Access to the User Update page's GUI Widgets
 	
+	// Password feedback widgets and match labels
+	protected static Label label_PasswordsDoNotMatch = new Label();
+	protected static Label validPassword = new Label();
+	protected static Label label_Requirements = 
+	    	new Label("A valid password must satisfy the following requirements:");
+	protected static Label label_UpperCase = new Label();
+	protected static Label label_LowerCase = new Label();
+	protected static Label label_NumericDigit = new Label();
+	protected static Label label_SpecialChar = new Label();
+	protected static Label label_CorrectLength = new Label();
 
 	/*-********************************************************************************************
 
@@ -125,6 +136,11 @@ public class ViewNewAccount {
 		text_Password1.setText("");	// appear for a new user
 		text_Password2.setText("");
 		
+		// Reset password validation assessments and match status on entry
+		resetAssessments();
+		validPassword.setText("");
+		label_PasswordsDoNotMatch.setText("");
+		
 		// Fetch the role for this user
 		theRole = theDatabase.getRoleGivenAnInvitationCode(theInvitationCode);
 		
@@ -139,7 +155,9 @@ public class ViewNewAccount {
     	// Place all of the established GUI elements into the pane
     	theRootPane.getChildren().clear();
     	theRootPane.getChildren().addAll(label_NewUserCreation, label_NewUserLine, text_Username,
-    			text_Password1, text_Password2, button_UserSetup, button_Quit);    	
+    			text_Password1, label_Requirements, label_UpperCase, label_LowerCase, 
+    			label_NumericDigit, label_SpecialChar, label_CorrectLength, validPassword,
+    			text_Password2, button_UserSetup, label_PasswordsDoNotMatch, button_Quit);   	
 
 		// Set the title for the window, display the page, and wait for the Admin to do something
 		theStage.setTitle("CSE 360 Foundation Code: New User Account Setup");	
@@ -179,11 +197,30 @@ public class ViewNewAccount {
 		// Establish the text input operand field for the password
 		setupTextUI(text_Password1, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 210, true);
 		text_Password1.setPromptText("Enter the Password");
+		text_Password1.textProperty().addListener((_, _, _) 
+				-> {ControllerNewAccount.setPassword1(); });
+		
+		// Visual layout configuration for password validation
+		setupLabelUI(label_Requirements, "Arial", 13, 400, Pos.BASELINE_LEFT, 50, 260);
+		setupLabelUI(label_UpperCase, "Arial", 12, 350, Pos.BASELINE_LEFT, 65, 280);
+		setupLabelUI(label_LowerCase, "Arial", 12, 350, Pos.BASELINE_LEFT, 65, 300);
+		setupLabelUI(label_NumericDigit, "Arial", 12, 350, Pos.BASELINE_LEFT, 65, 320);
+		setupLabelUI(label_SpecialChar, "Arial", 12, 350, Pos.BASELINE_LEFT, 65, 340);
+		setupLabelUI(label_CorrectLength, "Arial", 12, 400, Pos.BASELINE_LEFT, 65, 360);
+		setupLabelUI(validPassword, "Arial", 13, 350, Pos.BASELINE_LEFT, 50, 385);
+		resetAssessments();
 		
 		// Establish the text input operand field to confirm the password
-		setupTextUI(text_Password2, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 260, true);
+		setupTextUI(text_Password2, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 415, true);
 		text_Password2.setPromptText("Enter the Password Again");
+		text_Password2.textProperty().addListener((_, _, _) 
+				-> {ControllerNewAccount.setPassword2(); });
+		text_Password2.focusedProperty().addListener((_, _, isNowFocused) 
+				-> {ControllerNewAccount.handlePassword2FocusChange(isNowFocused); });
 		
+		// Label to display whether the two passwords match
+		setupLabelUI(label_PasswordsDoNotMatch, "Arial", 13, 300, Pos.BASELINE_LEFT, 50, 450);
+				
 		// If the invitation code is wrong, this alert dialog will tell the user
 		alertInvitationCodeIsInvalid.setTitle("Invalid Invitation Code");
 		alertInvitationCodeIsInvalid.setHeaderText("The invitation code is not valid.");
@@ -213,6 +250,26 @@ public class ViewNewAccount {
 	Helper methods to reduce code length
 
 	 */
+		
+	/*******
+	* <p> Title: resetAssessments - Resets widgets to their default state</p>
+	*/
+	public static void resetAssessments() {
+		label_UpperCase.setText("At least one upper case letter - Not yet satisfied");
+		label_UpperCase.setTextFill(Color.RED);
+				
+		label_LowerCase.setText("At least one lower case letter - Not yet satisfied");
+		label_LowerCase.setTextFill(Color.RED);
+				
+		label_NumericDigit.setText("At least one numeric digit - Not yet satisfied");
+		label_NumericDigit.setTextFill(Color.RED);
+				
+		label_SpecialChar.setText("At least one special character - Not yet satisfied");
+		label_SpecialChar.setTextFill(Color.RED);
+				
+		label_CorrectLength.setText("Between 8 and 58 characters - Not yet satisfied");
+		label_CorrectLength.setTextFill(Color.RED);
+	}
 	
 	/**********
 	 * Private local method to initialize the standard fields for a label
