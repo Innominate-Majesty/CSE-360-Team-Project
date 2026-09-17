@@ -30,6 +30,7 @@ import entityClasses.User;
  * 							Mukkiri and Ishwarya Hidkimath Basavaraj
  * @version 2.01		2025-12-17 Minor updates for Spring 2026
  * @version 2.02		2026-09-12 Added deleteUser() method for TP1
+ * @version 2.03		2026-09-16 Added updatePassword() method for TP1
  */
 
 /*
@@ -555,6 +556,29 @@ public class Database {
 		return;
 	}
 	
+	/*******
+	 * <p> Method: void updatePassword(String username, String password) </p>
+	 * 
+	 * <p> Description: Update the password of a user given that user's username and the new password.</p>
+	 * 
+	 * @author Alexander Robert Murray
+	 * 
+	 * @param username is the username of the user
+	 *  
+	 * @param password is the new password for the user
+	 *  
+	 */
+	public void updatePassword(String username, String password) {
+	    String query = "UPDATE userDB SET password = ? WHERE username = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, password);
+	        pstmt.setString(2, username);
+	        pstmt.executeUpdate();
+	        currentPassword = password;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
 	
 	/*******
 	 * <p> Method: String getFirstName(String username) </p>
@@ -961,6 +985,8 @@ public class Database {
 	 *  
 	 */
 	public String getCurrentPassword() { return currentPassword;};
+	
+	
 
 	
 	/*******
