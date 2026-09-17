@@ -12,6 +12,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import entityClasses.User;
+import javafx.scene.control.PasswordField;
+import javafx.scene.paint.Color;
+import javafx.stage.Modality;
+import passwordValidator.PasswordValidator;
 
 /*******
  * <p> Title: ViewUserUpdate Class. </p>
@@ -33,6 +37,7 @@ import entityClasses.User;
  * @author Lynn Robert Carter
  * 
  * @version 1.01		2025-08-19 Initial version plus new internal documentation
+ * @version 1.02		2026-09-16 Added update password functionality
  *  
  */
 
@@ -116,6 +121,19 @@ public class ViewUserUpdate {
 	public static Scene theUserUpdateScene = null;	// The Scene each invocation populates
 
 	private static Optional<String> result;		// The result from a pop-up dialog
+	
+	// Standalone popup window widgets for live password validation
+	private static PasswordField text_NewPassword = new PasswordField();
+	private static Label label_Requirements = 
+			new Label("A valid password must satisfy the following requirements:");
+	private static Label label_UpperCase = new Label();
+	private static Label label_LowerCase = new Label();
+	private static Label label_NumericDigit = new Label();
+	private static Label label_SpecialChar = new Label();
+	private static Label label_CorrectLength = new Label();
+	private static Label validPassword = new Label();
+	private static Button button_SavePassword = new Button("Save New Password");
+	private static Button button_CancelPassword = new Button("Cancel");
 
 	/*-********************************************************************************************
 
@@ -255,6 +273,9 @@ public class ViewUserUpdate {
         setupLabelUI(label_Password, "Arial", 18, 190, Pos.BASELINE_RIGHT, 5, 150);
         setupLabelUI(label_CurrentPassword, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 150);
         setupButtonUI(button_UpdatePassword, "Dialog", 18, 275, Pos.CENTER, 500, 143);
+        button_UpdatePassword.setOnAction((_) -> {
+        	displayUpdatePasswordWindow(theStage, theUser);
+        	});
         
         // First Name
         setupLabelUI(label_FirstName, "Arial", 18, 190, Pos.BASELINE_RIGHT, 5, 200);
@@ -346,6 +367,155 @@ public class ViewUserUpdate {
         		button_ProceedToUserHomePage);
 	}
 	
+	/**********
+	 * <p> Method: displayUpdatePasswordWindow(Stage ownerStage, User user) </p>
+	 * 
+	 * <p> Description: Creates and displays a modal standalone window containing
+	 * a password input field and the live requirements checklist from PasswordValidator.
+	 * Directly invokes theDatabase.updatePassword() upon saving.</p>
+	 */
+	private static void displayUpdatePasswordWindow(Stage ownerStage, User user) {
+		Stage popupStage = new Stage();
+		popupStage.initModality(Modality.WINDOW_MODAL);
+		popupStage.initOwner(ownerStage);
+		popupStage.setTitle("Update Password");
+
+		double popupWidth = 480;
+		double popupHeight = 390;
+		Pane popupPane = new Pane();
+		Scene popupScene = new Scene(popupPane, popupWidth, popupHeight);
+
+		Label label_Header = new Label("Enter your new password:");
+		setupLabelUI(label_Header, "Arial", 16, popupWidth - 40, Pos.BASELINE_LEFT, 20, 20);
+
+		text_NewPassword.setText("");
+		text_NewPassword.setFont(Font.font("Arial", 16));
+		text_NewPassword.setMinWidth(popupWidth - 40);
+		text_NewPassword.setMaxWidth(popupWidth - 40);
+		text_NewPassword.setLayoutX(20);
+		text_NewPassword.setLayoutY(55);
+		text_NewPassword.setPromptText("Enter New Password");
+
+		setupLabelUI(label_Requirements, "Arial", 13, popupWidth - 40, Pos.BASELINE_LEFT, 20, 105);
+		setupLabelUI(label_UpperCase, "Arial", 12, popupWidth - 60, Pos.BASELINE_LEFT, 35, 130);
+		setupLabelUI(label_LowerCase, "Arial", 12, popupWidth - 60, Pos.BASELINE_LEFT, 35, 150);
+		setupLabelUI(label_NumericDigit, "Arial", 12, popupWidth - 60, Pos.BASELINE_LEFT, 35, 170);
+		setupLabelUI(label_SpecialChar, "Arial", 12, popupWidth - 60, Pos.BASELINE_LEFT, 35, 190);
+		setupLabelUI(label_CorrectLength, "Arial", 12, popupWidth - 60, Pos.BASELINE_LEFT, 35, 210);
+		setupLabelUI(validPassword, "Arial", 13, popupWidth - 40, Pos.BASELINE_LEFT, 20, 235);
+
+		resetAssessments();
+		validPassword.setText("");
+
+		setupButtonUI(button_SavePassword, "Dialog", 14, 160, Pos.CENTER, 70, 280);
+		button_SavePassword.setDisable(true);
+		button_SavePassword.setOnAction((_) -> {
+			String newPass = text_NewPassword.getText();
+			String checkErr = PasswordValidator.evaluatePassword(newPass);
+			if (checkErr.isEmpty()) {
+				// Directly updates password in the database
+				theDatabase.updatePassword(theUser.getUserName(), newPass);
+				theDatabase.getUserAccountDetails(theUser.getUserName());
+				theUser.setPassword(newPass);
+				label_CurrentPassword.setText(newPass);
+				popupStage.close();
+			}
+		});
+
+		setupButtonUI(button_CancelPassword, "Dialog", 14, 140, Pos.CENTER, 250, 280);
+		button_CancelPassword.setOnAction((_) -> popupStage.close());
+
+		text_NewPassword.textProperty().addListener((_, _, _) -> {
+			validateNewPasswordLive();
+		});
+
+		popupPane.getChildren().addAll(
+				label_Header, text_NewPassword, label_Requirements,
+				label_UpperCase, label_LowerCase, label_NumericDigit,
+				label_SpecialChar, label_CorrectLength, validPassword,
+				button_SavePassword, button_CancelPassword);
+
+		popupStage.setScene(popupScene);
+		popupStage.showAndWait();
+	}
+	
+	/**********
+	 * <p> Method: validateNewPasswordLive() </p>
+	 * 
+	 * <p> Description: Live evaluation of the entered password against the PasswordValidator
+	 * requirements.</p>
+	 */
+	private static void validateNewPasswordLive() {
+		resetAssessments();
+		String password = text_NewPassword.getText();
+
+		if (password.isEmpty()) {
+			validPassword.setText("");
+			button_SavePassword.setDisable(true);
+			return;
+		}
+
+		String errMessage = PasswordValidator.evaluatePassword(password);
+		updateFlags();
+
+		if (!errMessage.isEmpty()) {
+			validPassword.setTextFill(Color.RED);
+			validPassword.setText("Failure! The password does not meet all requirements.");
+			button_SavePassword.setDisable(true);
+		} else {
+			validPassword.setTextFill(Color.GREEN);
+			validPassword.setText("Success! The password satisfies the requirements.");
+			button_SavePassword.setDisable(false);
+		}
+	}
+	
+	/**********
+	 * <p> Method: updateFlags() </p>
+	 * 
+	 * <p> Description: Sets satisfied requirements text to green.</p>
+	 */
+	private static void updateFlags() {
+		if (PasswordValidator.foundUpperCase) {
+			label_UpperCase.setText("At least one upper case letter - Satisfied");
+			label_UpperCase.setTextFill(Color.GREEN);
+		}
+		if (PasswordValidator.foundLowerCase) {
+			label_LowerCase.setText("At least one lower case letter - Satisfied");
+			label_LowerCase.setTextFill(Color.GREEN);
+		}
+		if (PasswordValidator.foundNumericDigit) {
+			label_NumericDigit.setText("At least one numeric digit - Satisfied");
+			label_NumericDigit.setTextFill(Color.GREEN);
+		}
+		if (PasswordValidator.foundSpecialChar) {
+			label_SpecialChar.setText("At least one special character - Satisfied");
+			label_SpecialChar.setTextFill(Color.GREEN);
+		}
+		if (PasswordValidator.foundCorrectLength) {
+			label_CorrectLength.setText("Between 8 and 58 characters - Satisfied");
+			label_CorrectLength.setTextFill(Color.GREEN);
+		}
+	}
+	
+	/**********
+	 * <p> Title: resetAssessments - Resets widgets to their default not satisfied state</p>
+	 */
+	private static void resetAssessments() {
+		label_UpperCase.setText("At least one upper case letter - Not yet satisfied");
+		label_UpperCase.setTextFill(Color.RED);
+
+		label_LowerCase.setText("At least one lower case letter - Not yet satisfied");
+		label_LowerCase.setTextFill(Color.RED);
+
+		label_NumericDigit.setText("At least one numeric digit - Not yet satisfied");
+		label_NumericDigit.setTextFill(Color.RED);
+
+		label_SpecialChar.setText("At least one special character - Not yet satisfied");
+		label_SpecialChar.setTextFill(Color.RED);
+
+		label_CorrectLength.setText("Between 8 and 58 characters - Not yet satisfied");
+		label_CorrectLength.setTextFill(Color.RED);
+	}
 	
 	/*-********************************************************************************************
 
