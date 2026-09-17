@@ -16,6 +16,16 @@ Team Members:
 
 Phase 1:
 
+   1. Extended an existing Java/JavaFX application rather than building the system from scratch.
+   2. Established the foundation for the application's secure identity and login system.
+   3. Implemented validation for existing and newly added input fields.
+   4. Used finite-state-machine concepts for validating user input and generating meaningful error messages.
+   5. Established a consistent user experience for newly implemented roles and screens.
+   6. Created and prioritized a sprint backlog containing required user stories.
+   7. Developed test cases, architecture/design documentation, and code documentation.
+   8. Conducted recurring team standups and tracked user stories through Backlog, In Progress, and Completed states.
+   9. Produced demonstrations connecting requirements → architecture → design → implementation → testing.
+
 Phase 2:
 
 Phase 3:
