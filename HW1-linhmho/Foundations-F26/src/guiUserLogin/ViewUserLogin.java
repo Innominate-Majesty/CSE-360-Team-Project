@@ -11,6 +11,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.scene.control.TextFormatter;
 
 
 /*******
@@ -23,6 +24,7 @@ import javafx.stage.Stage;
  * @author Lynn Robert Carter
  * 
  * @version 1.00		2025-04-20 Initial version
+ * @version 1.1			2026-09-16 Updated to limit total characters for login and invitation code fields. - Alexander Robert Murray
  *  
  */
 
@@ -135,10 +137,12 @@ public class ViewUserLogin {
 		// Establish the text input operand field for the username
 		setupTextUI(text_Username, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 160, true);
 		text_Username.setPromptText("Enter Username");
+		applyLengthLimiter(text_Username, 40);
 
 		// Establish the text input operand field for the password
 		setupTextUI(text_Password, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 210, true);
 		text_Password.setPromptText("Enter Password");
+		applyLengthLimiter(text_Password, 60);
 
 		// Set up the Log In button
 		setupButtonUI(button_Login, "Dialog", 18, 200, Pos.CENTER, 475, 180);
@@ -155,6 +159,7 @@ public class ViewUserLogin {
 		// Establish the text input operand field for the password
 		setupTextUI(text_Invitation, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 340, true);
 		text_Invitation.setPromptText("Enter Invitation Code");
+		applyLengthLimiter(text_Invitation, 20);
 
 		// Set up the setup button
 		setupButtonUI(button_SetupAccount, "Dialog", 18, 200, Pos.CENTER, 475, 340);
@@ -184,6 +189,22 @@ public class ViewUserLogin {
 
 	 *********************************************************************************************/
 
+	/**********
+	 * Private local method to apply a maximum character length limiter to a text input field.
+	 * 
+	 * @param field		The TextField or PasswordField to limit
+	 * @param maxLength	The maximum allowed characters
+	 */
+	private void applyLengthLimiter(TextField field, int maxLength) {
+		field.setTextFormatter(new TextFormatter<String>(change -> {
+			if (change.getControlNewText().length() <= maxLength) {
+				return change;
+			}
+			return null;
+		}));
+	}
+	
+	
 	/**********
 	 * Private local method to initialize the standard fields for a label
 	 */
