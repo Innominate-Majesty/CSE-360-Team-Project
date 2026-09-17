@@ -28,7 +28,31 @@ Phase 1:
 
 Phase 2:
 
+   1. Extended Phase 1 with the core data model for storing lessons learned.
+   2. Implemented a Post entity supporting complete Create, Read, Update, and Delete (CRUD) functionality.
+   3. Designed entity attributes to support current user stories while considering functionality required by later project phases.
+   4. Added JavaFX GUI packages supporting the Student/Contributor-related user stories.
+   5. Applied the Model-View-Controller (MVC) pattern to new GUI functionality.
+   6. Connected application requirements to the classes and methods responsible for implementing them.
+   7. Added extensive Javadoc and internal documentation describing class responsibilities, attributes, operations, and design rationale.
+   8. Designed tests for each requirement and documented how test results demonstrate requirement satisfaction.
+   9. Demonstrated and documented automated testing of the implemented functionality.
+   10. Maintained planning/status records throughout development to track task ownership, status, and completion dates.
+
 Phase 3:
+
+   1. Expanded staff-oriented requirements into a cohesive set of user stories.
+   2. Maintained and prioritized a project backlog with assigned owners and sprint deadlines.
+   3. Updated project plans throughout development based on team progress.
+   4. Refined the system's architecture using appropriate UML models and architectural views.
+   5. Produced a detailed design showing how software components satisfy functional requirements.
+   6. Documented how architecture supports functional, quality, and reuse objectives.
+   7. Integrated new functionality with work produced during earlier phases.
+   8. Added and refined Javadoc for new production and testing code.
+   9. Documented test coverage for newly implemented methods using JUnit, semi-automated, and manual tests.
+   10. Created manual test procedures including inputs, expected outputs, and pass/fail criteria.
+   11. Demonstrated traceability between user stories → architecture → detailed design → code → tests.
+   12. Refined code comments and documentation to create a consistent, professionally maintained final codebase.
 
 
 -- Group Norms --
