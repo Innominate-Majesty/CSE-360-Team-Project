@@ -79,6 +79,14 @@ public class ControllerUserLogin {
     	}
 		// System.out.println("*** Username is valid");
 		
+		// System.out.println("*** Password is valid for this user");
+		
+     	String tempPassword = theDatabase.getTemporaryPassword();
+    	if(tempPassword != "" && password.compareTo(tempPassword) != 0) {
+    		guiPasswordChange.ViewPasswordChange.displayPasswordChange(theStage, theDatabase);
+    		return;
+    	}
+     	
 		// Check to see that the login password matches the account password
     	String actualPassword = theDatabase.getCurrentPassword();
     	
@@ -87,11 +95,6 @@ public class ControllerUserLogin {
     				"Incorrect username/password. Try again!");
     		ViewUserLogin.alertUsernamePasswordError.showAndWait();
     		return;
-    	}
-		// System.out.println("*** Password is valid for this user");
-		
-    	if(theDatabase.getPasswordChangeStatus() == true) {
-    		
     	}
     	
 		// Establish this user's details

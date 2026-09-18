@@ -64,7 +64,7 @@ public class Database {
 	private boolean currentAdminRole;
 	private boolean currentNewRole1;
 	private boolean currentNewRole2;
-	private boolean passwordChange;
+	private String tempPassword;
 
 	/*******
 	 * <p> Method: Database </p>
@@ -125,7 +125,7 @@ public class Database {
 				+ "adminRole BOOL DEFAULT FALSE, "
 				+ "newRole1 BOOL DEFAULT FALSE, "
 				+ "newRole2 BOOL DEFAULT FALSE, "
-				+ "changePassword BOOL DEFAULT FALSE)";
+				+ "tempPassword VARCHAR(255))";
 		statement.execute(userTable);
 		
 		// Create the invitation codes table
@@ -872,7 +872,7 @@ public class Database {
 	    	currentAdminRole = rs.getBoolean(9);
 	    	currentNewRole1 = rs.getBoolean(10);
 	    	currentNewRole2 = rs.getBoolean(11);
-	    	passwordChange = rs.getBoolean(12);
+	    	tempPassword = rs.getString(12);
 			return true;
 	    } catch (SQLException e) {
 			return false;
@@ -990,7 +990,9 @@ public class Database {
 	public String getCurrentPassword() { return currentPassword;};
 	
 	
-	public boolean getPasswordChangeStatus() {return passwordChange; };
+	public String getTemporaryPassword() {return tempPassword; };
+	
+	public void removeTemporaryPassword() {
 	
 	/*******
 	 * <p> Method: String getCurrentFirstName() </p>

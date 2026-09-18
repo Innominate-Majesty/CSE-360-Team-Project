@@ -128,29 +128,12 @@ public class ViewPasswordChange {
 		text_Password.setPromptText("Enter Password Again");
 		applyLengthLimiter(text_second_Password, 40);
 
-		// Set up the Change Passwod button
+		// Set up the Change Password button
 		setupButtonUI(button_Login, "Dialog", 18, 200, Pos.CENTER, 475, 180);
 		button_Login.setOnAction((_) -> {ControllerPasswordChange.doChangePassword(theStage); });
 
 		alertUsernamePasswordError.setTitle("Invalid passwords!");
 		alertUsernamePasswordError.setHeaderText(null);
-
-
-		// The invitation to setup an account portion of the page
-
-		setupLabelUI(label_AccountSetupInsrtuctions, "Arial", 18, width, Pos.BASELINE_LEFT, 20, 300);
-
-		// Establish the text input operand field for the password
-		setupTextUI(text_Invitation, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 340, true);
-		text_Invitation.setPromptText("Enter Invitation Code");
-		applyLengthLimiter(text_Invitation, 20);
-
-		// Set up the setup button
-		setupButtonUI(button_SetupAccount, "Dialog", 18, 200, Pos.CENTER, 475, 340);
-		button_SetupAccount.setOnAction((_) -> {
-			System.out.println("**** Calling doSetupAccount");
-			ControllerPasswordChange.doSetupAccount(theStage, text_Invitation.getText());
-		});
 
 		// Set up the Quit button  
 		setupButtonUI(button_Quit, "Dialog", 18, 250, Pos.CENTER, 300, 520);
