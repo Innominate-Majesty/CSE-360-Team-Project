@@ -221,6 +221,17 @@ public class ViewAddRemoveRoles {
 		setupButtonUI(button_Quit, "Dialog", 18, 210, Pos.CENTER, 570, 540);
 		button_Quit.setOnAction((_) -> {ControllerAddRemoveRoles.performQuit(); });
 		
+		//Alert for trying to remove last Admin
+		removingLastAdmin.setTitle("Removing Last Admin!");
+		removingLastAdmin.setHeaderText("You are trying to remove your Admin role as the only Admin!");
+		removingLastAdmin.setContentText("The last remaining user with Admin role can not remove their own Admin role.");
+		
+		//Alert for trying to remove another user's Admin role
+		removingOtherAdmin.setTitle("Removing another Admin!");
+		removingOtherAdmin.setHeaderText("You are trying to remove someone else's Admin role!");
+		removingOtherAdmin.setContentText("Admins can only remove their own Admin role, not others.");
+
+		
 		// This is the end of the GUI Widgets for the page
 		
 		// Due to the very dynamic nature of this page, setting the widget into the Root Pane has 

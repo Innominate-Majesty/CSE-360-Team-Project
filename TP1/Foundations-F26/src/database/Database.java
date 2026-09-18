@@ -184,6 +184,45 @@ public class Database {
 	    }
 		return 0;
 	}
+	
+/*******
+* <p> Method: getRoleCount </p>
+*
+* <p> Description: Returns an integer of the number of a specified role currently in the user database. </p>
+*
+* @param role specifies the role whose users are to be counted.
+* @return the count of specified role in the database.
+*
+*/
+	public int getRoleCount(String role) {
+		String columnName = "";
+		
+		// Set string columnName to the corresponding column name
+		if (role.equals("Admin")) {
+			columnName = "adminRole";
+		}
+		else if (role.equals("Role1")) {
+			columnName = "newRole1";
+		}
+		else if (role.equals("Role2")) {
+			columnName = "newRole2";
+		}
+		else {
+			return 0;
+		}
+		
+		String query = "SELECT COUNT(*) AS count FROM userDB WHERE " + columnName + " = TRUE";
+		try {
+			ResultSet resultSet = statement.executeQuery(query);
+			if (resultSet.next()) {
+				return resultSet.getInt("count");
+			}
+		} catch (SQLException e) {
+	        return 0;
+	    }
+		return 0;
+	}	
+
 
 /*******
  * <p> Method: register(User user) </p>
