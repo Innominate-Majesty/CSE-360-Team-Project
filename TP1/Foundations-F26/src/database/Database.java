@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import entityClasses.User;
+import entityClasses.UserAccountSummary;
 
 /*******
  * <p> Title: Database Class. </p>
@@ -294,6 +295,48 @@ public class Database {
 		return userList;
 	}
 
+/******
+ * 
+ * <p> Method: getAllUserAccountSummaries() </p>
+ * 
+ * <p> Description: Retrieves the account information that an admin is allowed to view. Passwords and database ID are not retrieved. </p>
+ * 
+ * @return a list containing a summary of every user account without revealing their password
+ * 
+ * @throws SQLException when the account information cannot be retrieved
+ * 
+ */
+
+public List<UserAccountSummary> getAllUserAccountSummaries() throws SQLException {
+
+	// Creates a list that will contain the account summaries without password
+	List<UserAccountSummary> accountSummaries = new ArrayList<UserAccountSummary>();
+
+	// Selects only the account information that admin are allowed to view
+	String query = "SELECT userName, firstName, middleName, lastName, " + "preferredFirstName, emailAddress, adminRole, newRole1, newRole2 " + "FROM userDB " + "ORDER BY lastName, firstName, userName";
+
+	// Prepares the account summary query and automatically closes it afterward
+	try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+
+		// Executes the account summary query
+		try (ResultSet rs = pstmt.executeQuery()) {
+
+			// Processes every user account returned by the db
+			while (rs.next()) {
+
+				// Creates a summary from the current db row
+				UserAccountSummary accountSummary = new UserAccountSummary(rs.getString("userName"), (rs.getString("firstName")), (rs.getString("middleName")), (rs.getString("lastName")), (rs.getString("preferredFirstName")), (rs.getString("emailAddress")), (rs.getBoolean("adminRole")), (rs.getBoolean("newRole1")), (rs.getBoolean("newRole2")));
+
+				// Adds the current account summary to the result list
+				accountSummaries.add(accountSummary);
+			}
+		}
+	}
+
+	// Returns an empty list when no accounts exist
+	return accountSummaries;
+
+}
 /*******
  * <p> Method: boolean loginAdmin(User user) </p>
  * 
