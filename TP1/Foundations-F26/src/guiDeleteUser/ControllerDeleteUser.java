@@ -1,5 +1,6 @@
 package guiDeleteUser;
 
+import java.util.ArrayList;
 import database.Database;
 import guiDeleteUser.ViewDeleteUser;
 import javafx.collections.FXCollections;
@@ -126,27 +127,30 @@ public class ControllerDeleteUser {
      * 
      */
     protected static void performDeleteUser() {
-        // Delete the user from the database.
-        theDatabase.deleteUser(ViewDeleteUser.theSelectedUser);
-
-        // Display alert confirming deletion.
-        ViewDeleteUser.alertDeleted.showAndWait();
-        ViewDeleteUser.combobox_SelectUser = new ComboBox <String>();
-        ViewDeleteUser.combobox_SelectUser.setItems(FXCollections.
-			observableArrayList(ViewDeleteUser.userList));
-        ViewDeleteUser.combobox_SelectUser.getSelectionModel().
-			clearAndSelect(0);
-        
-        // Create the list of users (e.g., Do not show the user that was just deleted!)
-        ViewDeleteUser.userList.clear();
-        ViewDeleteUser.userList = theDatabase.getUserList();
-
-        // Given the above actions, populate the related widgets with the new values
-        ViewDeleteUser.setupComboBoxUI(ViewDeleteUser.combobox_SelectUser, "Dialog", 16, 250, 280, 125);
-        ViewDeleteUser.combobox_SelectUser.setItems(FXCollections.
-				observableArrayList(ViewDeleteUser.userList));
-		ViewDeleteUser.combobox_SelectUser.getSelectionModel().clearAndSelect(0);
-        doSelectUser();
+        // Determine which item in the ComboBox list was selected.
+    	ViewDeleteUser.theSelectedUser = ViewDeleteUser.
+    			combobox_SelectUser.getValue();
+    	
+    	// If the selection is the list header (e.g., "<Select a User>") don't do anything
+    	if (ViewDeleteUser.theSelectedUser.compareTo("<Select a User>") != 0) {
+    		
+    		// If an actual user was selected, delete that user from the database
+    		if (theDatabase.deleteUser(ViewDeleteUser.theSelectedUser)) {
+    			ViewDeleteUser.combobox_SelectUser = new ComboBox <String>();
+    			ViewDeleteUser.userList = new ArrayList<String>();
+    			ViewDeleteUser.setupComboBoxUI(ViewDeleteUser.combobox_SelectUser, "Dialog", 16, 250, 280,
+    				125);
+    			ViewDeleteUser.userList = theDatabase.getUserList();
+    			ViewDeleteUser.combobox_SelectUser.setItems(FXCollections.
+    				observableArrayList(ViewDeleteUser.userList));
+    			ViewDeleteUser.combobox_SelectUser.getSelectionModel().select(0);
+    			ViewDeleteUser.combobox_SelectUser.getSelectionModel().selectedItemProperty()
+    	    	.addListener((@SuppressWarnings("unused") ObservableValue<? extends String> observable, 
+    	    		@SuppressWarnings("unused") String oldvalue, 
+    	    		@SuppressWarnings("unused") String newValue) -> {doSelectUser();});
+    			doSelectUser();
+    		}
+    	}
     }
 	
 	
