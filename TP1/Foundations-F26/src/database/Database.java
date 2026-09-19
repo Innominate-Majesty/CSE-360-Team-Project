@@ -1,10 +1,6 @@
 package database;
 
 import java.sql.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -982,23 +978,27 @@ public class Database {
 	}
 
 	/*******
-	 * <p> Method: User deleteUser(String username) </p>
+	 * <p> Method: boolean deleteUser(String username) </p>
 	 * 
 	 * <p> Description: Delete a user given a username.</p>
 	 * 
 	 * @param username is the username of the user
 	 * 
+	 * @return true if the update was successful, else false
+	 * 
 	 * @author Alan G. Shimp
 	 * 
 	 */
-	public void deleteUser(String username) {
+	public boolean deleteUser(String username) {
 		String query = "DELETE FROM userDB WHERE username = ?";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			pstmt.setString(1, username);
 			pstmt.executeUpdate();
+			return true;
 		}
 		catch (SQLException e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 	
