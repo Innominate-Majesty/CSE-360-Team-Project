@@ -32,28 +32,28 @@ public class ViewListUsers {
 	private static double height = applicationMain.FoundationsMain.WINDOW_HEIGHT;
 
 	// Defines the pale blue-white background selected by the team
-	private static final String PAGE_BACKGROUND = "#F3F7FF";
+	private static final String PAGE_BACKGROUND = "#F5F7F4";
 
 	// Defines the white background used for account cards
 	private static final String CARD_BACKGROUND = "#FFFFFF";
 
 	// Defines the clear modern blue used for important buttons and borders
-	private static final String ACCENT_COLOR = "#3B82F6";
+	private static final String ACCENT_COLOR = "#607D70";
 
 	// Defines the deeper blue displayed when hovering over a primary button
-	private static final String ACCENT_HOVER = "#2563EB";
+	private static final String ACCENT_HOVER = "#4F6A5E";
 
 	// Defines the pale blue used when highlighting an account card
-	private static final String HOVER_BACKGROUND = "#E7F0FF";
+	private static final String HOVER_BACKGROUND = "#E8F0EB";
 
 	// Defines the dark navy-gray used for primary text
-	private static final String PRIMARY_TEXT = "#1E293B";
+	private static final String PRIMARY_TEXT = "#26332D";
 
 	// Defines the slate blue-gray used for secondary text
-	private static final String SECONDARY_TEXT = "#64748B";
+	private static final String SECONDARY_TEXT = "#69776F";
 
 	// Defines the light blue-gray border used around cards and panels
-	private static final String BORDER_COLOR = "#CBD5E1";
+	private static final String BORDER_COLOR = "#D8E2DC";
 
 	// Displays the title of the page
 	private static Label label_PageTitle = new Label("All User Accounts");
