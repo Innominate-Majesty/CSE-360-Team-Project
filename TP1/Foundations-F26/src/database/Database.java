@@ -92,7 +92,7 @@ public class Database {
 			System.out.println(">>> USING THIS DATABASE.JAVA <<<");
 
 			// You can use this command to clear the database and restart from fresh.
-			statement.execute("DROP ALL OBJECTS");
+			// statement.execute("DROP ALL OBJECTS");
 
 			createTables();  // Create the necessary tables if they don't exist
 		} catch (ClassNotFoundException e) {
