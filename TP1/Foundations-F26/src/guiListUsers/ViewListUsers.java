@@ -2,28 +2,17 @@ package guiListUsers;
 
 import java.util.List;
 
-import entityClasses.UserAccountSummary;
-
 import entityClasses.User;
-
+import entityClasses.UserAccountSummary;
 import javafx.geometry.Insets;
-
 import javafx.geometry.Pos;
-
 import javafx.scene.Scene;
-
 import javafx.scene.control.Button;
-
 import javafx.scene.control.Label;
-
 import javafx.scene.control.ScrollPane;
-
 import javafx.scene.layout.Pane;
-
 import javafx.scene.layout.VBox;
-
 import javafx.scene.text.Font;
-
 import javafx.stage.Stage;
 
 /******
@@ -42,32 +31,32 @@ public class ViewListUsers {
 	// Stores the application window height
 	private static double height = applicationMain.FoundationsMain.WINDOW_HEIGHT;
 
-	// Defines the soft blue-gray page background
-	private static final String PAGE_BACKGROUND = "#F4F7FB";
+	// Defines the pale blue-white background selected by the team
+	private static final String PAGE_BACKGROUND = "#F3F7FF";
 
 	// Defines the white background used for account cards
 	private static final String CARD_BACKGROUND = "#FFFFFF";
 
-	// Defines the primary blue used for important buttons
-	private static final String PRIMARY_BLUE = "#5B7DB1";
+	// Defines the clear modern blue used for important buttons and borders
+	private static final String ACCENT_COLOR = "#3B82F6";
 
-    // Defines the darker blue displayed when hovering over a primary button
-	private static final String PRIMARY_BLUE_HOVER = "#496A99";
+	// Defines the deeper blue displayed when hovering over a primary button
+	private static final String ACCENT_HOVER = "#2563EB";
 
 	// Defines the pale blue used when highlighting an account card
-	private static final String HOVER_BLUE = "#E8F0FA";
+	private static final String HOVER_BACKGROUND = "#E7F0FF";
 
-	// Defines the dark blue gray used for primary text
-	private static final String PRIMARY_TEXT = "#263445";
+	// Defines the dark navy-gray used for primary text
+	private static final String PRIMARY_TEXT = "#1E293B";
 
-	// Defines the lighter blue gray used for secondary text
-	private static final String SECONDARY_TEXT = "#68778A";
+	// Defines the slate blue-gray used for secondary text
+	private static final String SECONDARY_TEXT = "#64748B";
 
-	// Defines the light border color used around cards and panels
-	private static final String BORDER_COLOR = "#D9E2EC";
+	// Defines the light blue-gray border used around cards and panels
+	private static final String BORDER_COLOR = "#CBD5E1";
 
 	// Displays the title of the page
-	private static Label label_PageTitle = new Label("View User Accounts");
+	private static Label label_PageTitle = new Label("All User Accounts");
 
 	// Displays the username of the currently logged in admin user
 	private static Label label_AdminDetails = new Label();
@@ -147,8 +136,11 @@ public class ViewListUsers {
 		// Displays the admin's username
 		label_AdminDetails.setText("Admin: " + theUser.getUserName());
 
+        // Loads the latest user account summaries whenever the page opens
+        ControllerListUsers.loadUserAccounts();
+
 		// Sets the application window title for this page
-		theStage.setTitle("View User Accounts");
+		theStage.setTitle("View All User Accounts");
 
 		// Places the View User Accounts scene into the application window
 		theStage.setScene(theListUsersScene);
@@ -320,6 +312,21 @@ public class ViewListUsers {
 				button_Return,
 				button_Logout,
 				button_Quit);
+        
+        // Reloads the account summaries when the admin clicks Refresh
+        button_Refresh.setOnAction((_) -> ControllerListUsers.performRefresh());
+
+        // Returns to the account card list when the admin clicks Back
+        button_BackToList.setOnAction((_) -> ControllerListUsers.performBackToList());
+
+        // Returns to Admin Home when the admin clicks Return
+        button_Return.setOnAction((_) -> ControllerListUsers.performReturn());
+
+        // Logs the admin out when the admin clicks Logout
+        button_Logout.setOnAction((_) -> ControllerListUsers.performLogout());
+
+        // Terminates the application when the admin clicks Quit
+        button_Quit.setOnAction((_) -> ControllerListUsers.performQuit());
 
 	}
 
@@ -358,7 +365,7 @@ public class ViewListUsers {
 
 		// Applies the default primary button appearance
 		button.setStyle(
-				"-fx-background-color: " + PRIMARY_BLUE + ";" +
+				"-fx-background-color: " + ACCENT_COLOR + ";" +
 			    "-fx-text-fill: white;" +
 				"-fx-background-radius: 8;" +
 				"-fx-padding: 8 16 8 16;" +
@@ -367,7 +374,7 @@ public class ViewListUsers {
 
 		// Applies the darker blue appearance while the pointer is over the button
 		button.setOnMouseEntered((_) -> button.setStyle(
-				"-fx-background-color: " + PRIMARY_BLUE_HOVER + ";" +
+				"-fx-background-color: " + ACCENT_HOVER + ";" +
 				"-fx-text-fill: white;" +
 				"-fx-background-radius: 8;" +
 				"-fx-padding: 8 16 8 16;" +
@@ -376,7 +383,7 @@ public class ViewListUsers {
 
 		// Restores the primary appearance when the pointer leaves the button
 		button.setOnMouseExited((_) -> button.setStyle(
-				"-fx-background-color: " + PRIMARY_BLUE + ";" +
+				"-fx-background-color: " + ACCENT_COLOR + ";" +
 				"-fx-text-fill: white;" +
 				"-fx-background-radius: 8;" +
 				"-fx-padding: 8 16 8 16;" +
@@ -429,9 +436,9 @@ public class ViewListUsers {
 
 		// Applies the pale-blue appearance while the pointer is over the button
 		button.setOnMouseEntered((_) -> button.setStyle(
-				"-fx-background-color: " + HOVER_BLUE + ";" +
+				"-fx-background-color: " + HOVER_BACKGROUND + ";" +
 				"-fx-text-fill: " + PRIMARY_TEXT + ";" +
-				"-fx-border-color: " + PRIMARY_BLUE + ";" +
+				"-fx-border-color: " + ACCENT_COLOR + ";" +
 				"-fx-border-radius: 8;" +
 				"-fx-background-radius: 8;" +
 				"-fx-padding: 8 16 8 16;" +
@@ -607,8 +614,8 @@ public class ViewListUsers {
 
 		// Applies the pale-blue appearance while the pointer is over the card
 		accountCard.setOnMouseEntered((_) -> accountCard.setStyle(
-				"-fx-background-color: " + HOVER_BLUE + ";" +
-				"-fx-border-color: " + PRIMARY_BLUE + ";" +
+				"-fx-background-color: " + HOVER_BACKGROUND + ";" +
+				"-fx-border-color: " + ACCENT_COLOR + ";" +
 				"-fx-border-radius: 10;" +
 				"-fx-background-radius: 10;" +
 				"-fx-padding: 12;" +

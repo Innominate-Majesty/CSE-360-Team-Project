@@ -299,39 +299,52 @@ public class UserAccountSummary{
      * <p> Method: getDisplayRoles() </p>
      *
      * <p> Description: Converts the stored role values into readable role names.
-     * Role1 and Role2 are provisionally represented by the single User label until
-     * the team confirms their final meanings. </p>
+     * Role1 and Role2 retain their current names until their meanings are defined
+     * during TP2. </p>
      *
      * @return the account's formatted role names
      */
     public String getDisplayRoles() {
 
-        // Determines whether either existing non-admin role is assigned
-        boolean hasUserRole = role1 || role2;
+        // Creates the readable list of assigned roles
+        StringBuilder displayedRoles = new StringBuilder();
 
-        // Returns both labels when the account has Admin and User access
-        if (adminRole && hasUserRole) {
-
-            // Returns the combined readable role labels
-            return "Admin, User";
-        }
-
-        // Returns Admin when the account only has the Admin role
+        // Checks whether the account has the Admin role
         if (adminRole) {
 
-            // Returns the readable Admin label
-            return "Admin";
+            // Adds the Admin role to the readable list
+            displayedRoles.append("Admin");
         }
 
-        // Returns User when either existing non-admin role is assigned
-        if (hasUserRole) {
+        // Checks whether the account has Role1
+        if (role1) {
 
-            // Returns the readable User label
-            return "User";
+            // Adds a separator when another role is already displayed
+            if (displayedRoles.length() > 0) displayedRoles.append(", ");
+
+            // Adds Role1 to the readable list
+            displayedRoles.append("Role1");
         }
 
-        // Returns a readable value when no role is assigned
-        return "No assigned role";
+        // Checks whether the account has Role2
+        if (role2) {
+
+            // Adds a separator when another role is already displayed
+            if (displayedRoles.length() > 0) displayedRoles.append(", ");
+
+            // Adds Role2 to the readable list
+            displayedRoles.append("Role2");
+        }
+
+        // Checks whether the account has no assigned roles
+        if (displayedRoles.length() == 0) {
+
+            // Returns a readable value when no role is assigned
+            return "No assigned role";
+        }
+
+        // Returns every assigned role using its current readable name
+        return displayedRoles.toString();
     }
 
 }

@@ -101,7 +101,7 @@ public class ViewAdminHome {
 	protected static Button button_ManageInvitations = new Button("Manage Invitations");
 	protected static Button button_SetOnetimePassword = new Button("Set a One-Time Password");
 	protected static Button button_DeleteUser = new Button("Delete a User");
-	protected static Button button_ListUsers = new Button("List All Users");
+	protected static Button button_ListUsers = new Button("View All User Accounts");
 	protected static Button button_AddRemoveRoles = new Button("Add/Remove Roles");
 	protected static Alert alertNotImplemented = new Alert(AlertType.INFORMATION);
 

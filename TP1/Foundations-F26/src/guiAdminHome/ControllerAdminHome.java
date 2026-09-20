@@ -137,15 +137,19 @@ public class ControllerAdminHome {
 	 * 
 	 * Title: listUsers () Method. </p>
 	 * 
-	 * <p> Description: Protected method that is currently a stub informing the user that
-	 * this function has not yet been implemented. </p>
+	 * <p> Description: Opens the View All User Accounts page for the current admin </p>
+	 * 
 	 */
 	protected static void listUsers() {
-		System.out.println("\n*** WARNING ***: List Users Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
-		ViewAdminHome.alertNotImplemented.setHeaderText("List User Issue");
-		ViewAdminHome.alertNotImplemented.setContentText("List Users Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.showAndWait();
+		// System.out.println("\n*** WARNING ***: List Users Not Yet Implemented");
+		// ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
+		// ViewAdminHome.alertNotImplemented.setHeaderText("List User Issue");
+		// ViewAdminHome.alertNotImplemented.setContentText("List Users Not Yet Implemented");
+		// ViewAdminHome.alertNotImplemented.showAndWait();
+
+		// Opens the View All User Accounts page for the current admin
+		guiListUsers.ViewListUsers.displayListUsers(ViewAdminHome.theStage, ViewAdminHome.theUser);
+
 	}
 	
 	/**********
