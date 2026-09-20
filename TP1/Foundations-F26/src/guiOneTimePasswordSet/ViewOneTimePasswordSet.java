@@ -1,5 +1,7 @@
-package guiUserLogin;
+package guiOneTimePasswordSet;
 
+import database.Database;
+import entityClasses.User;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -28,7 +30,7 @@ import javafx.scene.control.TextFormatter;
  *  
  */
 
-public class ViewUserLogin {
+public class ViewOneTimePasswordSet {
 
 	/*-********************************************************************************************
 
@@ -41,34 +43,23 @@ public class ViewUserLogin {
 	private static double width = applicationMain.FoundationsMain.WINDOW_WIDTH;
 	private static double height = applicationMain.FoundationsMain.WINDOW_HEIGHT;
 
-	private static Label label_ApplicationTitle = new Label("Foundation Application Startup Page");
+	private static Label label_ApplicationTitle = new Label("Change Password");
 
-	// This set is for all subsequent starts of the system
-	private static Label label_OperationalStartTitle = new Label("Log In or Invited User Account Setup ");
-	private static Label label_LogInInsrtuctions = new Label("Enter your user name and password and "+	
-			"then click on the LogIn button");
-	protected static Alert alertUsernamePasswordError = new Alert(AlertType.INFORMATION);
+	protected static Alert alertUserPasswordError = new Alert(AlertType.INFORMATION);
 
 
 	//	private User user;
-	protected static TextField text_Username = new TextField();
-	protected static PasswordField text_Password = new PasswordField();
-	private static Button button_Login = new Button("Log In");	
+	protected static PasswordField text_username = new PasswordField();
+	protected static PasswordField text_password = new PasswordField();
+	private static Button button_Set_Password = new Button("Change Password");
 
-	private static Label label_AccountSetupInsrtuctions = new Label("No account? "+	
-			"Enter your invitation code and click on the Account Setup button");
-	private static TextField text_Invitation = new TextField();
-	private static Button button_SetupAccount = new Button("Setup Account");
-
-	private static Button button_Quit = new Button("Quit");
-
-	private static Stage theStage;	
+	private static Stage theStage;
+	private static User adminUser;
 	private static Pane theRootPane;
-	public static Scene theUserLoginScene = null;	
+	public static Scene thePasswordSetScene = null;	
 
 
-	private static ViewUserLogin theView = null;	//	private static guiUserLogin.ControllerUserLogin theController;
-
+	private static ViewOneTimePasswordSet theView = null;
 
 	/*-********************************************************************************************
 
@@ -76,23 +67,21 @@ public class ViewUserLogin {
 
 	 *********************************************************************************************/
 
-	public static void displayUserLogin(Stage ps) {
+	public static void displayOneTimePasswordSet(Stage ps, User adUser) {
 		
 		// Establish the references to the GUI. There is no current user yet.
 		theStage = ps;
+		adminUser = adUser;
 		
 		// If not yet established, populate the static aspects of the GUI
-		if (theView == null) theView = new ViewUserLogin();
-		
-		// Populate the dynamic aspects of the GUI with the data from the user and the current
-		// state of the system.		
-		text_Username.setText("");		// Reset the username and password from the last use
-		text_Password.setText("");
-		text_Invitation.setText("");	// Same for the invitation code
+		if (theView == null) theView = new ViewOneTimePasswordSet();
+	
+		text_username.setText("");
+		text_password.setText("");
 
 		// Set the title for the window, display the page, and wait for the Admin to do something
-		theStage.setTitle("CSE 360 Foundation Code: User Login Page");		
-		theStage.setScene(theUserLoginScene);
+		theStage.setTitle("CSE 360 Foundation Code: One Time Password Set");		
+		theStage.setScene(thePasswordSetScene);
 		theStage.show();
 	}
 
@@ -118,68 +107,39 @@ public class ViewUserLogin {
 	 * @param db specifies the Database to be used by this GUI and it's methods
 	 * 
 	 */
-	private ViewUserLogin() {
+	private ViewOneTimePasswordSet() {
 
 		// Create the Pane for the list of widgets and the Scene for the window
 		theRootPane = new Pane();
-		theUserLoginScene = new Scene(theRootPane, width, height);
+		thePasswordSetScene = new Scene(theRootPane, width, height);
 		
 		// Populate the window with the title and other common widgets and set their static state
 		setupLabelUI(label_ApplicationTitle, "Arial", 32, width, Pos.CENTER, 0, 10);
 
-		setupLabelUI(label_OperationalStartTitle, "Arial", 24, width, Pos.CENTER, 0, 60);
+		// Establish the text input operand field for the first password
+		setupTextUI(text_username, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 160, true);
+		text_username.setPromptText("Enter Username");
+		applyLengthLimiter(text_username, 40);
 
+		// Establish the text input operand field for the second password
+		setupTextUI(text_password, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 210, true);
+		text_password.setPromptText("Enter Password");
+		applyLengthLimiter(text_password, 40);
 
-		// Existing user log in portion of the page
+		// Set up the Change Password button
+		setupButtonUI(button_Set_Password, "Dialog", 18, 200, Pos.CENTER, 475, 180);
+		button_Set_Password.setOnAction((_) -> {ControllerOneTimePasswordSet.doPasswordSet(theStage, adminUser); });
 
-		setupLabelUI(label_LogInInsrtuctions, "Arial", 18, width, Pos.BASELINE_LEFT, 20, 120);
-
-		// Establish the text input operand field for the username
-		setupTextUI(text_Username, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 160, true);
-		text_Username.setPromptText("Enter Username");
-		applyLengthLimiter(text_Username, 40);
-
-		// Establish the text input operand field for the password
-		setupTextUI(text_Password, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 210, true);
-		text_Password.setPromptText("Enter Password");
-		applyLengthLimiter(text_Password, 60);
-
-		// Set up the Log In button
-		setupButtonUI(button_Login, "Dialog", 18, 200, Pos.CENTER, 475, 180);
-		button_Login.setOnAction((_) -> {ControllerUserLogin.doLogin(theStage); });
-
-		alertUsernamePasswordError.setTitle("Invalid username/password!");
-		alertUsernamePasswordError.setHeaderText(null);
-
-
-		// The invitation to setup an account portion of the page
-
-		setupLabelUI(label_AccountSetupInsrtuctions, "Arial", 18, width, Pos.BASELINE_LEFT, 20, 300);
-
-		// Establish the text input operand field for the password
-		setupTextUI(text_Invitation, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 340, true);
-		text_Invitation.setPromptText("Enter Invitation Code");
-		applyLengthLimiter(text_Invitation, 20);
-
-		// Set up the setup button
-		setupButtonUI(button_SetupAccount, "Dialog", 18, 200, Pos.CENTER, 475, 340);
-		button_SetupAccount.setOnAction((_) -> {
-			System.out.println("**** Calling doSetupAccount");
-			ControllerUserLogin.doSetupAccount(theStage, text_Invitation.getText());
-		});
-
-		// Set up the Quit button  
-		setupButtonUI(button_Quit, "Dialog", 18, 250, Pos.CENTER, 300, 520);
-		button_Quit.setOnAction((_) -> {ControllerUserLogin.performQuit(); });
+		alertUserPasswordError.setTitle("Invalid username!");
+		alertUserPasswordError.setHeaderText(null);
 
 		//		theRootPane.getChildren().clear();
 
 		theRootPane.getChildren().addAll(
 				label_ApplicationTitle, 
-				label_OperationalStartTitle,
-				label_LogInInsrtuctions, label_AccountSetupInsrtuctions, text_Username,
-				button_Login, text_Password, text_Invitation, button_SetupAccount,
-				button_Quit);
+				text_username,
+				text_password,
+				button_Set_Password);
 	}
 
 

@@ -61,6 +61,7 @@ public class Database {
 	private boolean currentAdminRole;
 	private boolean currentNewRole1;
 	private boolean currentNewRole2;
+	private String tempPassword;
 
 	/*******
 	 * <p> Method: Database </p>
@@ -120,7 +121,8 @@ public class Database {
 				+ "emailAddress VARCHAR(255), "
 				+ "adminRole BOOL DEFAULT FALSE, "
 				+ "newRole1 BOOL DEFAULT FALSE, "
-				+ "newRole2 BOOL DEFAULT FALSE)";
+				+ "newRole2 BOOL DEFAULT FALSE, "
+				+ "tempPassword VARCHAR(255))";
 		statement.execute(userTable);
 		
 		// Create the invitation codes table
@@ -948,6 +950,7 @@ public List<UserAccountSummary> getAllUserAccountSummaries() throws SQLException
 	    	currentAdminRole = rs.getBoolean(9);
 	    	currentNewRole1 = rs.getBoolean(10);
 	    	currentNewRole2 = rs.getBoolean(11);
+	    	tempPassword = rs.getString(12);
 			return true;
 	    } catch (SQLException e) {
 			return false;
@@ -1203,4 +1206,39 @@ public List<UserAccountSummary> getAllUserAccountSummaries() throws SQLException
 			se.printStackTrace(); 
 		} 
 	}
+	
+	public String getTemporaryPassword() {return tempPassword; };
+	
+	public void removeTemporaryPassword(String username) { 
+		String query = "UPDATE userDB SET tempPassword = null WHERE username = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void passwordChange(String username, String password) {
+		String query = "UPDATE userDB SET password = ? WHERE username = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, password);
+			pstmt.setString(2, username);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void oneTimePasswordSet(String username, String newPassword) {
+		String query = "UPDATE userDB SET tempPassword = ? WHERE username = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, newPassword);
+			pstmt.setString(2, username);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
 }

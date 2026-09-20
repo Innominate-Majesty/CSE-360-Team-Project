@@ -78,6 +78,12 @@ public class ControllerUserLogin {
     		return;
     	}
 		// System.out.println("*** Username is valid");
+     	
+     	String tempPassword = theDatabase.getTemporaryPassword();
+    	if(tempPassword != "" && password.compareTo(tempPassword) != 0) {
+    		theDatabase.removeTemporaryPassword(username);
+    		guiPasswordChange.ViewPasswordChange.displayPasswordChange(theStage, username);
+    	}
 		
 		// Check to see that the login password matches the account password
     	String actualPassword = theDatabase.getCurrentPassword();
