@@ -31,6 +31,19 @@ Team Project 1
     - Hold team standups at least twice per week to communicate progress, upcoming work, blockers, and integration risks.
     - Produce demonstrations showing that the implementation works and that the requirements flow through design, code, and testing.
 
+-- Implementation Details --
+
+1. Password Validation:
+
+2. Admin's ability to set a one time password:
+
+3. Admin's ability to delete a user account:
+
+4. Admin's ability to list all user accounts and display information:
+
+5. Admin's ability to add or remove roles to and from users:
+
+
 -- Full Details --
 
 (Copy and Pasted from Canvas)

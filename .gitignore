@@ -37,3 +37,5 @@ target/
 .env.*
 !.env.example
 
+# Local implementation planning notes
+/TP1/list-all-user-accounts-readme.md
