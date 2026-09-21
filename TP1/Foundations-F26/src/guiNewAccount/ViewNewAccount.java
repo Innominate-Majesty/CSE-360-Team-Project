@@ -27,6 +27,7 @@ import javafx.scene.paint.Color;
  * @author Lynn Robert Carter
  * 
  * @version 1.1		2026-09-13 Updated version to add password validation - Alexander Robert Murray
+ * @version 1.11	2026-09-20 Changed colors and created presets
  *  
  */
 
@@ -42,6 +43,45 @@ public class ViewNewAccount {
 	
 	private static double width = applicationMain.FoundationsMain.WINDOW_WIDTH;
 	private static double height = applicationMain.FoundationsMain.WINDOW_HEIGHT;
+	
+	// Theme Color Presets
+	// Defines the soft off-white/pale sage background selected by the team
+	private static final String PAGE_BACKGROUND = "#F5F7F4";
+
+	// Defines the pure white background used for inputs and cards
+	private static final String CARD_BACKGROUND = "#FFFFFF";
+
+	// Defines the muted sage green used for primary buttons and accents
+	private static final String ACCENT_COLOR = "#607D70";
+
+	// Defines the deeper forest sage displayed when hovering over an accent button
+	private static final String ACCENT_HOVER = "#4F6A5E";
+
+	// Defines the soft mint-tinted gray used when highlighting cards and focused fields
+	private static final String HOVER_BACKGROUND = "#E8F0EB";
+
+	// Defines the deep forest slate-charcoal used for primary text
+	private static final String PRIMARY_TEXT = "#26332D";
+
+	// Defines the muted sage-gray used for secondary text and subheadings
+	private static final String SECONDARY_TEXT = "#69776F";
+
+	// Defines the light sage-gray border used around cards, fields, and panels
+	private static final String BORDER_COLOR = "#D8E2DC";
+
+	// Style presets constructed from color constants
+	private static final String STYLE_BUTTON = 
+			"-fx-background-color: " + ACCENT_COLOR + "; -fx-text-fill: " + CARD_BACKGROUND + 
+			"; -fx-background-radius: 6; -fx-cursor: hand;";
+	private static final String STYLE_BUTTON_HOVER = 
+			"-fx-background-color: " + ACCENT_HOVER + "; -fx-text-fill: " + CARD_BACKGROUND + 
+			"; -fx-background-radius: 6; -fx-cursor: hand;";
+	private static final String STYLE_TEXTFIELD = 
+			"-fx-background-color: " + CARD_BACKGROUND + "; -fx-text-fill: " + PRIMARY_TEXT + 
+			"; -fx-border-color: " + BORDER_COLOR + "; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6;";
+	private static final String STYLE_TEXTFIELD_FOCUS = 
+			"-fx-background-color: " + HOVER_BACKGROUND + "; -fx-text-fill: " + PRIMARY_TEXT + 
+			"; -fx-border-color: " + ACCENT_COLOR + "; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6;";
 	
 	// This is a simple GUI login Page, very similar to the FirstAdmin login page.  The only real
 	// difference is in this case we also know an email address, since it was used to send the
@@ -179,16 +219,20 @@ public class ViewNewAccount {
 		
 		// Create the Pane for the list of widgets and the Scene for the window
 		theRootPane = new Pane();
+		theRootPane.setStyle("-fx-background-color: " + PAGE_BACKGROUND + ";");
 		theNewAccountScene = new Scene(theRootPane, width, height);
 
 		// Label the Panle with the name of the startup screen, centered at the top of the pane
 		setupLabelUI(label_ApplicationTitle, "Arial", 28, width, Pos.CENTER, 0, 5);
+		label_ApplicationTitle.setStyle("-fx-font-weight: bold; -fx-text-fill: " + PRIMARY_TEXT + ";");
 		
     	// Label to display the welcome message for the new user
     	setupLabelUI(label_NewUserCreation, "Arial", 32, width, Pos.CENTER, 0, 10);
+    	label_NewUserCreation.setTextFill(Color.web(PRIMARY_TEXT));
 	
     	// Label to display the  message for the first user
     	setupLabelUI(label_NewUserLine, "Arial", 24, width, Pos.CENTER, 0, 70);
+    	label_NewUserLine.setTextFill(Color.web(SECONDARY_TEXT));
 		
 		// Establish the text input operand asking for a username
 		setupTextUI(text_Username, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 160, true);
@@ -202,6 +246,7 @@ public class ViewNewAccount {
 		
 		// Visual layout configuration for password validation
 		setupLabelUI(label_Requirements, "Arial", 13, 400, Pos.BASELINE_LEFT, 50, 260);
+		label_Requirements.setTextFill(Color.web(SECONDARY_TEXT));
 		setupLabelUI(label_UpperCase, "Arial", 12, 350, Pos.BASELINE_LEFT, 65, 280);
 		setupLabelUI(label_LowerCase, "Arial", 12, 350, Pos.BASELINE_LEFT, 65, 300);
 		setupLabelUI(label_NumericDigit, "Arial", 12, 350, Pos.BASELINE_LEFT, 65, 320);
@@ -300,7 +345,10 @@ public class ViewNewAccount {
 		b.setMinWidth(w);
 		b.setAlignment(p);
 		b.setLayoutX(x);
-		b.setLayoutY(y);		
+		b.setLayoutY(y);
+		b.setStyle(STYLE_BUTTON);
+		b.setOnMouseEntered(_ -> b.setStyle(STYLE_BUTTON_HOVER));
+		b.setOnMouseExited(_ -> b.setStyle(STYLE_BUTTON));
 	}
 
 	/**********
@@ -314,5 +362,9 @@ public class ViewNewAccount {
 		t.setLayoutX(x);
 		t.setLayoutY(y);		
 		t.setEditable(e);
+		t.setStyle(STYLE_TEXTFIELD);
+		t.focusedProperty().addListener((_, _, isNowFocused) -> {
+			t.setStyle(isNowFocused ? STYLE_TEXTFIELD_FOCUS : STYLE_TEXTFIELD);
+		});
 	}	
 }
