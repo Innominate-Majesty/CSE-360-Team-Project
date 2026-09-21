@@ -151,7 +151,7 @@ public class ControllerDeleteUser {
 
 				// Show a confirmation message
 				ViewDeleteUser.alertDeleted.setHeaderText("The User " +
-					viewDeleteUser.theSelectedUser + " Was Deleted.");
+					ViewDeleteUser.theSelectedUser + " Was Deleted.");
 				ViewDeleteUser.alertDeleted.showAndWait();
     		}
     	}
