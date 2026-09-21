@@ -320,7 +320,7 @@ public class ViewDeleteUser {
 				"-fx-cursor: hand;");
 			
 			// Applies the darker blue appearance while the pointer is over the button
-			b.setOnMouseEntered((_) -> button.setStyle(
+			b.setOnMouseEntered((_) -> b.setStyle(
 				"-fx-background-color: " + ACCENT_HOVER + ";" +
 				"-fx-text-fill: white;" +
 				"-fx-background-radius: 8;" +
@@ -329,7 +329,7 @@ public class ViewDeleteUser {
 				"-fx-cursor: hand;"));
 			
 			// Restores the primary appearance when the pointer leaves the button
-			b.setOnMouseExited((_) -> button.setStyle(
+			b.setOnMouseExited((_) -> b.setStyle(
 				"-fx-background-color: " + ACCENT_COLOR + ";" +
 				"-fx-text-fill: white;" +
 				"-fx-background-radius: 8;" +
@@ -350,7 +350,7 @@ public class ViewDeleteUser {
 				"-fx-cursor: hand;");
 
 			//
-			b.setOnMouseEntered((_) -> button.setStyle(
+			b.setOnMouseEntered((_) -> b.setStyle(
 				"-fx-background-color: " + HOVER_BACKGROUND + ";" +
 				"-fx-text-fill: " + PRIMARY_TEXT + ";" +
 				"-fx-border-color: " + ACCENT_COLOR + ";" +
@@ -360,7 +360,7 @@ public class ViewDeleteUser {
 				"-fx-cursor: hand;"));
 
 			//
-			b.setOnMouseExited((_) -> button.setStyle(
+			b.setOnMouseExited((_) -> b.setStyle(
 				"-fx-background-color: " + CARD_BACKGROUND + ";" +
 				"-fx-text-fill: " + PRIMARY_TEXT + ";" +
 				"-fx-border-color: " + BORDER_COLOR + ";" +
