@@ -989,10 +989,17 @@ public class Database {
 	 */
 	public String getCurrentPassword() { return currentPassword;};
 	
-	
 	public String getTemporaryPassword() {return tempPassword; };
 	
-	public void removeTemporaryPassword() {
+	public void removeTemporaryPassword(String username) { 
+		String query = "UPDATE userDB SET tempPassword = null WHERE username = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/*******
 	 * <p> Method: String getCurrentFirstName() </p>
@@ -1125,5 +1132,29 @@ public class Database {
 		} catch(SQLException se){ 
 			se.printStackTrace(); 
 		} 
+	}
+
+
+	public void passwordChange(String username, String password) {
+		String query = "UPDATE userDB SET password = ? WHERE username = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, password);
+			pstmt.setString(2, username);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	public void oneTimePasswordSet(String username, String newPassword) {
+		String query = "UPDATE userDB SET tempPassword = ? WHERE username = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, newPassword);
+			pstmt.setString(2, username);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 }

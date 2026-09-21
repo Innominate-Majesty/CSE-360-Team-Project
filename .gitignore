@@ -23,6 +23,7 @@ target/
 *.ipr
 .vscode/
 .metadata/
+*pom.xml
 
 # Logs and temporary files
 *.log

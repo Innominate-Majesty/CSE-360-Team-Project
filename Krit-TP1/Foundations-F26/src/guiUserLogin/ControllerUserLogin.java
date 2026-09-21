@@ -83,8 +83,8 @@ public class ControllerUserLogin {
 		
      	String tempPassword = theDatabase.getTemporaryPassword();
     	if(tempPassword != "" && password.compareTo(tempPassword) != 0) {
-    		guiPasswordChange.ViewPasswordChange.displayPasswordChange(theStage, theDatabase);
-    		return;
+    		theDatabase.removeTemporaryPassword(username);
+    		guiPasswordChange.ViewPasswordChange.displayPasswordChange(theStage, username);
     	}
      	
 		// Check to see that the login password matches the account password

@@ -250,7 +250,7 @@ public class ViewAdminHome {
 	
 		setupButtonUI(button_SetOnetimePassword, "Dialog", 16, 250, Pos.CENTER, 20, 320);
 		button_SetOnetimePassword.setOnAction((_) -> 
-			{ControllerAdminHome.setOnetimePassword(); });
+			{ControllerAdminHome.setOneTimePassword(theStage, theUser); });
 
 		setupButtonUI(button_DeleteUser, "Dialog", 16, 250, Pos.CENTER, 20, 370);
 		button_DeleteUser.setOnAction((_) -> {ControllerAdminHome.deleteUser(); });

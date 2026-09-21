@@ -1,5 +1,6 @@
 package guiPasswordChange;
 
+import database.Database;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -43,17 +44,16 @@ public class ViewPasswordChange {
 
 	private static Label label_ApplicationTitle = new Label("Change Password");
 
-	protected static Alert alertUsernamePasswordError = new Alert(AlertType.INFORMATION);
+	protected static Alert alertPasswordError = new Alert(AlertType.INFORMATION);
 
 
 	//	private User user;
 	protected static PasswordField text_first_Password = new PasswordField();
 	protected static PasswordField text_second_Password = new PasswordField();
-	private static Button button_Change_Password = new Button("Change Password");	
+	private static Button button_Change_Password = new Button("Change Password");
 
-	private static Button button_Quit = new Button("Quit");
-
-	private static Stage theStage;	
+	private static Stage theStage;
+	private static String username;
 	private static Pane theRootPane;
 	public static Scene thePasswordChangeScene = null;	
 
@@ -66,16 +66,17 @@ public class ViewPasswordChange {
 
 	 *********************************************************************************************/
 
-	public static void displayPasswordChange(Stage ps) {
+	public static void displayPasswordChange(Stage ps, String usNm) {
 		
 		// Establish the references to the GUI. There is no current user yet.
 		theStage = ps;
+		username = usNm;
 		
 		// If not yet established, populate the static aspects of the GUI
 		if (theView == null) theView = new ViewPasswordChange();
 	
 		text_first_Password.setText("");
-		text_first_Password.setText("");
+		text_second_Password.setText("");
 
 		// Set the title for the window, display the page, and wait for the Admin to do something
 		theStage.setTitle("CSE 360 Foundation Code: Password Change");		
@@ -114,39 +115,30 @@ public class ViewPasswordChange {
 		// Populate the window with the title and other common widgets and set their static state
 		setupLabelUI(label_ApplicationTitle, "Arial", 32, width, Pos.CENTER, 0, 10);
 
-		setupLabelUI(label_OperationalStartTitle, "Arial", 24, width, Pos.CENTER, 0, 60);
-
-		setupLabelUI(label_Chng_Pswd_Insrtuctions, "Arial", 18, width, Pos.BASELINE_LEFT, 20, 120);
-
 		// Establish the text input operand field for the first password
-		setupTextUI(text_Username, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 160, true);
-		text_Username.setPromptText("Enter Password");
+		setupTextUI(text_first_Password, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 160, true);
+		text_first_Password.setPromptText("Enter Password");
 		applyLengthLimiter(text_first_Password, 40);
 
 		// Establish the text input operand field for the second password
-		setupTextUI(text_Password, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 210, true);
-		text_Password.setPromptText("Enter Password Again");
+		setupTextUI(text_second_Password, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 210, true);
+		text_second_Password.setPromptText("Enter Password Again");
 		applyLengthLimiter(text_second_Password, 40);
 
 		// Set up the Change Password button
-		setupButtonUI(button_Login, "Dialog", 18, 200, Pos.CENTER, 475, 180);
-		button_Login.setOnAction((_) -> {ControllerPasswordChange.doChangePassword(theStage); });
+		setupButtonUI(button_Change_Password, "Dialog", 18, 200, Pos.CENTER, 475, 180);
+		button_Change_Password.setOnAction((_) -> {ControllerPasswordChange.doPasswordChange(username); });
 
-		alertUsernamePasswordError.setTitle("Invalid passwords!");
-		alertUsernamePasswordError.setHeaderText(null);
-
-		// Set up the Quit button  
-		setupButtonUI(button_Quit, "Dialog", 18, 250, Pos.CENTER, 300, 520);
-		button_Quit.setOnAction((_) -> {ControllerPasswordChange.performQuit(); });
+		alertPasswordError.setTitle("Invalid passwords!");
+		alertPasswordError.setHeaderText(null);
 
 		//		theRootPane.getChildren().clear();
 
 		theRootPane.getChildren().addAll(
 				label_ApplicationTitle, 
-				label_OperationalStartTitle,
-				label_Chng_Pswd_Insrtuctions, label_AccountSetupInsrtuctions, text_Username,
-				button_Login, text_Password, text_Invitation, button_SetupAccount,
-				button_Quit);
+				text_first_Password,
+				text_second_Password,
+				button_Change_Password);
 	}
 
 
