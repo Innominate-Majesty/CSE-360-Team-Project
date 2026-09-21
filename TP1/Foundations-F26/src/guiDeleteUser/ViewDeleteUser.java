@@ -235,7 +235,6 @@ public class ViewDeleteUser {
         ViewDeleteUser.button_Yes.setOnAction((_) ->
             {ControllerDeleteUser.performDeleteUser(); });
         alertDeleted.setTitle("Success");
-		alertDeleted.setHeaderText("The User " + theSelectedUser + " Was Deleted.");
 		alertDeleted.setContentText("Select another user or return to role menu.");
 		
 		// GUI Area 3		
