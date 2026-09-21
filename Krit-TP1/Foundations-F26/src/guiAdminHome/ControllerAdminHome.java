@@ -1,6 +1,9 @@
 package guiAdminHome;
 
 import database.Database;
+import entityClasses.User;
+import guiOneTimePasswordSet.ViewOneTimePasswordSet;
+import javafx.stage.Stage;
 
 /*******
  * <p> Title: GUIAdminHomePage Class. </p>
@@ -110,12 +113,8 @@ public class ControllerAdminHome {
 	 * <p> Description: Protected method that is currently a stub informing the user that
 	 * this function has not yet been implemented. </p>
 	 */
-	protected static void setOnetimePassword () {
-		System.out.println("\n*** WARNING ***: One-Time Password Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
-		ViewAdminHome.alertNotImplemented.setHeaderText("One-Time Password Issue");
-		ViewAdminHome.alertNotImplemented.setContentText("One-Time Password Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.showAndWait();
+	protected static void setOnetimePassword (Stage theStage, User adminUser) {
+		ViewOneTimePasswordSet.displayOneTimePasswordSet(theStage, adminUser);
 	}
 	
 	/**********

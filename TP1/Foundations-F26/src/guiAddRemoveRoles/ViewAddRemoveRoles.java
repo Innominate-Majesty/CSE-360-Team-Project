@@ -6,9 +6,11 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
@@ -101,6 +103,10 @@ public class ViewAddRemoveRoles {
 	protected static String theSelectedUser = "";	// The user whose roles are being updated
 	protected static String theAddRole = "";		// The role being added
 	protected static String theRemoveRole = "";		// The roles being removed
+	
+	//Alerts for errors
+	protected static Alert removingLastAdmin = new Alert(AlertType.INFORMATION);
+	protected static Alert removingOtherAdmin = new Alert(AlertType.INFORMATION);
 
 
 
