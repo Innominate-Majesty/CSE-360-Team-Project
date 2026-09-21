@@ -134,7 +134,9 @@ public class ControllerDeleteUser {
     		
     		// If an actual user was selected, delete that user from the database
     		if (theDatabase.deleteUser(ViewDeleteUser.theSelectedUser)) {
-    			// Reset the page
+    			String justDeleted = ViewDeleteUser.theSelectedUser;
+				
+				// Reset the page
 				ViewDeleteUser.combobox_SelectUser = new ComboBox <String>();
     			ViewDeleteUser.userList = new ArrayList<String>();
     			ViewDeleteUser.setupComboBoxUI(ViewDeleteUser.combobox_SelectUser, "Arial", 16, 250, 280,
@@ -150,8 +152,8 @@ public class ControllerDeleteUser {
     			doSelectUser();
 
 				// Show a confirmation message
-				ViewDeleteUser.alertDeleted.setHeaderText("The User " +
-					ViewDeleteUser.theSelectedUser + " Was Deleted.");
+				ViewDeleteUser.alertDeleted.setHeaderText("The User " + justDeleted +
+					" Was Deleted.");
 				ViewDeleteUser.alertDeleted.showAndWait();
     		}
     	}
