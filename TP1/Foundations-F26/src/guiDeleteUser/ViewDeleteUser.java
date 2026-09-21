@@ -78,9 +78,6 @@ public class ViewDeleteUser {
 	protected static Label label_UserDetails = new Label();
 	protected static Button button_UpdateThisUser = new Button("Account Update");
 	
-	// This is a separator and it is used to partition the GUI for various tasks
-	protected static Line line_Separator1 = new Line(20, 95, width-20, 95);
-	
 	// When no user has been selected, only Area 2a is shown.  If a user in the ComboBox in Area 1a
 	// has been specified, then Area 2b is made visible.
 	
@@ -101,9 +98,6 @@ public class ViewDeleteUser {
 
     // Popup: This prepares a popup that will appear if a user is deleted.
     protected static Alert alertDeleted = new Alert(AlertType.INFORMATION);
-		
-	// This is a separator and it is used to partition the GUI for various tasks
-	protected static Line line_Separator4 = new Line(20, 525, width-20,525);
 	
 	// GUI Area 3: This is last of the GUI areas.  It is used for quitting the application, logging
 	// out, and on other pages a return is provided so the user can return to a previous page when

@@ -78,9 +78,8 @@ public class ControllerDeleteUser {
 			// Only show the request to select a user to be updated and the ComboBox
 			ViewDeleteUser.theRootPane.getChildren().addAll(
 					ViewDeleteUser.label_PageTitle, ViewDeleteUser.label_UserDetails, 
-					ViewDeleteUser.button_UpdateThisUser, ViewDeleteUser.line_Separator1,
-					ViewDeleteUser.label_SelectUser, ViewDeleteUser.combobox_SelectUser, 
-					ViewDeleteUser.line_Separator4, ViewDeleteUser.button_Return,
+					ViewDeleteUser.button_UpdateThisUser, ViewDeleteUser.label_SelectUser,
+					ViewDeleteUser.combobox_SelectUser, ViewDeleteUser.button_Return,
 					ViewDeleteUser.button_Logout, ViewDeleteUser.button_Quit);
 		}
         else if (ViewDeleteUser.theSelectedUser.compareTo(ViewDeleteUser.theUser.getUserName()) ==
@@ -88,11 +87,10 @@ public class ControllerDeleteUser {
             // If the user selects themself, show the message telling them they cannot delete.
             ViewDeleteUser.theRootPane.getChildren().addAll(
 			    ViewDeleteUser.label_PageTitle, ViewDeleteUser.label_UserDetails,
-				ViewDeleteUser.button_UpdateThisUser, ViewDeleteUser.line_Separator1,
+				ViewDeleteUser.button_UpdateThisUser,
 				ViewDeleteUser.label_SelectUser,
 				ViewDeleteUser.combobox_SelectUser, 
-                ViewDeleteUser.label_SelectSelf,
-				ViewDeleteUser.line_Separator4, 
+                ViewDeleteUser.label_SelectSelf, 
 				ViewDeleteUser.button_Return,
 				ViewDeleteUser.button_Logout,
 				ViewDeleteUser.button_Quit);
@@ -101,12 +99,11 @@ public class ControllerDeleteUser {
 			// Show the fields to delete a user as a valid selection has been made.
 			ViewDeleteUser.theRootPane.getChildren().addAll(
 					ViewDeleteUser.label_PageTitle, ViewDeleteUser.label_UserDetails,
-					ViewDeleteUser.button_UpdateThisUser, ViewDeleteUser.line_Separator1,
+					ViewDeleteUser.button_UpdateThisUser,
 					ViewDeleteUser.label_SelectUser,
 					ViewDeleteUser.combobox_SelectUser, 
                     ViewDeleteUser.label_AreYouSure,
-                    ViewDeleteUser.button_Yes,
-					ViewDeleteUser.line_Separator4, 
+                    ViewDeleteUser.button_Yes, 
 					ViewDeleteUser.button_Return,
 					ViewDeleteUser.button_Logout,
 					ViewDeleteUser.button_Quit);
