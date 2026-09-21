@@ -25,6 +25,7 @@ import javafx.scene.control.TextFormatter;
  * 
  * @version 1.00		2025-04-20 Initial version
  * @version 1.1			2026-09-16 Updated to limit total characters for login and invitation code fields. - Alexander Robert Murray
+ * @version 1.11		2026-09-20 Changed colors and added presets
  *  
  */
 
@@ -40,6 +41,45 @@ public class ViewUserLogin {
 
 	private static double width = applicationMain.FoundationsMain.WINDOW_WIDTH;
 	private static double height = applicationMain.FoundationsMain.WINDOW_HEIGHT;
+	
+	// Theme Color Presets
+	// Defines the soft off-white/pale sage background selected by the team
+	private static final String PAGE_BACKGROUND = "#F5F7F4";
+
+	// Defines the pure white background used for inputs and cards
+	private static final String CARD_BACKGROUND = "#FFFFFF";
+
+	// Defines the muted sage green used for primary buttons and accents
+	private static final String ACCENT_COLOR = "#607D70";
+
+	// Defines the deeper forest sage displayed when hovering over an accent button
+	private static final String ACCENT_HOVER = "#4F6A5E";
+
+	// Defines the soft mint-tinted gray used when highlighting cards and focused fields
+	private static final String HOVER_BACKGROUND = "#E8F0EB";
+
+	// Defines the deep forest slate-charcoal used for primary text
+	private static final String PRIMARY_TEXT = "#26332D";
+
+	// Defines the muted sage-gray used for secondary text and subheadings
+	private static final String SECONDARY_TEXT = "#69776F";
+
+	// Defines the light sage-gray border used around cards, fields, and panels
+	private static final String BORDER_COLOR = "#D8E2DC";
+			
+	// Style presets constructed from color constants
+	private static final String STYLE_BUTTON = 
+			"-fx-background-color: " + ACCENT_COLOR + "; -fx-text-fill: " + CARD_BACKGROUND + 
+			"; -fx-background-radius: 6; -fx-cursor: hand;";
+	private static final String STYLE_BUTTON_HOVER = 
+			"-fx-background-color: " + ACCENT_HOVER + "; -fx-text-fill: " + CARD_BACKGROUND + 
+			"; -fx-background-radius: 6; -fx-cursor: hand;";
+	private static final String STYLE_TEXTFIELD = 
+			"-fx-background-color: " + CARD_BACKGROUND + "; -fx-text-fill: " + PRIMARY_TEXT + 
+			"; -fx-border-color: " + BORDER_COLOR + "; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6;";
+	private static final String STYLE_TEXTFIELD_FOCUS = 
+			"-fx-background-color: " + HOVER_BACKGROUND + "; -fx-text-fill: " + PRIMARY_TEXT + 
+			"; -fx-border-color: " + ACCENT_COLOR + "; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6;";
 
 	private static Label label_ApplicationTitle = new Label("Foundation Application Startup Page");
 
@@ -122,17 +162,21 @@ public class ViewUserLogin {
 
 		// Create the Pane for the list of widgets and the Scene for the window
 		theRootPane = new Pane();
+		theRootPane.setStyle("-fx-background-color: " + PAGE_BACKGROUND + ";");
 		theUserLoginScene = new Scene(theRootPane, width, height);
 		
 		// Populate the window with the title and other common widgets and set their static state
 		setupLabelUI(label_ApplicationTitle, "Arial", 32, width, Pos.CENTER, 0, 10);
+		label_ApplicationTitle.setStyle("-fx-font-weight: bold; -fx-text-fill: " + PRIMARY_TEXT + ";");
 
 		setupLabelUI(label_OperationalStartTitle, "Arial", 24, width, Pos.CENTER, 0, 60);
+		label_OperationalStartTitle.setTextFill(Color.web(PRIMARY_TEXT));
 
 
 		// Existing user log in portion of the page
 
 		setupLabelUI(label_LogInInsrtuctions, "Arial", 18, width, Pos.BASELINE_LEFT, 20, 120);
+		label_LogInInsrtuctions.setTextFill(Color.web(SECONDARY_TEXT));
 
 		// Establish the text input operand field for the username
 		setupTextUI(text_Username, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 160, true);
@@ -155,6 +199,7 @@ public class ViewUserLogin {
 		// The invitation to setup an account portion of the page
 
 		setupLabelUI(label_AccountSetupInsrtuctions, "Arial", 18, width, Pos.BASELINE_LEFT, 20, 300);
+		label_AccountSetupInsrtuctions.setTextFill(Color.web(SECONDARY_TEXT));
 
 		// Establish the text input operand field for the password
 		setupTextUI(text_Invitation, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 340, true);
@@ -234,7 +279,10 @@ public class ViewUserLogin {
 		b.setMinWidth(w);
 		b.setAlignment(p);
 		b.setLayoutX(x);
-		b.setLayoutY(y);		
+		b.setLayoutY(y);
+		b.setStyle(STYLE_BUTTON);
+		b.setOnMouseEntered(_ -> b.setStyle(STYLE_BUTTON_HOVER));
+		b.setOnMouseExited(_ -> b.setStyle(STYLE_BUTTON));
 	}
 
 	/**********
@@ -248,5 +296,9 @@ public class ViewUserLogin {
 		t.setLayoutX(x);
 		t.setLayoutY(y);		
 		t.setEditable(e);
+		t.setStyle(STYLE_TEXTFIELD);
+		t.focusedProperty().addListener((_, _, isNowFocused) -> {
+			t.setStyle(isNowFocused ? STYLE_TEXTFIELD_FOCUS : STYLE_TEXTFIELD);
+		});
 	}		
 }

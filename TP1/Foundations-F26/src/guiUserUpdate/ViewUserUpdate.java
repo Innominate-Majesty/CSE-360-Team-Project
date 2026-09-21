@@ -38,6 +38,7 @@ import passwordValidator.PasswordValidator;
  * 
  * @version 1.01		2025-08-19 Initial version plus new internal documentation
  * @version 1.02		2026-09-16 Added update password functionality
+ * @version 1.03		2026-09-20 Changed colors and created presets
  *  
  */
 
@@ -54,6 +55,43 @@ public class ViewUserUpdate {
 	private static double width = applicationMain.FoundationsMain.WINDOW_WIDTH;
 	private static double height = applicationMain.FoundationsMain.WINDOW_HEIGHT;
 
+	// Theme Color Presets
+	// Defines the soft off-white/pale sage background selected by the team
+	private static final String PAGE_BACKGROUND = "#F5F7F4";
+
+	// Defines the pure white background used for inputs and cards
+	private static final String CARD_BACKGROUND = "#FFFFFF";
+
+	// Defines the muted sage green used for primary buttons and accents
+	private static final String ACCENT_COLOR = "#607D70";
+
+	// Defines the deeper forest sage displayed when hovering over an accent button
+	private static final String ACCENT_HOVER = "#4F6A5E";
+
+	// Defines the soft mint-tinted gray used when highlighting cards and focused fields
+	private static final String HOVER_BACKGROUND = "#E8F0EB";
+
+	// Defines the deep forest slate-charcoal used for primary text
+	private static final String PRIMARY_TEXT = "#26332D";
+
+	// Defines the muted sage-gray used for secondary text and subheadings
+	private static final String SECONDARY_TEXT = "#69776F";
+
+	// Defines the light sage-gray border used around cards, fields, and panels
+	private static final String BORDER_COLOR = "#D8E2DC";
+	
+	private static final String STYLE_BUTTON = 
+			"-fx-background-color: " + ACCENT_COLOR + "; -fx-text-fill: " + CARD_BACKGROUND + 
+			"; -fx-background-radius: 6; -fx-cursor: hand;";
+	private static final String STYLE_BUTTON_HOVER = 
+			"-fx-background-color: " + ACCENT_HOVER + "; -fx-text-fill: " + CARD_BACKGROUND + 
+			"; -fx-background-radius: 6; -fx-cursor: hand;";
+	private static final String STYLE_TEXTFIELD = 
+			"-fx-background-color: " + CARD_BACKGROUND + "; -fx-text-fill: " + PRIMARY_TEXT + 
+			"; -fx-border-color: " + BORDER_COLOR + "; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6;";
+	private static final String STYLE_TEXTFIELD_FOCUS = 
+			"-fx-background-color: " + HOVER_BACKGROUND + "; -fx-text-fill: " + PRIMARY_TEXT + 
+			"; -fx-border-color: " + ACCENT_COLOR + "; -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 6;";
 	
 	// These are the widget attributes for the GUI. There are 3 areas for this GUI.
 	
@@ -230,6 +268,7 @@ public class ViewUserUpdate {
 
 		// Create the Pane for the list of widgets and the Scene for the window
 		theRootPane = new Pane();
+		theRootPane.setStyle("-fx-background-color: " + PAGE_BACKGROUND + ";");
 		theUserUpdateScene = new Scene(theRootPane, width, height);
 
 		// Initialize the pop-up dialogs to an empty text filed.
@@ -257,21 +296,27 @@ public class ViewUserUpdate {
 
 		// Label theScene with the name of the startup screen, centered at the top of the pane
 		setupLabelUI(label_ApplicationTitle, "Arial", 28, width, Pos.CENTER, 0, 5);
+		label_ApplicationTitle.setStyle("-fx-font-weight: bold; -fx-text-fill: " + PRIMARY_TEXT + ";");
 
         // Label to display the welcome message for the first theUser
         setupLabelUI(label_Purpose, "Arial", 20, width, Pos.CENTER, 0, 50);
+        label_Purpose.setTextFill(Color.web(SECONDARY_TEXT));
         
         // Display the titles, values, and update buttons for the various admin account attributes.
         // If the attributes is null or empty, display "<none>".
         
         // USername
         setupLabelUI(label_Username, "Arial", 18, 190, Pos.BASELINE_RIGHT, 5, 100);
+        label_Username.setTextFill(Color.web(SECONDARY_TEXT));
         setupLabelUI(label_CurrentUsername, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 100);
+        label_CurrentUsername.setTextFill(Color.web(PRIMARY_TEXT));
         setupButtonUI(button_UpdateUsername, "Dialog", 18, 275, Pos.CENTER, 500, 93);
        
         // password
         setupLabelUI(label_Password, "Arial", 18, 190, Pos.BASELINE_RIGHT, 5, 150);
+        label_Password.setTextFill(Color.web(SECONDARY_TEXT));
         setupLabelUI(label_CurrentPassword, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 150);
+        label_CurrentPassword.setTextFill(Color.web(PRIMARY_TEXT));
         setupButtonUI(button_UpdatePassword, "Dialog", 18, 275, Pos.CENTER, 500, 143);
         button_UpdatePassword.setOnAction((_) -> {
         	displayUpdatePasswordWindow(theStage, theUser);
@@ -279,7 +324,9 @@ public class ViewUserUpdate {
         
         // First Name
         setupLabelUI(label_FirstName, "Arial", 18, 190, Pos.BASELINE_RIGHT, 5, 200);
+        label_FirstName.setTextFill(Color.web(SECONDARY_TEXT));
         setupLabelUI(label_CurrentFirstName, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 200);
+        label_CurrentFirstName.setTextFill(Color.web(PRIMARY_TEXT));
         setupButtonUI(button_UpdateFirstName, "Dialog", 18, 275, Pos.CENTER, 500, 193);
         button_UpdateFirstName.setOnAction((_) -> {result = dialogUpdateFirstName.showAndWait();
         	result.ifPresent(_ -> theDatabase.updateFirstName(theUser.getUserName(), result.get()));
@@ -292,7 +339,9 @@ public class ViewUserUpdate {
                
         // Middle Name
         setupLabelUI(label_MiddleName, "Arial", 18, 190, Pos.BASELINE_RIGHT, 5, 250);
+        label_MiddleName.setTextFill(Color.web(SECONDARY_TEXT));
         setupLabelUI(label_CurrentMiddleName, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 250);
+        label_CurrentMiddleName.setTextFill(Color.web(PRIMARY_TEXT));
         setupButtonUI(button_UpdateMiddleName, "Dialog", 18, 275, Pos.CENTER, 500, 243);
         button_UpdateMiddleName.setOnAction((_) -> {result = dialogUpdateMiddleName.showAndWait();
     		result.ifPresent(_ -> theDatabase.updateMiddleName(theUser.getUserName(), result.get()));
@@ -305,7 +354,9 @@ public class ViewUserUpdate {
         
         // Last Name
         setupLabelUI(label_LastName, "Arial", 18, 190, Pos.BASELINE_RIGHT, 5, 300);
+        label_LastName.setTextFill(Color.web(SECONDARY_TEXT));
         setupLabelUI(label_CurrentLastName, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 300);
+        label_CurrentLastName.setTextFill(Color.web(PRIMARY_TEXT));
         setupButtonUI(button_UpdateLastName, "Dialog", 18, 275, Pos.CENTER, 500, 293);
         button_UpdateLastName.setOnAction((_) -> {result = dialogUpdateLastName.showAndWait();
     		result.ifPresent(_ -> theDatabase.updateLastName(theUser.getUserName(), result.get()));
@@ -319,8 +370,10 @@ public class ViewUserUpdate {
         // Preferred First Name
         setupLabelUI(label_PreferredFirstName, "Arial", 18, 190, Pos.BASELINE_RIGHT, 
         		5, 350);
+        label_PreferredFirstName.setTextFill(Color.web(SECONDARY_TEXT));
         setupLabelUI(label_CurrentPreferredFirstName, "Arial", 18, 260, Pos.BASELINE_LEFT, 
         		200, 350);
+        label_CurrentPreferredFirstName.setTextFill(Color.web(PRIMARY_TEXT));
         setupButtonUI(button_UpdatePreferredFirstName, "Dialog", 18, 275, Pos.CENTER, 500, 343);
         button_UpdatePreferredFirstName.setOnAction((_) -> 
         	{result = dialogUpdatePreferredFirstName.showAndWait();
@@ -335,7 +388,9 @@ public class ViewUserUpdate {
         
         // Email Address
         setupLabelUI(label_EmailAddress, "Arial", 18, 190, Pos.BASELINE_RIGHT, 5, 400);
+        label_EmailAddress.setTextFill(Color.web(SECONDARY_TEXT));
         setupLabelUI(label_CurrentEmailAddress, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 400);
+        label_CurrentEmailAddress.setTextFill(Color.web(PRIMARY_TEXT));
         setupButtonUI(button_UpdateEmailAddress, "Dialog", 18, 275, Pos.CENTER, 500, 393);
         button_UpdateEmailAddress.setOnAction((_) -> {result = dialogUpdateEmailAddresss.showAndWait();
     		result.ifPresent(_ -> theDatabase.updateEmailAddress(theUser.getUserName(), result.get()));
@@ -383,10 +438,12 @@ public class ViewUserUpdate {
 		double popupWidth = 480;
 		double popupHeight = 390;
 		Pane popupPane = new Pane();
+		popupPane.setStyle("-fx-background-color: " + PAGE_BACKGROUND + ";");
 		Scene popupScene = new Scene(popupPane, popupWidth, popupHeight);
 
 		Label label_Header = new Label("Enter your new password:");
 		setupLabelUI(label_Header, "Arial", 16, popupWidth - 40, Pos.BASELINE_LEFT, 20, 20);
+		label_Header.setTextFill(Color.web(PRIMARY_TEXT));
 
 		text_NewPassword.setText("");
 		text_NewPassword.setFont(Font.font("Arial", 16));
@@ -395,8 +452,13 @@ public class ViewUserUpdate {
 		text_NewPassword.setLayoutX(20);
 		text_NewPassword.setLayoutY(55);
 		text_NewPassword.setPromptText("Enter New Password");
+		text_NewPassword.setStyle(STYLE_TEXTFIELD);
+		text_NewPassword.focusedProperty().addListener((_, _, isNowFocused) -> {
+			text_NewPassword.setStyle(isNowFocused ? STYLE_TEXTFIELD_FOCUS : STYLE_TEXTFIELD);
+		});
 
 		setupLabelUI(label_Requirements, "Arial", 13, popupWidth - 40, Pos.BASELINE_LEFT, 20, 105);
+		label_Requirements.setTextFill(Color.web(SECONDARY_TEXT));
 		setupLabelUI(label_UpperCase, "Arial", 12, popupWidth - 60, Pos.BASELINE_LEFT, 35, 130);
 		setupLabelUI(label_LowerCase, "Arial", 12, popupWidth - 60, Pos.BASELINE_LEFT, 35, 150);
 		setupLabelUI(label_NumericDigit, "Arial", 12, popupWidth - 60, Pos.BASELINE_LEFT, 35, 170);
@@ -559,6 +621,9 @@ public class ViewUserUpdate {
 		b.setMinWidth(w);
 		b.setAlignment(p);
 		b.setLayoutX(x);
-		b.setLayoutY(y);		
+		b.setLayoutY(y);
+		b.setStyle(STYLE_BUTTON);
+		b.setOnMouseEntered(_ -> b.setStyle(STYLE_BUTTON_HOVER));
+		b.setOnMouseExited(_ -> b.setStyle(STYLE_BUTTON));
 	}
 }
