@@ -45,6 +45,30 @@ public class ViewDeleteUser {
 	private static double width = applicationMain.FoundationsMain.WINDOW_WIDTH;
 	private static double height = applicationMain.FoundationsMain.WINDOW_HEIGHT;
 
+		// Defines the pale blue-white background selected by the team
+	private static final String PAGE_BACKGROUND = "#F5F7F4";
+
+	// Defines the white background used for account cards
+	private static final String CARD_BACKGROUND = "#FFFFFF";
+
+	// Defines the clear modern blue used for important buttons and borders
+	private static final String ACCENT_COLOR = "#607D70";
+
+	// Defines the deeper blue displayed when hovering over a primary button
+	private static final String ACCENT_HOVER = "#4F6A5E";
+
+	// Defines the pale blue used when highlighting an account card
+	private static final String HOVER_BACKGROUND = "#E8F0EB";
+
+	// Defines the dark navy-gray used for primary text
+	private static final String PRIMARY_TEXT = "#26332D";
+
+	// Defines the slate blue-gray used for secondary text
+	private static final String SECONDARY_TEXT = "#69776F";
+
+	// Defines the light blue-gray border used around cards and panels
+	private static final String BORDER_COLOR = "#D8E2DC";
+
 
     // These are the widget attributes for the GUI. There are 3 areas for this GUI.
 	
@@ -85,7 +109,7 @@ public class ViewDeleteUser {
 	// out, and on other pages a return is provided so the user can return to a previous page when
 	// the actions on that page are complete.  Be advised that in most cases in this code, the 
 	// return is to a fixed page as opposed to the actual page that invoked the pages.
-	protected static Button button_Return = new Button("Return");
+	protected static Button button_Return = new Button("Return to Admin Home");
 	protected static Button button_Logout = new Button("Logout");
 	protected static Button button_Quit = new Button("Quit");
 
@@ -174,24 +198,33 @@ public class ViewDeleteUser {
 		// Create the Pane for the list of widgets and the Scene for the window
 		theRootPane = new Pane();
 		theDeleteUserScene = new Scene(theRootPane, width, height);
+
+		// Applies the soft blue gray background to the page
+		theRootPane.setStyle("-fx-background-color: " + PAGE_BACKGROUND + ";");
 		
 		// Populate the window with the title and other common widgets and set their static state
 		
 		// GUI Area 1
 		label_PageTitle.setText("Delete User Page");
-		setupLabelUI(label_PageTitle, "Arial", 28, width, Pos.CENTER, 0, 5);
+		setupLabelUI(label_PageTitle, "Arial", 28, width, Pos.CENTER, 0, 15);
+
+		// Applies the primary text color to the page title
+		label_PageTitle.setStyle("-fx-text-fill: " + PRIMARY_TEXT + "; -fx-font-weight: bold;");
 
 		label_UserDetails.setText("User: " + theUser.getUserName());
-		setupLabelUI(label_UserDetails, "Arial", 20, width, Pos.BASELINE_LEFT, 20, 55);
+		setupLabelUI(label_UserDetails, "Arial", 16, width, Pos.BASELINE_LEFT, 30, 65);
+
+		// Applies the secondary text color to the user label
+		label_UserDetails.setStyle("-fx-text-fill: " + SECONDARY_TEXT + ";");
 		
-		setupButtonUI(button_UpdateThisUser, "Dialog", 18, 170, Pos.CENTER, 610, 45);
+		setupButtonUI(button_UpdateThisUser, "Arial", 15, 170, Pos.CENTER, 610, 45, false);
 		button_UpdateThisUser.setOnAction((_) -> 
 			{guiUserUpdate.ViewUserUpdate.displayUserUpdate(theStage, theUser); });
 		
 		// GUI Area 2a
 		setupLabelUI(label_SelectUser, "Arial", 20, 300, Pos.BASELINE_LEFT, 20, 130);
 		
-		setupComboBoxUI(combobox_SelectUser, "Dialog", 16, 250, 280, 125);
+		setupComboBoxUI(combobox_SelectUser, "Arial", 16, 250, 280, 125);
 		userList = theDatabase.getUserList();	
 		combobox_SelectUser.setItems(FXCollections.observableArrayList(userList));
 		combobox_SelectUser.getSelectionModel().select(0);
@@ -204,7 +237,7 @@ public class ViewDeleteUser {
         setupLabelUI(label_SelectSelf, "Arial", 16, 300, Pos.BASELINE_LEFT, 50, 170);
         // GUI Area 2c
         setupLabelUI(label_AreYouSure, "Arial", 16, 300, Pos.BASELINE_LEFT, 20, 210);
-        setupButtonUI(button_Yes, "Dialog", 16, 150, Pos.CENTER, 280, 205);
+        setupButtonUI(button_Yes, "Arial", 15, 150, Pos.CENTER, 280, 205, true);
         ViewDeleteUser.button_Yes.setOnAction((_) ->
             {ControllerDeleteUser.performDeleteUser(); });
         alertDeleted.setTitle("Success");
@@ -212,13 +245,13 @@ public class ViewDeleteUser {
 		alertDeleted.setContentText("Select another user or return to role menu.");
 		
 		// GUI Area 3		
-		setupButtonUI(button_Return, "Dialog", 18, 210, Pos.CENTER, 20, 540);
+		setupButtonUI(button_Return, "Arial", 15, 230, Pos.CENTER, 200, 540, false);
 		button_Return.setOnAction((_) -> {ControllerDeleteUser.performReturn(); });
 
-		setupButtonUI(button_Logout, "Dialog", 18, 210, Pos.CENTER, 300, 540);
+		setupButtonUI(button_Logout, "Arial", 15, 120, Pos.CENTER, 500, 540, false);
 		button_Logout.setOnAction((_) -> {ControllerDeleteUser.performLogout(); });
     
-		setupButtonUI(button_Quit, "Dialog", 18, 210, Pos.CENTER, 570, 540);
+		setupButtonUI(button_Quit, "Arial", 15, 120, Pos.CENTER, 650, 540, false);
 		button_Quit.setOnAction((_) -> {ControllerDeleteUser.performQuit(); });
 		
 		// This is the end of the GUI Widgets for the page
@@ -259,21 +292,83 @@ public class ViewDeleteUser {
 	/**********
 	 * Private local method to initialize the standard fields for a button
 	 * 
-	 * @param b		The Button object to be initialized
-	 * @param ff	The font to be used
-	 * @param f		The size of the font to be used
-	 * @param w		The width of the Button
-	 * @param p		The alignment (e.g. left, centered, or right)
-	 * @param x		The location from the left edge (x axis)
-	 * @param y		The location from the top (y axis)
+	 * @param b			The Button object to be initialized
+	 * @param ff		The font to be used
+	 * @param f			The size of the font to be used
+	 * @param w			The width of the Button
+	 * @param p			The alignment (e.g. left, centered, or right)
+	 * @param x			The location from the left edge (x axis)
+	 * @param y			The location from the top (y axis)
+	 * @param primary	Whether the button is primmary or secondary
 	 */
 	protected static void setupButtonUI(Button b, String ff, double f, double w, Pos p, double x,
-			double y){
+			double y, boolean primary){
 		b.setFont(Font.font(ff, f));
 		b.setMinWidth(w);
 		b.setAlignment(p);
 		b.setLayoutX(x);
-		b.setLayoutY(y);		
+		b.setLayoutY(y);
+
+		if (primary) {
+			// Applies the default primary button appearance
+			button.setStyle(
+				"-fx-background-color: " + ACCENT_COLOR + ";" +
+			    "-fx-text-fill: white;" +
+				"-fx-background-radius: 8;" +
+				"-fx-padding: 8 16 8 16;" +
+				"-fx-font-weight: bold;" +
+				"-fx-cursor: hand;");
+			
+			// Applies the darker blue appearance while the pointer is over the button
+			button.setOnMouseEntered((_) -> button.setStyle(
+				"-fx-background-color: " + ACCENT_HOVER + ";" +
+				"-fx-text-fill: white;" +
+				"-fx-background-radius: 8;" +
+				"-fx-padding: 8 16 8 16;" +
+				"-fx-font-weight: bold;" +
+				"-fx-cursor: hand;"));
+			
+			// Restores the primary appearance when the pointer leaves the button
+			button.setOnMouseExited((_) -> button.setStyle(
+				"-fx-background-color: " + ACCENT_COLOR + ";" +
+				"-fx-text-fill: white;" +
+				"-fx-background-radius: 8;" +
+				"-fx-padding: 8 16 8 16;" +
+				"-fx-font-weight: bold;" +
+				"-fx-cursor: hand;"));
+		}
+
+		else {
+			// Applies the default secondary-button appearance
+			button.setStyle(
+				"-fx-background-color: " + CARD_BACKGROUND + ";" +
+				"-fx-text-fill: " + PRIMARY_TEXT + ";" +
+				"-fx-border-color: " + BORDER_COLOR + ";" +
+				"-fx-border-radius: 8;" +
+				"-fx-background-radius: 8;" +
+				"-fx-padding: 8 16 8 16;" +
+				"-fx-cursor: hand;");
+
+			//
+			button.setOnMouseEntered((_) -> button.setStyle(
+				"-fx-background-color: " + HOVER_BACKGROUND + ";" +
+				"-fx-text-fill: " + PRIMARY_TEXT + ";" +
+				"-fx-border-color: " + ACCENT_COLOR + ";" +
+				"-fx-border-radius: 8;" +
+				"-fx-background-radius: 8;" +
+				"-fx-padding: 8 16 8 16;" +
+				"-fx-cursor: hand;"));
+
+			//
+			button.setOnMouseExited((_) -> button.setStyle(
+				"-fx-background-color: " + CARD_BACKGROUND + ";" +
+				"-fx-text-fill: " + PRIMARY_TEXT + ";" +
+				"-fx-border-color: " + BORDER_COLOR + ";" +
+				"-fx-border-radius: 8;" +
+				"-fx-background-radius: 8;" +
+				"-fx-padding: 8 16 8 16;" +
+				"-fx-cursor: hand;"));
+		}
 	}
 
 	/**********

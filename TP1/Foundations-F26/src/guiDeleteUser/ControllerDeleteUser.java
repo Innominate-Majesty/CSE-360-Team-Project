@@ -139,7 +139,7 @@ public class ControllerDeleteUser {
     		if (theDatabase.deleteUser(ViewDeleteUser.theSelectedUser)) {
     			ViewDeleteUser.combobox_SelectUser = new ComboBox <String>();
     			ViewDeleteUser.userList = new ArrayList<String>();
-    			ViewDeleteUser.setupComboBoxUI(ViewDeleteUser.combobox_SelectUser, "Dialog", 16, 250, 280,
+    			ViewDeleteUser.setupComboBoxUI(ViewDeleteUser.combobox_SelectUser, "Arial", 16, 250, 280,
     				125);
     			ViewDeleteUser.userList = theDatabase.getUserList();
     			ViewDeleteUser.combobox_SelectUser.setItems(FXCollections.
