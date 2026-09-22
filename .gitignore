@@ -24,6 +24,8 @@ target/
 .vscode/
 .metadata/
 *pom.xml
+*.classpath
+*.project
 
 # Logs and temporary files
 *.log
@@ -40,3 +42,7 @@ target/
 
 # Local implementation planning notes
 /TP1/list-all-user-accounts-readme.md
+/Maven/.settings/
+/TP1/Foundations-F26/.projectile
+/TP1/Foundations-F26/.settings/org.eclipse.jdt.apt.core.prefs
+/TP1/Foundations-F26/.settings/org.eclipse.m2e.core.prefs
