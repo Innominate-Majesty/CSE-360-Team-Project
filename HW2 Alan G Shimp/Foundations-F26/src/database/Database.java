@@ -1,0 +1,2027 @@
+package database;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import entityClasses.Experience;
+import entityClasses.LessonLearned;
+import entityClasses.User;
+import entityClasses.UserAccountSummary;
+
+/*******
+ * <p> Title: Database Class. </p>
+ * 
+ * <p> Description: This is an in-memory database built on H2.  Detailed documentation of H2 can
+ * be found at https://www.h2database.com/html/main.html (Click on "PDF (2MB)" on the l3ft side
+ * of the page under the heading "Reference" for a PDF of 438 pages.)  This class leverages H2
+ * and provides numerous special supporting methods.
+ * </p>
+ * 
+ * <p> Copyright: Lynn Robert Carter © 2025 </p>
+ * 
+ * @author Lynn Robert Carter
+ * 
+ * @author Alan G. Shimp
+ * 
+ * @version 2.00		2025-04-29 Updated and expanded from the version produce by Pravalika 
+ * 							Mukkiri and Ishwarya Hidkimath Basavaraj
+ * @version 2.01		2025-12-17 Minor updates for Spring 2026
+ * @version 2.02		2026-09-12 Added deleteUser() method for TP1
+ * @version 2.03		2026-09-16 Added updatePassword() method for TP1
+ * @version 2.04		2026-10-03 Added features for storing lessons learned
+ */
+
+/*
+ * The Database class is responsible for establishing and managing the connection to the database,
+ * and performing operations such as user registration, login validation, handling invitation 
+ * codes, and numerous other database related functions.
+ */
+public class Database {
+
+	// JDBC driver name and database URL 
+	static final String JDBC_DRIVER = "org.h2.Driver";   
+	static final String DB_URL = "jdbc:h2:~/FoundationDatabase";  
+
+	//  Database credentials 
+	static final String USER = "sa"; 
+	static final String PASS = ""; 
+
+	//  Shared variables used within this class
+	private Connection connection = null;		// Singleton to access the database 
+	private Statement statement = null;			// The H2 Statement is used to construct queries
+	
+	// These are the easily accessible attributes of the currently logged-in user
+	// This is only useful for single user applications
+	private String currentUsername;
+	private String currentPassword;
+	private String currentFirstName;
+	private String currentMiddleName;
+	private String currentLastName;
+	private String currentPreferredFirstName;
+	private String currentEmailAddress;
+	private boolean currentAdminRole;
+	private boolean currentContributorRole;
+	private boolean currentNewRole2;
+	private String tempPassword;
+	
+	// Experience attributes
+	private int currentExpLessonId;
+	private String currentExpCreatorName;
+	private boolean currentExpLocked;
+	private String currentExpWhat;
+	private String currentExpHow;
+	private String currentExpHowLong;
+	private String currentExpEffort;
+	private int currentExpIndex;
+	private int currentExpPrevId;
+	private int currentExpNextId;
+	
+	// Lesson attributes
+	private String currentLessonTitle;
+	private String currentLessonCreatorName;
+	private boolean currentLessonLocked;
+	private String currentLessonCoreInfo;
+	private int currentLessonExpCount;
+
+	/*******
+	 * <p> Method: Database </p>
+	 * 
+	 * <p> Description: The default constructor used to establish this singleton object.</p>
+	 * 
+	 */
+	
+	public Database () {
+		
+	}
+	
+	
+/*******
+ * <p> Method: connectToDatabase </p>
+ * 
+ * <p> Description: Used to establish the in-memory instance of the H2 database from secondary
+ *		storage.</p>
+ *
+ * @throws SQLException when the DriverManager is unable to establish a connection
+ * 
+ */
+	public void connectToDatabase() throws SQLException {
+		try {
+			Class.forName(JDBC_DRIVER); // Load the JDBC driver
+			connection = DriverManager.getConnection(DB_URL, USER, PASS);
+			statement = connection.createStatement(); 
+			
+			System.out.println(">>> USING THIS DATABASE.JAVA <<<");
+
+			// You can use this command to clear the database and restart from fresh.
+			// statement.execute("DROP ALL OBJECTS");
+
+			createTables();  // Create the necessary tables if they don't exist
+		} catch (ClassNotFoundException e) {
+			System.err.println("JDBC Driver not found: " + e.getMessage());
+		}
+	}
+
+	
+/*******
+ * <p> Method: createTables </p>
+ * 
+ * <p> Description: Used to create new instances of the two database tables used by this class.</p>
+ * 
+ */
+	private void createTables() throws SQLException {
+		// Create the user database
+		String userTable = "CREATE TABLE IF NOT EXISTS userDB ("
+				+ "id INT AUTO_INCREMENT PRIMARY KEY, "
+				+ "userName VARCHAR(255) UNIQUE, "
+				+ "password VARCHAR(255), "
+				+ "firstName VARCHAR(255), "
+				+ "middleName VARCHAR(255), "
+				+ "lastName VARCHAR (255), "
+				+ "preferredFirstName VARCHAR(255), "
+				+ "emailAddress VARCHAR(255), "
+				+ "adminRole BOOL DEFAULT FALSE, "
+				+ "contributorRole BOOL DEFAULT FALSE, "
+				+ "newRole2 BOOL DEFAULT FALSE, "
+				+ "tempPassword VARCHAR(255))";
+		statement.execute(userTable);
+		
+		// Create the invitation codes table
+	    String invitationCodesTable = "CREATE TABLE IF NOT EXISTS InvitationCodes ("
+	            + "code VARCHAR(10) PRIMARY KEY, "
+	    		+ "emailAddress VARCHAR(255), "
+	            + "role VARCHAR(10))";
+	    statement.execute(invitationCodesTable);
+	    
+	    // Create the lessons learned table
+	    String lessonsLearnedTable = "CREATE TABLE IF NOT EXISTS LessonsLearned ("
+	    		+ "id INT AUTO_INCREMENT PRIMARY KEY, "
+	    		+ "title VARCHAR(255) UNIQUE, "
+	    		+ "creatorName VARCHAR(255), "
+	    		+ "locked BOOL DEFAULT FALSE, "
+	    		+ "coreInfo VARCHAR(2047), "
+	    		+ "experienceCount INT, "
+	    		+ "tailExperienceId INT, "
+	    		+ "headExperienceId INT)";
+	    statement.execute(lessonsLearnedTable);
+	    
+	    // Create the experience table
+	    String experiencesTable = "CREATE TABLE IF NOT EXISTS Experiences ("
+	    		+ "id INT AUTO_INCREMENT PRIMARY KEY, "
+	    		+ "lessonId INT, "
+	    		+ "creatorName VARCHAR(255), "
+	    		+ "locked BOOL DEFAULT FALSE, "
+	    		+ "what VARCHAR(2047), "
+	    		+ "how VARCHAR(2047), "
+	    		+ "howlong VARCHAR(2047), "
+	    		+ "effort VARCHAR(2047), "
+	    		+ "index INT, "
+	    		+ "prev INT, "
+	    		+ "next INT)";
+	    statement.execute(experiencesTable);
+	}
+
+
+/*******
+ * <p> Method: isDatabaseEmpty </p>
+ * 
+ * <p> Description: If the user database has no rows, true is returned, else false.</p>
+ * 
+ * @return true if the database is empty, else it returns false
+ * 
+ */
+	public boolean isDatabaseEmpty() {
+	    String query = "SELECT COUNT(*) AS count FROM userDB";
+
+	    try {
+	        ResultSet resultSet = statement.executeQuery(query);
+
+	        if (resultSet.next()) {
+	            int count = resultSet.getInt("count");
+	            System.out.println(">>> USER COUNT = " + count);
+	            return count == 0;
+	        }
+
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+
+	    return true;
+	}
+	
+	
+/*******
+ * <p> Method: getNumberOfUsers </p>
+ * 
+ * <p> Description: Returns an integer .of the number of users currently in the user database. </p>
+ * 
+ * @return the number of user records in the database.
+ * 
+ */
+	public int getNumberOfUsers() {
+		String query = "SELECT COUNT(*) AS count FROM userDB";
+		try {
+			ResultSet resultSet = statement.executeQuery(query);
+			if (resultSet.next()) {
+				return resultSet.getInt("count");
+			}
+		} catch (SQLException e) {
+	        return 0;
+	    }
+		return 0;
+	}
+	
+/*******
+* <p> Method: getRoleCount </p>
+*
+* <p> Description: Returns an integer of the number of a specified role currently in the user database. </p>
+*
+* @param role specifies the role whose users are to be counted.
+* @return the count of specified role in the database.
+*
+*/
+	public int getRoleCount(String role) {
+		String columnName = "";
+		
+		// Set string columnName to the corresponding column name
+		if (role.equals("Admin")) {
+			columnName = "adminRole";
+		}
+		else if (role.equals("Contributor")) {
+			columnName = "contributorRole";
+		}
+		else if (role.equals("Role2")) {
+			columnName = "newRole2";
+		}
+		else {
+			return 0;
+		}
+		
+		String query = "SELECT COUNT(*) AS count FROM userDB WHERE " + columnName + " = TRUE";
+		try {
+			ResultSet resultSet = statement.executeQuery(query);
+			if (resultSet.next()) {
+				return resultSet.getInt("count");
+			}
+		} catch (SQLException e) {
+	        return 0;
+	    }
+		return 0;
+	}	
+
+
+/*******
+ * <p> Method: register(User user) </p>
+ * 
+ * <p> Description: Creates a new row in the database using the user parameter. </p>
+ * 
+ * @throws SQLException when there is an issue creating the SQL command or executing it.
+ * 
+ * @param user specifies a user object to be added to the database.
+ * 
+ */
+	public void register(User user) throws SQLException {
+		String insertUser = "INSERT INTO userDB (userName, password, firstName, middleName, "
+				+ "lastName, preferredFirstName, emailAddress, adminRole, contributorRole, newRole2) "
+				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		try (PreparedStatement pstmt = connection.prepareStatement(insertUser)) {
+			currentUsername = user.getUserName();
+			pstmt.setString(1, currentUsername);
+			
+			currentPassword = user.getPassword();
+			pstmt.setString(2, currentPassword);
+			
+			currentFirstName = user.getFirstName();
+			pstmt.setString(3, currentFirstName);
+			
+			currentMiddleName = user.getMiddleName();			
+			pstmt.setString(4, currentMiddleName);
+			
+			currentLastName = user.getLastName();
+			pstmt.setString(5, currentLastName);
+			
+			currentPreferredFirstName = user.getPreferredFirstName();
+			pstmt.setString(6, currentPreferredFirstName);
+			
+			currentEmailAddress = user.getEmailAddress();
+			pstmt.setString(7, currentEmailAddress);
+			
+			currentAdminRole = user.getAdminRole();
+			pstmt.setBoolean(8, currentAdminRole);
+			
+			currentContributorRole = user.getContributorRole();
+			pstmt.setBoolean(9, currentContributorRole);
+			
+			currentNewRole2 = user.getNewRole2();
+			pstmt.setBoolean(10, currentNewRole2);
+			
+			pstmt.executeUpdate();
+		}
+		
+	}
+	
+/*******
+ *  <p> Method: List getUserList() </p>
+ *  
+ *  <p> Description: Generate an List of Strings, one for each user in the database,
+ *  starting with "&lt;Select User&gt;" at the start of the list. </p>
+ *  
+ *  @return a list of userNames found in the database.
+ */
+	public List<String> getUserList () {
+		List<String> userList = new ArrayList<String>();
+		userList.add("<Select a User>");
+		String query = "SELECT userName FROM userDB";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				userList.add(rs.getString("userName"));
+			}
+		} catch (SQLException e) {
+	        return null;
+	    }
+//		System.out.println(userList);
+		return userList;
+	}
+
+/******
+ * 
+ * <p> Method: getAllUserAccountSummaries() </p>
+ * 
+ * <p> Description: Retrieves the account information that an admin is allowed to view. Passwords and database ID are not retrieved. </p>
+ * 
+ * @return a list containing a summary of every user account without revealing their password
+ * 
+ * @throws SQLException when the account information cannot be retrieved
+ * 
+ */
+
+public List<UserAccountSummary> getAllUserAccountSummaries() throws SQLException {
+
+	// Creates a list that will contain the account summaries without password
+	List<UserAccountSummary> accountSummaries = new ArrayList<UserAccountSummary>();
+
+	// Selects only the account information that admin are allowed to view
+	String query = "SELECT userName, firstName, middleName, lastName, " + "preferredFirstName, emailAddress, adminRole, contributorRole, newRole2 " + "FROM userDB " + "ORDER BY lastName, firstName, userName";
+
+	// Prepares the account summary query and automatically closes it afterward
+	try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+
+		// Executes the account summary query
+		try (ResultSet rs = pstmt.executeQuery()) {
+
+			// Processes every user account returned by the db
+			while (rs.next()) {
+
+				// Creates a summary from the current db row
+				UserAccountSummary accountSummary = new UserAccountSummary(rs.getString("userName"), (rs.getString("firstName")), (rs.getString("middleName")), (rs.getString("lastName")), (rs.getString("preferredFirstName")), (rs.getString("emailAddress")), (rs.getBoolean("adminRole")), (rs.getBoolean("contributorRole")), (rs.getBoolean("newRole2")));
+
+				// Adds the current account summary to the result list
+				accountSummaries.add(accountSummary);
+			}
+		}
+	}
+
+	// Returns an empty list when no accounts exist
+	return accountSummaries;
+
+}
+/*******
+ * <p> Method: boolean loginAdmin(User user) </p>
+ * 
+ * <p> Description: Check to see that a user with the specified username, password, and role
+ * 		is the same as a row in the table for the username, password, and role. </p>
+ * 
+ * @param user specifies the specific user that should be logged in playing the Admin role.
+ * 
+ * @return true if the specified user has been logged in as an Admin else false.
+ * 
+ */
+	public boolean loginAdmin(User user){
+		// Validates an admin user's login credentials so the user can login in as an Admin.
+		String query = "SELECT * FROM userDB WHERE userName = ? AND password = ? AND "
+				+ "adminRole = TRUE";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, user.getUserName());
+			pstmt.setString(2, user.getPassword());
+			ResultSet rs = pstmt.executeQuery();
+			return rs.next();	// If a row is returned, rs.next() will return true		
+		} catch  (SQLException e) {
+	        e.printStackTrace();
+	    }
+		return false;
+	}
+	
+	
+/*******
+ * <p> Method: boolean loginContributor(User user) </p>
+ * 
+ * <p> Description: Check to see that a user with the specified username, password, and role
+ * 		is the same as a row in the table for the username, password, and role. </p>
+ * 
+ * @param user specifies the specific user that should be logged in playing the Student role.
+ * 
+ * @return true if the specified user has been logged in as an Student else false.
+ * 
+ */
+	public boolean loginContributor(User user) {
+		// Validates a student user's login credentials.
+		String query = "SELECT * FROM userDB WHERE userName = ? AND password = ? AND "
+				+ "contributorRole = TRUE";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, user.getUserName());
+			pstmt.setString(2, user.getPassword());
+			ResultSet rs = pstmt.executeQuery();
+			return rs.next();
+		} catch  (SQLException e) {
+		       e.printStackTrace();
+		}
+		return false;
+	}
+
+	/*******
+	 * <p> Method: boolean loginRole2(User user) </p>
+	 * 
+	 * <p> Description: Check to see that a user with the specified username, password, and role
+	 * 		is the same as a row in the table for the username, password, and role. </p>
+	 * 
+	 * @param user specifies the specific user that should be logged in playing the Reviewer role.
+	 * 
+	 * @return true if the specified user has been logged in as an Student else false.
+	 * 
+	 */
+	// Validates a reviewer user's login credentials.
+	public boolean loginRole2(User user) {
+		String query = "SELECT * FROM userDB WHERE userName = ? AND password = ? AND "
+				+ "newRole2 = TRUE";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, user.getUserName());
+			pstmt.setString(2, user.getPassword());
+			ResultSet rs = pstmt.executeQuery();
+			return rs.next();
+		} catch  (SQLException e) {
+		       e.printStackTrace();
+		}
+		return false;
+	}
+	
+	
+	/*******
+	 * <p> Method: boolean doesUserExist(User user) </p>
+	 * 
+	 * <p> Description: Check to see that a user with the specified username is  in the table. </p>
+	 * 
+	 * @param userName specifies the specific user that we want to determine if it is in the table.
+	 * 
+	 * @return true if the specified user is in the table else false.
+	 * 
+	 */
+	// Checks if a user already exists in the database based on their userName.
+	public boolean doesUserExist(String userName) {
+	    String query = "SELECT COUNT(*) FROM userDB WHERE userName = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        
+	        pstmt.setString(1, userName);
+	        ResultSet rs = pstmt.executeQuery();
+	        
+	        if (rs.next()) {
+	            // If the count is greater than 0, the user exists
+	            return rs.getInt(1) > 0;
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return false; // If an error occurs, assume user doesn't exist
+	}
+
+	
+	/*******
+	 * <p> Method: int getNumberOfRoles(User user) </p>
+	 * 
+	 * <p> Description: Determine the number of roles a specified user plays. </p>
+	 * 
+	 * @param user specifies the specific user that we want to determine if it is in the table.
+	 * 
+	 * @return the number of roles this user plays (0 - 5).
+	 * 
+	 */	
+	// Get the number of roles that this user plays
+	public int getNumberOfRoles (User user) {
+		int numberOfRoles = 0;
+		if (user.getAdminRole()) numberOfRoles++;
+		if (user.getContributorRole()) numberOfRoles++;
+		if (user.getNewRole2()) numberOfRoles++;
+		return numberOfRoles;
+	}	
+
+	
+	/*******
+	 * <p> Method: String generateInvitationCode(String emailAddress, String role) </p>
+	 * 
+	 * <p> Description: Given an email address and a roles, this method establishes and invitation
+	 * code and adds a record to the InvitationCodes table.  When the invitation code is used, the
+	 * stored email address is used to establish the new user and the record is removed from the
+	 * table.</p>
+	 * 
+	 * @param emailAddress specifies the email address for this new user.
+	 * 
+	 * @param role specified the role that this new user will play.
+	 * 
+	 * @return the code of six characters so the new user can use it to securely setup an account.
+	 * 
+	 */
+	// Generates a new invitation code and inserts it into the database.
+	public String generateInvitationCode(String emailAddress, String role) {
+	    String code = UUID.randomUUID().toString().substring(0, 6); // Generate a random 6-character code
+	    String query = "INSERT INTO InvitationCodes (code, emailaddress, role) VALUES (?, ?, ?)";
+
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, code);
+	        pstmt.setString(2, emailAddress);
+	        pstmt.setString(3, role);
+	        pstmt.executeUpdate();
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return code;
+	}
+
+	
+	/*******
+	 * <p> Method: int getNumberOfInvitations() </p>
+	 * 
+	 * <p> Description: Determine the number of outstanding invitations in the table.</p>
+	 *  
+	 * @return the number of invitations in the table.
+	 * 
+	 */
+	// Number of invitations in the database
+	public int getNumberOfInvitations() {
+		String query = "SELECT COUNT(*) AS count FROM InvitationCodes";
+		try {
+			ResultSet resultSet = statement.executeQuery(query);
+			if (resultSet.next()) {
+				return resultSet.getInt("count");
+			}
+		} catch  (SQLException e) {
+	        e.printStackTrace();
+	    }
+		return 0;
+	}
+	
+	
+	/*******
+	 * <p> Method: boolean emailaddressHasBeenUsed(String emailAddress) </p>
+	 * 
+	 * <p> Description: Determine if an email address has been user to establish a user.</p>
+	 * 
+	 * @param emailAddress is a string that identifies a user in the table
+	 *  
+	 * @return true if the email address is in the table, else return false.
+	 * 
+	 */
+	// Check to see if an email address is already in the database
+	public boolean emailaddressHasBeenUsed(String emailAddress) {
+	    String query = "SELECT COUNT(*) AS count FROM InvitationCodes WHERE emailAddress = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, emailAddress);
+	        ResultSet rs = pstmt.executeQuery();
+	 //     System.out.println(rs);
+	        if (rs.next()) {
+	            // Mark the code as used
+	        	return rs.getInt("count")>0;
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+		return false;
+	}
+	
+	
+	/*******
+	 * <p> Method: String getRoleGivenAnInvitationCode(String code) </p>
+	 * 
+	 * <p> Description: Get the role associated with an invitation code.</p>
+	 * 
+	 * @param code is the 6 character String invitation code
+	 *  
+	 * @return the role for the code or an empty string.
+	 * 
+	 */
+	// Obtain the roles associated with an invitation code.
+	public String getRoleGivenAnInvitationCode(String code) {
+	    String query = "SELECT * FROM InvitationCodes WHERE code = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, code);
+	        ResultSet rs = pstmt.executeQuery();
+	        if (rs.next()) {
+	            return rs.getString("role");
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return "";
+	}
+
+	
+	/*******
+	 * <p> Method: String getEmailAddressUsingCode (String code ) </p>
+	 * 
+	 * <p> Description: Get the email addressed associated with an invitation code.</p>
+	 * 
+	 * @param code is the 6 character String invitation code
+	 *  
+	 * @return the email address for the code or an empty string.
+	 * 
+	 */
+	// For a given invitation code, return the associated email address of an empty string
+	public String getEmailAddressUsingCode (String code ) {
+	    String query = "SELECT emailAddress FROM InvitationCodes WHERE code = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, code);
+	        ResultSet rs = pstmt.executeQuery();
+	        if (rs.next()) {
+	            return rs.getString("emailAddress");
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+		return "";
+	}
+	
+	
+	/*******
+	 * <p> Method: void removeInvitationAfterUse(String code) </p>
+	 * 
+	 * <p> Description: Remove an invitation record once it is used.</p>
+	 * 
+	 * @param code is the 6 character String invitation code
+	 *  
+	 */
+	// Remove an invitation using an email address once the user account has been setup
+	public void removeInvitationAfterUse(String code) {
+	    String query = "SELECT COUNT(*) AS count FROM InvitationCodes WHERE code = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, code);
+	        ResultSet rs = pstmt.executeQuery();
+	        if (rs.next()) {
+	        	int counter = rs.getInt(1);
+	            // Only do the remove if the code is still in the invitation table
+	        	if (counter > 0) {
+        			query = "DELETE FROM InvitationCodes WHERE code = ?";
+	        		try (PreparedStatement pstmt2 = connection.prepareStatement(query)) {
+	        			pstmt2.setString(1, code);
+	        			pstmt2.executeUpdate();
+	        		}catch (SQLException e) {
+	        	        e.printStackTrace();
+	        	    }
+	        	}
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+		return;
+	}
+	
+	/*******
+	 * <p> Method: void updatePassword(String username, String password) </p>
+	 * 
+	 * <p> Description: Update the password of a user given that user's username and the new password.</p>
+	 * 
+	 * @param username is the username of the user
+	 *  
+	 * @param password is the new password for the user
+	 *  
+	 */
+	public void updatePassword(String username, String password) {
+	    String query = "UPDATE userDB SET password = ? WHERE username = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, password);
+	        pstmt.setString(2, username);
+	        pstmt.executeUpdate();
+	        currentPassword = password;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: String getFirstName(String username) </p>
+	 * 
+	 * <p> Description: Get the first name of a user given that user's username.</p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @return the first name of a user given that user's username 
+	 *  
+	 */
+	// Get the First Name
+	public String getFirstName(String username) {
+		String query = "SELECT firstName FROM userDB WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+	        ResultSet rs = pstmt.executeQuery();
+	        
+	        if (rs.next()) {
+	            return rs.getString("firstName"); // Return the first name if user exists
+	        }
+			
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+		return null;
+	}
+	
+
+	/*******
+	 * <p> Method: void updateFirstName(String username, String firstName) </p>
+	 * 
+	 * <p> Description: Update the first name of a user given that user's username and the new
+	 *		first name.</p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @param firstName is the new first name for the user
+	 *  
+	 */
+	// update the first name
+	public void updateFirstName(String username, String firstName) {
+	    String query = "UPDATE userDB SET firstName = ? WHERE username = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, firstName);
+	        pstmt.setString(2, username);
+	        pstmt.executeUpdate();
+	        currentFirstName = firstName;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+
+	
+	/*******
+	 * <p> Method: String getMiddleName(String username) </p>
+	 * 
+	 * <p> Description: Get the middle name of a user given that user's username.</p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @return the middle name of a user given that user's username 
+	 *  
+	 */
+	// get the middle name
+	public String getMiddleName(String username) {
+		String query = "SELECT MiddleName FROM userDB WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+	        ResultSet rs = pstmt.executeQuery();
+	        
+	        if (rs.next()) {
+	            return rs.getString("middleName"); // Return the middle name if user exists
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+		return null;
+	}
+
+	
+	/*******
+	 * <p> Method: void updateMiddleName(String username, String middleName) </p>
+	 * 
+	 * <p> Description: Update the middle name of a user given that user's username and the new
+	 * 		middle name.</p>
+	 * 
+	 * @param username is the username of the user
+	 *  
+	 * @param middleName is the new middle name for the user
+	 *  
+	 */
+	// update the middle name
+	public void updateMiddleName(String username, String middleName) {
+	    String query = "UPDATE userDB SET middleName = ? WHERE username = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, middleName);
+	        pstmt.setString(2, username);
+	        pstmt.executeUpdate();
+	        currentMiddleName = middleName;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	
+	/*******
+	 * <p> Method: String getLastName(String username) </p>
+	 * 
+	 * <p> Description: Get the last name of a user given that user's username.</p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @return the last name of a user given that user's username 
+	 *  
+	 */
+	// get he last name
+	public String getLastName(String username) {
+		String query = "SELECT LastName FROM userDB WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+	        ResultSet rs = pstmt.executeQuery();
+	        
+	        if (rs.next()) {
+	            return rs.getString("lastName"); // Return last name role if user exists
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+		return null;
+	}
+	
+	
+	/*******
+	 * <p> Method: void updateLastName(String username, String lastName) </p>
+	 * 
+	 * <p> Description: Update the middle name of a user given that user's username and the new
+	 * 		middle name.</p>
+	 * 
+	 * @param username is the username of the user
+	 *  
+	 * @param lastName is the new last name for the user
+	 *  
+	 */
+	// update the last name
+	public void updateLastName(String username, String lastName) {
+	    String query = "UPDATE userDB SET lastName = ? WHERE username = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, lastName);
+	        pstmt.setString(2, username);
+	        pstmt.executeUpdate();
+	        currentLastName = lastName;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	
+	/*******
+	 * <p> Method: String getPreferredFirstName(String username) </p>
+	 * 
+	 * <p> Description: Get the preferred first name of a user given that user's username.</p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @return the preferred first name of a user given that user's username 
+	 *  
+	 */
+	// get the preferred first name
+	public String getPreferredFirstName(String username) {
+		String query = "SELECT preferredFirstName FROM userDB WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+	        ResultSet rs = pstmt.executeQuery();
+	        
+	        if (rs.next()) {
+	            return rs.getString("firstName"); // Return the preferred first name if user exists
+	        }
+			
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+		return null;
+	}
+	
+	
+	/*******
+	 * <p> Method: void updatePreferredFirstName(String username, String preferredFirstName) </p>
+	 * 
+	 * <p> Description: Update the preferred first name of a user given that user's username and
+	 * 		the new preferred first name.</p>
+	 * 
+	 * @param username is the username of the user
+	 *  
+	 * @param preferredFirstName is the new preferred first name for the user
+	 *  
+	 */
+	// update the preferred first name of the user
+	public void updatePreferredFirstName(String username, String preferredFirstName) {
+	    String query = "UPDATE userDB SET preferredFirstName = ? WHERE username = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, preferredFirstName);
+	        pstmt.setString(2, username);
+	        pstmt.executeUpdate();
+	        currentPreferredFirstName = preferredFirstName;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	
+	/*******
+	 * <p> Method: String getEmailAddress(String username) </p>
+	 * 
+	 * <p> Description: Get the email address of a user given that user's username.</p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @return the email address of a user given that user's username 
+	 *  
+	 */
+	// get the email address
+	public String getEmailAddress(String username) {
+		String query = "SELECT emailAddress FROM userDB WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+	        ResultSet rs = pstmt.executeQuery();
+	        
+	        if (rs.next()) {
+	            return rs.getString("emailAddress"); // Return the email address if user exists
+	        }
+			
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+		return null;
+	}
+	
+	
+	/*******
+	 * <p> Method: void updateEmailAddress(String username, String emailAddress) </p>
+	 * 
+	 * <p> Description: Update the email address name of a user given that user's username and
+	 * 		the new email address.</p>
+	 * 
+	 * @param username is the username of the user
+	 *  
+	 * @param emailAddress is the new preferred first name for the user
+	 *  
+	 */
+	// update the email address
+	public void updateEmailAddress(String username, String emailAddress) {
+	    String query = "UPDATE userDB SET emailAddress = ? WHERE username = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, emailAddress);
+	        pstmt.setString(2, username);
+	        pstmt.executeUpdate();
+	        currentEmailAddress = emailAddress;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	
+	/*******
+	 * <p> Method: boolean getUserAccountDetails(String username) </p>
+	 * 
+	 * <p> Description: Get all the attributes of a user given that user's username.</p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @return true of the get is successful, else false
+	 *  
+	 */
+	// get the attributes for a specified user
+	public boolean getUserAccountDetails(String username) {
+		String query = "SELECT * FROM userDB WHERE username = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+	        ResultSet rs = pstmt.executeQuery();			
+			rs.next();
+	    	currentUsername = rs.getString(2);
+	    	currentPassword = rs.getString(3);
+	    	currentFirstName = rs.getString(4);
+	    	currentMiddleName = rs.getString(5);
+	    	currentLastName = rs.getString(6);
+	    	currentPreferredFirstName = rs.getString(7);
+	    	currentEmailAddress = rs.getString(8);
+	    	currentAdminRole = rs.getBoolean(9);
+	    	currentContributorRole = rs.getBoolean(10);
+	    	currentNewRole2 = rs.getBoolean(11);
+	    	tempPassword = rs.getString(12);
+			return true;
+	    } catch (SQLException e) {
+			return false;
+	    }
+	}
+	
+	
+	/*******
+	 * <p> Method: boolean updateUserRole(String username, String role, String value) </p>
+	 * 
+	 * <p> Description: Update a specified role for a specified user's and set and update all the
+	 * 		current user attributes.</p>
+	 * 
+	 * @param username is the username of the user
+	 *  
+	 * @param role is string that specifies the role to update
+	 * 
+	 * @param value is the string that specified TRUE or FALSE for the role
+	 * 
+	 * @return true if the update was successful, else false
+	 *  
+	 */
+	// Update a users role
+	public boolean updateUserRole(String username, String role, String value) {
+		if (role.compareTo("Admin") == 0) {
+			String query = "UPDATE userDB SET adminRole = ? WHERE username = ?";
+			try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+				pstmt.setString(1, value);
+				pstmt.setString(2, username);
+				pstmt.executeUpdate();
+				if (value.compareTo("true") == 0)
+					currentAdminRole = true;
+				else
+					currentAdminRole = false;
+				return true;
+			} catch (SQLException e) {
+				return false;
+			}
+		}
+		if (role.compareTo("Contributor") == 0) {
+			String query = "UPDATE userDB SET contributorRole = ? WHERE username = ?";
+			try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+				pstmt.setString(1, value);
+				pstmt.setString(2, username);
+				pstmt.executeUpdate();
+				if (value.compareTo("true") == 0)
+					currentContributorRole = true;
+				else
+					currentContributorRole = false;
+				return true;
+			} catch (SQLException e) {
+				return false;
+			}
+		}
+		if (role.compareTo("Role2") == 0) {
+			String query = "UPDATE userDB SET newRole2 = ? WHERE username = ?";
+			try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+				pstmt.setString(1, value);
+				pstmt.setString(2, username);
+				pstmt.executeUpdate();
+				if (value.compareTo("true") == 0)
+					currentNewRole2 = true;
+				else
+					currentNewRole2 = false;
+				return true;
+			} catch (SQLException e) {
+				return false;
+			}
+		}
+		return false;
+	}
+
+	/*******
+	 * <p> Method: boolean deleteUser(String username) </p>
+	 * 
+	 * <p> Description: Delete a user given a username.</p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @return true if the update was successful, else false
+	 * 
+	 */
+	public boolean deleteUser(String username) {
+		String query = "DELETE FROM userDB WHERE username = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			pstmt.executeUpdate();
+			return true;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	
+	// Attribute getters for the current user
+	/*******
+	 * <p> Method: String getCurrentUsername() </p>
+	 * 
+	 * <p> Description: Get the current user's username.</p>
+	 * 
+	 * @return the username value is returned
+	 *  
+	 */
+	public String getCurrentUsername() { return currentUsername;};
+
+	
+	/*******
+	 * <p> Method: String getCurrentPassword() </p>
+	 * 
+	 * <p> Description: Get the current user's password.</p>
+	 * 
+	 * @return the password value is returned
+	 *  
+	 */
+	public String getCurrentPassword() { return currentPassword;};
+	
+	
+
+	
+	/*******
+	 * <p> Method: String getCurrentFirstName() </p>
+	 * 
+	 * <p> Description: Get the current user's first name.</p>
+	 * 
+	 * @return the first name value is returned
+	 *  
+	 */
+	public String getCurrentFirstName() { return currentFirstName;};
+
+	
+	/*******
+	 * <p> Method: String getCurrentMiddleName() </p>
+	 * 
+	 * <p> Description: Get the current user's middle name.</p>
+	 * 
+	 * @return the middle name value is returned
+	 *  
+	 */
+	public String getCurrentMiddleName() { return currentMiddleName;};
+
+	
+	/*******
+	 * <p> Method: String getCurrentLastName() </p>
+	 * 
+	 * <p> Description: Get the current user's last name.</p>
+	 * 
+	 * @return the last name value is returned
+	 *  
+	 */
+	public String getCurrentLastName() { return currentLastName;};
+
+	
+	/*******
+	 * <p> Method: String getCurrentPreferredFirstName( </p>
+	 * 
+	 * <p> Description: Get the current user's preferred first name.</p>
+	 * 
+	 * @return the preferred first name value is returned
+	 *  
+	 */
+	public String getCurrentPreferredFirstName() { return currentPreferredFirstName;};
+
+	
+	/*******
+	 * <p> Method: String getCurrentEmailAddress() </p>
+	 * 
+	 * <p> Description: Get the current user's email address name.</p>
+	 * 
+	 * @return the email address value is returned
+	 *  
+	 */
+	public String getCurrentEmailAddress() { return currentEmailAddress;};
+
+	
+	/*******
+	 * <p> Method: boolean getCurrentAdminRole() </p>
+	 * 
+	 * <p> Description: Get the current user's Admin role attribute.</p>
+	 * 
+	 * @return true if this user plays an Admin role, else false
+	 *  
+	 */
+	public boolean getCurrentAdminRole() { return currentAdminRole;};
+
+	
+	/*******
+	 * <p> Method: boolean getCurrentContributorRole() </p>
+	 * 
+	 * <p> Description: Get the current user's Student role attribute.</p>
+	 * 
+	 * @return true if this user plays a Student role, else false
+	 *  
+	 */
+	public boolean getCurrentContributorRole() { return currentContributorRole;};
+
+	
+	/*******
+	 * <p> Method: boolean getCurrentNewRole2() </p>
+	 * 
+	 * <p> Description: Get the current user's Reviewer role attribute.</p>
+	 * 
+	 * @return true if this user plays a Reviewer role, else false
+	 *  
+	 */
+	public boolean getCurrentNewRole2() { return currentNewRole2;};
+
+	
+	/*******
+	 * <p> Debugging method</p>
+	 * 
+	 * <p> Description: Debugging method that dumps the database of the console.</p>
+	 * 
+	 * @throws SQLException if there is an issues accessing the database.
+	 * 
+	 */
+	// Dumps the database.
+	public void dump() throws SQLException {
+		String query = "SELECT * FROM userDB";
+		ResultSet resultSet = statement.executeQuery(query);
+		ResultSetMetaData meta = resultSet.getMetaData();
+		while (resultSet.next()) {
+		for (int i = 0; i < meta.getColumnCount(); i++) {
+		System.out.println(
+		meta.getColumnLabel(i + 1) + ": " +
+				resultSet.getString(i + 1));
+		}
+		System.out.println();
+		}
+		resultSet.close();
+	}
+
+
+	/*******
+	 * <p> Method: void closeConnection()</p>
+	 * 
+	 * <p> Description: Closes the database statement and connection.</p>
+	 * 
+	 */
+	// Closes the database statement and connection.
+	public void closeConnection() {
+		try{ 
+			if(statement!=null) statement.close(); 
+		} catch(SQLException se2) { 
+			se2.printStackTrace();
+		} 
+		try { 
+			if(connection!=null) connection.close(); 
+		} catch(SQLException se){ 
+			se.printStackTrace(); 
+		} 
+	}
+	
+	/*******
+	 * <p> Method: String getTemporaryPassword()</p>
+	 * 
+	 * <p> Description: Returns the user's temporary password. </p>
+	 * 
+	 * @return tempPassword
+	 * 
+	 */
+	public String getTemporaryPassword() {return tempPassword; };
+	
+	/*******
+	 * <p> Method: void removeTemporaryPassword()</p>
+	 * 
+	 * <p> Description: Deletes the temporary password. </p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 */
+	public void removeTemporaryPassword(String username) { 
+		String query = "UPDATE userDB SET tempPassword = null WHERE username = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/*******
+	 * <p> Method: void passwordChange()</p>
+	 * 
+	 * <p> Description: Sets a new permanent password for the user </p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @param password is the new password of the user
+	 * 
+	 */
+	public void passwordChange(String username, String password) {
+		String query = "UPDATE userDB SET password = ? WHERE username = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, password);
+			pstmt.setString(2, username);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/*******
+	 * <p> Method: void oneTimePasswrodSet()</p>
+	 * 
+	 * <p> Description: Sets a one-time password for the user </p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @param newPassword is the one-time password to set
+	 * 
+	 */
+	public void oneTimePasswordSet(String username, String newPassword) {
+		String query = "UPDATE userDB SET tempPassword = ? WHERE username = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, newPassword);
+			pstmt.setString(2, username);
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/*******
+	 * <p> Method: getNumberOfExperiences </p>
+	 * 
+	 * <p> Description: Returns an integer of the number of experiences currently in the
+	 * experience database. </p>
+	 * 
+	 * @return the number of experience records in the database.
+	 * 
+	 */
+	public int getNumberOfExperiences() {
+		String query = "SELECT COUNT(*) AS count FROM Experiences";
+		try {
+			ResultSet resultSet = statement.executeQuery(query);
+			if (resultSet.next()) {
+				return resultSet.getInt("count");
+			}
+		} catch (SQLException e) {
+	        return 0;
+	    }
+		return 0;
+	}
+	
+	/*******
+	 * <p> Method: addExperience(Experience experience) </p>
+	 * 
+	 * <p> Description: Creates a new row in the database using the experience parameter. </p>
+	 * 
+	 * @throws SQLException when there is an issue creating the SQL command or executing it.
+	 * 
+	 * @param experience specifies an experience object to be added to the database.
+	 * 
+	 */
+	public void addExperience(Experience experience) throws SQLException {
+		String insertExperience = "INSERT INTO Experiences (id, lessonId, creatorName, locked, "
+				+ "what, how, howLong, effort, index, prev, next) "
+				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		try (PreparedStatement pstmt = connection.prepareStatement(insertExperience)) {
+			pstmt.setInt(1, experience.getId());
+			pstmt.setInt(2, experience.getLessonId());
+			pstmt.setString(3, experience.getCreatorName());
+			pstmt.setBoolean(4, experience.getLockedStatus());
+			pstmt.setString(5, experience.getWhat());
+			pstmt.setString(6, experience.getHow());
+			pstmt.setString(7, experience.getHowLong());
+			pstmt.setString(8, experience.getEffort());
+			pstmt.setInt(9, experience.getIndex());
+			
+			Experience prevExp = experience.getPrev();
+			if (prevExp == null) pstmt.setInt(10, -1);
+			else pstmt.setInt(10, prevExp.getId());
+			
+			Experience nextExp = experience.getNext();
+			if (nextExp == null) pstmt.setInt(10,  -1);
+			else pstmt.setInt(10,  nextExp.getId());
+			
+			pstmt.executeUpdate();
+		}
+		
+	}
+	
+	/*******
+	 * <p> Method: boolean getExperienceDetails(int id) </p>
+	 * 
+	 * <p> Description: Get all the attributes of an experience given that experience's unique ID
+	 * number.</p>
+	 * 
+	 * @param id is the unique ID number of the experience
+	 * 
+	 * @return true if the get is successful, else false
+	 *  
+	 */
+	public boolean getExperienceDetails(int id) {
+		String query = "SELECT * FROM Experiences WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, id);
+	        ResultSet rs = pstmt.executeQuery();			
+			rs.next();
+			currentExpLessonId = rs.getInt(2);
+			currentExpCreatorName = rs.getString(3);
+			currentExpLocked = rs.getBoolean(4);
+			currentExpWhat = rs.getString(5);
+			currentExpHow = rs.getString(6);
+			currentExpHowLong = rs.getString(7);
+			currentExpEffort = rs.getString(8);
+			currentExpIndex = rs.getInt(9);
+			currentExpPrevId = rs.getInt(10);
+			currentExpNextId = rs.getInt(11);
+			return true;
+	    } catch (SQLException e) {
+			return false;
+	    }
+	}
+	
+	/*******
+	 * <p> Method: int getCurrentExpLessonId() </p>
+	 * 
+	 * <p> Description: Get the ID number of the lesson the current experience is associated
+	 * with.</p>
+	 * 
+	 * @return the lesson's ID number
+	 *  
+	 */
+	public int getCurrentExpLessonId() { return currentExpLessonId; }
+	
+	/*******
+	 * <p> Method: String getCurrentExpCreatorName() </p>
+	 * 
+	 * <p> Description: Get the username of the creator of the current experience.</p>
+	 * 
+	 * @return the creator's name.
+	 *  
+	 */
+	public String getCurrentExpCreatorName() { return currentExpCreatorName; }
+	
+	/*******
+	 * <p> Method: boolean getCurrentExpLockedStatus() </p>
+	 * 
+	 * <p> Description: Determine whether the current experience is locked.</p>
+	 * 
+	 * @return a boolean TRUE if locked or FALSE if not
+	 *  
+	 */
+	public boolean getCurrentExpLockedStatus() { return currentExpLocked; }
+	
+	/*******
+	 * <p> Method: String getCurrentExpWhat() </p>
+	 * 
+	 * <p> Description: Get the what attribute of the current experience.</p>
+	 * 
+	 * @return the what attribute.
+	 *  
+	 */
+	public String getCurrentExpWhat() { return currentExpWhat; }
+	
+	/*******
+	 * <p> Method: String getCurrentExpHow() </p>
+	 * 
+	 * <p> Description: Get the how attribute of the current experience.</p>
+	 * 
+	 * @return the how attribute.
+	 *  
+	 */
+	public String getCurrentExpHow() { return currentExpHow; }
+	
+	/*******
+	 * <p> Method: String getCurrentExpHowLong() </p>
+	 * 
+	 * <p> Description: Get the howLong attribute of the current experience.</p>
+	 * 
+	 * @return the howLong attribute.
+	 *  
+	 */
+	public String getCurrentExpHowLong() { return currentExpHowLong; }
+	
+	/*******
+	 * <p> Method: String getCurrentExpEffort() </p>
+	 * 
+	 * <p> Description: Get the effort attribute of the current experience.</p>
+	 * 
+	 * @return the effort attribute.
+	 *  
+	 */
+	public String getCurrentExpEffort() { return currentExpEffort; }
+	
+	/*******
+	 * <p> Method: int getCurrentExpIndex() </p>
+	 * 
+	 * <p> Description: Get the index of the current experience.</p>
+	 * 
+	 * @return the index.
+	 *  
+	 */
+	public int getCurrentExpIndex() { return currentExpIndex; }
+	
+	/*******
+	 * <p> Method: int getCurrentExpPrevId() </p>
+	 * 
+	 * <p> Description: Get the ID number of the previous experience to the current one.</p>
+	 * 
+	 * @return the index.
+	 *  
+	 */
+	public int getCurrentExpPrevId() { return currentExpPrevId; }
+	
+	/*******
+	 * <p> Method: int getCurrentExpNextId() </p>
+	 * 
+	 * <p> Description: Get the ID number of the next experience to the current one.</p>
+	 * 
+	 * @return the index.
+	 *  
+	 */
+	public int getCurrentExpNextId() { return currentExpNextId; }
+	
+	/*******
+	 * <p> Method: void updateExpLockedStatus(int id, boolean newStatus) </p>
+	 * 
+	 * <p> Description: Update the locked status of an experience given the experience's id</p>
+	 * 
+	 * @param id is the ID number of the experience
+	 *  
+	 * @param newStatus is the new locked status of the experience
+	 *  
+	 */
+	public void updateExpLockedStatus(int id, boolean newStatus) {
+	    String query = "UPDATE Experiences SET locked = ? WHERE id = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setBoolean(1, newStatus);
+	        pstmt.setInt(2, id);
+	        pstmt.executeUpdate();
+	        currentExpLocked = newStatus;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: void updateExpWhat(int id, String newWhat) </p>
+	 * 
+	 * <p> Description: Update the what attribute of an experience given the experience's id</p>
+	 * 
+	 * @param id is the ID number of the experience
+	 *  
+	 * @param newWhat is the new what attribute of the experience
+	 *  
+	 */
+	public void updateExpWhat(int id, String newWhat) {
+	    String query = "UPDATE Experiences SET what = ? WHERE id = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	    	pstmt.setString(1, newWhat);
+	        pstmt.setInt(2, id);
+	        pstmt.executeUpdate();
+	        currentExpWhat = newWhat;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: void updateExpHow(int id, String newHow) </p>
+	 * 
+	 * <p> Description: Update the how attribute of an experience given the experience's id</p>
+	 * 
+	 * @param id is the ID number of the experience
+	 *  
+	 * @param newHow is the new how attribute of the experience
+	 *  
+	 */
+	public void updateExpHow(int id, String newHow) {
+	    String query = "UPDATE Experiences SET how = ? WHERE id = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	    	pstmt.setString(1, newHow);
+	        pstmt.setInt(2, id);
+	        pstmt.executeUpdate();
+	        currentExpHow = newHow;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: void updateExpHowLong(int id, String newHowLong) </p>
+	 * 
+	 * <p> Description: Update the howLong attribute of an experience given the experience's id</p>
+	 * 
+	 * @param id is the ID number of the experience
+	 *  
+	 * @param newHowLong is the new howLong attribute of the experience
+	 *  
+	 */
+	public void updateExpHowLong(int id, String newHowLong) {
+	    String query = "UPDATE Experiences SET howLong = ? WHERE id = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	    	pstmt.setString(1, newHowLong);
+	        pstmt.setInt(2, id);
+	        pstmt.executeUpdate();
+	        currentExpHowLong = newHowLong;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: void updateExpEffort(int id, String newEffort) </p>
+	 * 
+	 * <p> Description: Update the effort attribute of an experience given the experience's id</p>
+	 * 
+	 * @param id is the ID number of the experience
+	 *  
+	 * @param newEffort is the new effort attribute of the experience
+	 *  
+	 */
+	public void updateExpEffort(int id, String newEffort) {
+	    String query = "UPDATE Experiences SET effort = ? WHERE id = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	    	pstmt.setString(1, newEffort);
+	        pstmt.setInt(2, id);
+	        pstmt.executeUpdate();
+	        currentExpHow = newEffort;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: int updateExpIndex(int id, int newIndex) </p>
+	 * 
+	 * <p> Description: Update the index of an experience given the experience's id</p>
+	 * 
+	 * @param id is the ID number of the experience
+	 *  
+	 * @param newIndex is the new index of the experience
+	 *  
+	 */
+	public void updateExpIndex(int id, int newIndex) {
+	    String query = "UPDATE Experiences SET index = ? WHERE id = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	    	pstmt.setInt(1, newIndex);
+	        pstmt.setInt(2, id);
+	        pstmt.executeUpdate();
+	        currentExpIndex = newIndex;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: int updateExpPrevId(int id, int newPrevId) </p>
+	 * 
+	 * <p> Description: Update the previous ID for an experience given the experience's id</p>
+	 * 
+	 * @param id is the ID number of the experience
+	 *  
+	 * @param newPrevId is the ID number of the previous experience
+	 *  
+	 */
+	public void updateExpPrevId(int id, int newPrevId) {
+	    String query = "UPDATE Experiences SET prev = ? WHERE id = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	    	pstmt.setInt(1, newPrevId);
+	        pstmt.setInt(2, id);
+	        pstmt.executeUpdate();
+	        currentExpPrevId = newPrevId;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: int updateExpNextId(int id, int newNextId) </p>
+	 * 
+	 * <p> Description: Update the next ID for an experience given the experience's id</p>
+	 * 
+	 * @param id is the ID number of the experience
+	 *  
+	 * @param newNextId is the ID number of the next experience
+	 *  
+	 */
+	public void updateExpNextId(int id, int newNextId) {
+	    String query = "UPDATE Experiences SET next = ? WHERE id = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	    	pstmt.setInt(1, newNextId);
+	        pstmt.setInt(2, id);
+	        pstmt.executeUpdate();
+	        currentExpNextId = newNextId;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: boolean deleteExperience(int id) </p>
+	 * 
+	 * <p> Description: Delete an experience given an id.</p>
+	 * 
+	 * @param id is the ID number
+	 * 
+	 * @return true if the update was successful, else false
+	 * 
+	 */
+	public boolean deleteExperience(int id) {
+		getExperienceDetails(id);
+		int prevId = getCurrentExpPrevId();
+		int nextId = getCurrentExpNextId();
+		
+		if (prevId != -1) {
+			updateExpNextId(prevId, nextId);
+		}
+		if (nextId != -1) {
+			updateExpPrevId(nextId, prevId);
+		}
+		while (nextId != -1) {
+			getExperienceDetails(nextId);
+			int index = getCurrentExpIndex();
+			updateExpIndex(nextId, index + 1);
+			nextId = getCurrentExpNextId();
+		}
+		getExperienceDetails(id);
+		
+		String query = "DELETE FROM Experiences WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, id);
+			pstmt.executeUpdate();
+			return true;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	/*******
+	 * <p> Method: getNumberOfLessons </p>
+	 * 
+	 * <p> Description: Returns an integer of the number of lessons learned currently in the
+	 * lesson learned database. </p>
+	 * 
+	 * @return the number of lesson learned records in the database.
+	 * 
+	 */
+	public int getNumberOfLessonsLearned() {
+		String query = "SELECT COUNT(*) AS count FROM LessonsLearned";
+		try {
+			ResultSet resultSet = statement.executeQuery(query);
+			if (resultSet.next()) {
+				return resultSet.getInt("count");
+			}
+		} catch (SQLException e) {
+	        return 0;
+	    }
+		return 0;
+	}
+	
+	/*******
+	 * <p> Method: addLesson(LessonLearned lesson) </p>
+	 * 
+	 * <p> Description: Creates a new row in the database using the lesson learned parameter. </p>
+	 * 
+	 * @throws SQLException when there is an issue creating the SQL command or executing it.
+	 * 
+	 * @param lesson specifies a user object to be added to the database.
+	 * 
+	 */
+	public void addLesson(LessonLearned lesson) throws SQLException {
+		String insertLesson = "INSERT INTO LessonsLearned (title, creatorName, locked, "
+				+ "coreInfo, experienceCount, tailExperienceId, headExperienceId) "
+				+ "VALUES (?, ?, ?, ?, ?, ?, ?)";
+		try (PreparedStatement pstmt = connection.prepareStatement(insertLesson)) {
+			pstmt.setString(1, lesson.getTitle());
+			pstmt.setString(2, lesson.getCreatorName());
+			pstmt.setBoolean(3, lesson.getLockedStatus());
+			pstmt.setString(4, lesson.getCoreInfo());
+			pstmt.setInt(5, lesson.getCount());
+			
+			Experience tailExp = lesson.getExperience(lesson.getCount() - 1);
+			if (tailExp == null) pstmt.setInt(6, -1);
+			else pstmt.setInt(6, tailExp.getId());
+			
+			Experience headExp = lesson.getExperience(0);
+			if (headExp == null) pstmt.setInt(7, -1);
+			else pstmt.setInt(7, headExp.getId());
+			
+			pstmt.executeUpdate();
+		}
+		
+	}
+	
+	/*******
+	 * <p> Method: boolean getLessonDetails(int id) </p>
+	 * 
+	 * <p> Description: Get all the attributes of a lesson learned given that lesson's unique ID
+	 * number.</p>
+	 * 
+	 * @param id is the unique ID number of the lesson
+	 * 
+	 * @return true if the get is successful, else false
+	 *  
+	 */
+	public boolean getLessonDetails(int id) {
+		String query = "SELECT * FROM LessonsLearned WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, id);
+	        ResultSet rs = pstmt.executeQuery();			
+			rs.next();
+			currentLessonTitle = rs.getString(2);
+			currentLessonCreatorName = rs.getString(3);
+			currentLessonLocked = rs.getBoolean(4);
+			currentLessonCoreInfo = rs.getString(5);
+			currentLessonExpCount = rs.getInt(6);
+			return true;
+	    } catch (SQLException e) {
+			return false;
+	    }
+	}
+	
+	/*******
+	 * <p> Method: String getCurrentLessonTitle() </p>
+	 * 
+	 * <p> Description: Get the title of the current lesson.</p>
+	 * 
+	 * @return the lesson's title
+	 *  
+	 */
+	public String getCurrentLessonTitle() { return currentLessonTitle; }
+	
+	/*******
+	 * <p> Method: String getCurrentLessonCreatorName() </p>
+	 * 
+	 * <p> Description: Get the name of the creator of the current lesson.</p>
+	 * 
+	 * @return the creator's name
+	 *  
+	 */
+	public String getCurrentLessonCreatorName() { return currentLessonCreatorName; }
+	
+	/*******
+	 * <p> Method: String getCurrentLessonLockedStatus() </p>
+	 * 
+	 * <p> Description: Get the locked status of the current lesson.</p>
+	 * 
+	 * @return a boolean TRUE if locked or FALSE if not
+	 *  
+	 */
+	public boolean getCurrentLessonLockedStatus() { return currentLessonLocked; }
+	
+	/*******
+	 * <p> Method: String getCurrentLessonCoreInfo() </p>
+	 * 
+	 * <p> Description: Get the core information of the current lesson.</p>
+	 * 
+	 * @return the lesson's core information
+	 *  
+	 */
+	public String getCurrentLessonCoreInfo() { return currentLessonCoreInfo; }
+	
+	/*******
+	 * <p> Method: int getCurrentLessonExpCount() </p>
+	 * 
+	 * <p> Description: Get the number of experiences associated with the current lesson.</p>
+	 * 
+	 * @return the experience count
+	 *  
+	 */
+	public int getCurrentLessonExpCount() { return currentLessonExpCount; }
+	
+	/*******
+	 * <p> Method: void updateLessonTitle(int id, String newTitle) </p>
+	 * 
+	 * <p> Description: Update the title of a lesson given the lesson's id</p>
+	 * 
+	 * @param id is the ID number of the lesson
+	 *  
+	 * @param newTitle is the new title of the lesson
+	 *  
+	 */
+	public void updateLessonTitle(int id, String newTitle) {
+	    String query = "UPDATE LessonsLearned SET title = ? WHERE id = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	    	pstmt.setString(1, newTitle);
+	        pstmt.setInt(2, id);
+	        pstmt.executeUpdate();
+	        currentLessonTitle = newTitle;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: void updateLessonLockedStatus(int id, boolean newStatus) </p>
+	 * 
+	 * <p> Description: Lock or unlock a lesson given the lesson's id</p>
+	 * 
+	 * @param id is the ID number of the lesson
+	 *  
+	 * @param newStatus is a boolean TRUE or FALSE stating whether the lesson is locked
+	 *  
+	 */
+	public void updateLessonLockedStatus(int id, boolean newStatus) {
+	    String query = "UPDATE LessonsLearned SET locked = ? WHERE id = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	    	pstmt.setBoolean(1, newStatus);
+	        pstmt.setInt(2, id);
+	        pstmt.executeUpdate();
+	        currentLessonLocked = newStatus;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: void updateLessonCoreInfo(int id, String newInfo) </p>
+	 * 
+	 * <p> Description: Update the core information of a lesson given the lesson's id</p>
+	 * 
+	 * @param id is the ID number of the lesson
+	 *  
+	 * @param newInfo is the new core information for the lesson
+	 *  
+	 */
+	public void updateLessonCoreInfo(int id, String newInfo) {
+	    String query = "UPDATE LessonsLearned SET coreInfo = ? WHERE id = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	    	pstmt.setString(1, newInfo);
+	        pstmt.setInt(2, id);
+	        pstmt.executeUpdate();
+	        currentLessonCoreInfo = newInfo;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: void updateLessonExpCount(int id, int newCount) </p>
+	 * 
+	 * <p> Description: Update the count of experiences for a lesson given the lesson's id</p>
+	 * 
+	 * @param id is the ID number of the lesson
+	 *  
+	 * @param newCount is the new experience count of the lesson
+	 *  
+	 */
+	public void updateLessonExpCount(int id, int newCount) {
+	    String query = "UPDATE LessonsLearned SET experienceCount = ? WHERE id = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	    	pstmt.setInt(1, newCount);
+	        pstmt.setInt(2, id);
+	        pstmt.executeUpdate();
+	        currentLessonExpCount = newCount;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: boolean deleteLessonLearned(int id) </p>
+	 * 
+	 * <p> Description: Delete a lesson learned given an id.</p>
+	 * 
+	 * @param id is the ID number
+	 * 
+	 * @return true if the update was successful, else false
+	 * 
+	 */
+	public boolean deleteLessonLearned(int id) {
+		String query = "DELETE FROM LessonsLearned WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, id);
+			pstmt.executeUpdate();
+			return true;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	/******
+	 * 
+	 * <p> Method: getLessonIdsByName(String name) </p>
+	 * 
+	 * <p> Description: Retrieves a list of lessonLearned IDs belonging to one user. </p>
+	 * 
+	 * @param name is the username of the user
+	 * 
+	 * @return a list containing every ID of a lesson learned created by the user
+	 * 
+	 * @throws SQLException when the account information cannot be retrieved
+	 * 
+	 */
+
+	public List<Integer> getLessonIdsByName(String name) throws SQLException {
+
+		// Creates a list that will contain the IDs
+		List<Integer> ids = new ArrayList<Integer>();
+
+		// Selects only the items created by the user
+		String query = "SELECT id, creatorName FROM LessonsLearned WHERE creatorName = ?";
+
+		// Prepares the query and automatically closes it afterward
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, name);
+
+			// Executes the query
+			try (ResultSet rs = pstmt.executeQuery()) {
+
+				// Processes every id returned by the db
+				while (rs.next()) {
+
+					// Picks the id from the current db row
+					Integer id = rs.getInt("id");
+
+					// Adds the current account summary to the result list
+					ids.add(id);
+				}
+			}
+		}
+
+		// Returns an empty list when no accounts exist
+		return ids;
+
+	}
+	
+}
