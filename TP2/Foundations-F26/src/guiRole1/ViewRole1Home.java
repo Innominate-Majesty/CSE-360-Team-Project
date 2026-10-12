@@ -1,19 +1,43 @@
 package guiRole1;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import database.Database;
+import entityClasses.LessonsLearned;
+import entityClasses.LessonsLearnedList;
+import entityClasses.User;
+import javafx.geometry.Insets;
+import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
+import javafx.stage.Modality;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
-import database.Database;
-import entityClasses.User;
+
 
 /*******
+ * 
  * <p> Title: ViewRole1Home Class. </p>
  * 
  * <p> Description: The Java/FX-based Role1 Home Page.  The page is a stub for some role needed for
@@ -26,6 +50,7 @@ import entityClasses.User;
  * 
  * @version 1.00		2025-08-20 Initial version
  * @version 1.01		2026-10-04 Added Contributor role commands
+ * @version 1.02 		2026-10-12 Updated UI 
  *  
  */
 
@@ -38,18 +63,106 @@ public class ViewRole1Home {
 	 */
 	
 	// These are the application values required by the user interface
-	
+
 	private static double width = applicationMain.FoundationsMain.WINDOW_WIDTH;
 	private static double height = applicationMain.FoundationsMain.WINDOW_HEIGHT;
+	
+	// Defines the soft sage background used by the main page
+	private static final String PAGE_BACKGROUND = "#F1F4F0";
 
+	// Defines the white background used by cards, forms, and menus
+	private static final String SURFACE_COLOR = "#FFFFFF";
+
+	// Defines the primary dark-sage accent color
+	private static final String ACCENT_COLOR = "#405D52";
+
+	// Defines the darker sage used when primary buttons are hovered
+	private static final String ACCENT_HOVER = "#344C43";
+
+	// Defines the main dark text color
+	private static final String PRIMARY_TEXT = "#203029";
+
+	// Defines the lighter text color used for secondary information
+	private static final String SECONDARY_TEXT = "#65736B";
+
+	// Defines the subtle border color around fields and cards
+	private static final String BORDER_COLOR = "#CAD7D0";
+
+	// Defines the soft sage background used when secondary controls are hovered
+	private static final String HOVER_BACKGROUND = "#E2EBE6";
 
 	// These are the widget attributes for the GUI. There are 3 areas for this GUI.
 	
 	// GUI Area 1: It informs the user about the purpose of this page, whose account is being used,
 	// and a button to allow this user to update the account settings
+
 	protected static Label label_PageTitle = new Label();
+
+	// Displays a personalized welcome message for the contributor
+	protected static Label label_Welcome = new Label();
+
+	// Labels the expandable advanced-search section
+	protected static Label label_LessonSection = new Label("ADVANCED SEARCH OPTIONS");
+
+	// Labels the main lesson-search card
+	protected static Label label_SearchSection = new Label("SEARCH LESSONS");
+
+	// Labels either the contributor’s lessons or the current search results
+	protected static Label label_ResultsSection = new Label("RESULTS");
+
+	// Opens filtering and sorting controls for My Lessons
+	protected static Button button_FilterSort = new Button("Filter & Sort");
+
+	// Returns from search results to the contributor’s complete lesson list
+	protected static Button button_BackToLessons = new Button("Back");
+
+	// Contains the category and ordering controls
+	protected static ContextMenu menu_FilterSort = new ContextMenu();
+
+	// Selects a category used to filter the contributor’s lessons
+	protected static ComboBox<String> combo_CategoryFilter = new ComboBox<>();
+
+	// Selects the ordering applied to the contributor’s lessons
+	protected static ComboBox<String> combo_SortOrder = new ComboBox<>();
+
+	// Applies the selected filter and sort settings
+	protected static Button button_ApplyFilterSort = new Button("Apply");
+
+	// Restores the default filter and ordering settings
+	protected static Button button_ClearFilterSort = new Button("Clear");
+
 	protected static Label label_UserDetails = new Label();
-	protected static Button button_UpdateThisUser = new Button("Account Update");
+	protected static Button button_UpdateThisUser = new Button("Account Update");	
+
+	// Contains account-related actions without using JavaFX's native blue menu skin
+	protected static Popup menu_AccountSettings = new Popup();
+
+	// Displays the active username inside Account Settings
+	protected static Label label_MenuUserName = new Label();
+
+	// Opens the existing account-update page
+	protected static Label label_AccountUpdates = new Label("Account Updates");
+
+	// Logs the current user out
+	protected static Label label_Logout = new Label("Logout");
+
+	// Closes the application
+	protected static Label label_Quit = new Label("Quit");
+
+	// Opens actions that add information to a lesson
+	protected static Button button_Add = new Button("Add");
+
+	// Contains the available Add actions
+	protected static Popup menu_Add = new Popup();
+
+	// Opens the standalone Experience form
+	protected static Label label_AddExperience = new Label("Experience");
+
+	// Provides the white card behind advanced-search controls
+	protected static Pane pane_LessonCard = new Pane();
+
+	// Provides the white card behind the normal search controls
+	protected static Pane pane_SearchCard = new Pane();
 	
 	// This is a separator and it is used to partition the GUI for various tasks
 	protected static Line line_Separator1 = new Line(20, 95, width-20, 95);
@@ -76,9 +189,18 @@ public class ViewRole1Home {
 	protected static Label label_FilterCategory = new Label("Filter Category:");
 	protected static TextField textfield_FilterCategory = new TextField();
 	protected static Button button_FilterCategory = new Button("Filter");
+
+	// Expands or collapses the Lesson ID and Category search fields
+	protected static Button button_AdvancedSearch = new Button("Advanced Search");
 		
 	// Output area for records, status updates, and test-case error messages
 	protected static TextArea textarea_Display = new TextArea();
+
+	// Vertically arranges the contributor’s clickable lesson-title cards
+	protected static VBox box_MyLessons = new VBox(8);
+
+	// Allows a long collection of lesson-title cards to be scrolled
+	protected static ScrollPane scroll_MyLessons = new ScrollPane(box_MyLessons);
 	
 	// This is a separator and it is used to partition the GUI for various tasks
 	protected static Line line_Separator4 = new Line(20, 525, width-20,525);
@@ -132,6 +254,7 @@ public class ViewRole1Home {
 	 * @param user specifies the User for this GUI and it's methods
 	 * 
 	 */
+
 	public static void displayRole1Home(Stage ps, User user) {
 		
 		// Establish the references to the GUI and the current user
@@ -146,7 +269,36 @@ public class ViewRole1Home {
 		theDatabase.getUserAccountDetails(user.getUserName());
 		applicationMain.FoundationsMain.activeHomePage = theRole;
 		
+		// Stores the active username in the original user details label
 		label_UserDetails.setText("User: " + theUser.getUserName());
+
+		// Hides the original username label to keep the header uncluttered
+		label_UserDetails.setVisible(false);
+
+		// Changes the original account button text to the new menu name
+		button_UpdateThisUser.setText("Account Settings");
+
+		// Displays the active username inside the Account Settings menu
+		label_MenuUserName.setText(theUser.getUserName());
+
+		// Retrieves the contributor's preferred first name
+		String preferredName = theUser.getPreferredFirstName();
+
+		// Uses the regular first name when no preferred name is available
+		if (preferredName == null || preferredName.isBlank()) {
+			preferredName = theUser.getFirstName();
+		}
+
+		// Uses the username when neither first-name field contains a value
+		if (preferredName == null || preferredName.isBlank()) {
+			preferredName = theUser.getUserName();
+		}
+
+		// Displays the personalized welcome message.
+		label_Welcome.setText("Welcome, " + preferredName);
+
+		// Displays My Lessons as the contributor's default landing view
+		showMyLessons();
 				
 		// Set the title for the window, display the page, and wait for the Admin to do something
 		theStage.setTitle("CSE 360 Foundations: Contributor Home Page");
@@ -167,90 +319,338 @@ public class ViewRole1Home {
 	 */
 	private ViewRole1Home() {
 
-		// Create the Pane for the list of widgets and the Scene for the window
+		// Creates the root pane that contains all controls on this page.
 		theRootPane = new Pane();
-		theViewRole1HomeScene = new Scene(theRootPane, width, height);	// Create the scene
+
+		// Applies the muted-sage background to the complete page.
+		theRootPane.setStyle("-fx-background-color: " + PAGE_BACKGROUND + ";");
+
+		// Creates the scene using the project’s standard window dimensions.
+		theViewRole1HomeScene = new Scene(theRootPane, width, height);
 		
 		// Set the title for the window
 		
 		// Populate the window with the title and other common widgets and set their static state
 		
 		// GUI Area 1
-		label_PageTitle.setText("Role1 Home Page");
-		setupLabelUI(label_PageTitle, "Arial", 28, width, Pos.CENTER, 0, 5);
 
+		// Changes the original page title into the contributor workspace heading
+		label_PageTitle.setText("Contributor Workspace");
+
+		// Positions the workspace heading in the upper-left corner
+		setupLabelUI(label_PageTitle, "Helvetica", 14, 360, Pos.BASELINE_LEFT, 30, 15);
+
+		// Applies the dark primary text color to the workspace heading
+		label_PageTitle.setStyle("-fx-text-fill: " + PRIMARY_TEXT + "; -fx-font-weight: bold;");
+
+		// Stores the active username in the original user-details label
 		label_UserDetails.setText("User: " + theUser.getUserName());
-		setupLabelUI(label_UserDetails, "Arial", 20, width, Pos.BASELINE_LEFT, 20, 55);
-		
-		setupButtonUI(button_UpdateThisUser, "Dialog", 18, 170, Pos.CENTER, 610, 45);
-		button_UpdateThisUser.setOnAction((_) -> {ControllerRole1Home.performUpdate(); });
+
+		// Configures the original username label even though it remains hidden
+		setupLabelUI(label_UserDetails, "Helvetica", 12, 300, Pos.BASELINE_LEFT, 31, 78);
+
+		// Applies the secondary text color to the hidden username label
+		label_UserDetails.setStyle("-fx-text-fill: " + SECONDARY_TEXT + ";");
+
+		// Positions the personalized welcome message below the workspace heading
+		setupLabelUI(label_Welcome, "Helvetica", 27, 500, Pos.BASELINE_LEFT, 30, 38);
+
+		// Applies the primary heading style to the welcome message
+		label_Welcome.setStyle("-fx-text-fill: " + PRIMARY_TEXT + "; -fx-font-weight: bold;");
+
+		// Positions the Account Settings button in the upper-right corner
+		setupButtonUI(button_UpdateThisUser, "Helvetica", 12, 170, Pos.CENTER, 600, 31);
+
+		// Temporarily preserves the original account-update action
+		button_UpdateThisUser.setOnAction((_) -> ControllerRole1Home.performUpdate());
 		
 		// GUI Area 2
-		label_PageTitle.setText("Contributor Home Page");
 
-		// Row 1: Only Lesson ID, Title, and Category text fields
-		setupLabelUI(label_LessonId, "Arial", 14, 100, Pos.BASELINE_LEFT, 20, 110);
-		setupTextUI(textfield_LessonId, "Arial", 14, 100, 20, 135, true);
-		
-		setupLabelUI(label_Title, "Arial", 14, 380, Pos.BASELINE_LEFT, 140, 110);
-		setupTextUI(textfield_Title, "Arial", 14, 380, 140, 135, true);
-		
-		setupLabelUI(label_Category, "Arial", 14, 220, Pos.BASELINE_LEFT, 540, 110);
-		setupTextUI(textfield_Category, "Arial", 14, 220, 540, 135, true);
+		// Creates the white card that contains the regular search controls
+		configureCard(pane_SearchCard, 20, 108, width - 40, 112);
 
-		// Row 2: Action Buttons (Create, My Lessons, Examine, Update, Experience, Delete)
-		setupButtonUI(button_CreateLesson, "Dialog", 14, 110, Pos.CENTER, 20, 185);
-		button_CreateLesson.setOnAction((_) -> { ControllerRole1Home.handleCreateLesson(); });
+		// Creates the initially hidden card that contains the advanced search controls
+		configureCard(pane_LessonCard, 20, 232, width - 40, 150);
 
-		setupButtonUI(button_ReadAll, "Dialog", 14, 110, Pos.CENTER, 145, 185);
-		button_ReadAll.setOnAction((_) -> { ControllerRole1Home.handleReadAllLessons(); });
+		// Positions the Search Lessons heading inside the regular search card
+		setupSectionLabel(label_SearchSection, 38, 117);
 
-		setupButtonUI(button_ReadById, "Dialog", 14, 110, Pos.CENTER, 270, 185);
-		button_ReadById.setOnAction((_) -> { ControllerRole1Home.handleReadSingleLesson(); });
+		// Positions the Advanced Search Options heading inside the advanced-search card
+		setupSectionLabel(label_LessonSection, 38, 241);
 
-		setupButtonUI(button_UpdateLesson, "Dialog", 14, 110, Pos.CENTER, 395, 185);
-		button_UpdateLesson.setOnAction((_) -> { ControllerRole1Home.handleOpenUpdateWindow(); });
+		// Positions the heading displayed above lesson results
+		setupSectionLabel(label_ResultsSection, 22, 236);
 
-		setupButtonUI(button_Experience, "Dialog", 14, 110, Pos.CENTER, 520, 185);
-		button_Experience.setOnAction((_) -> { ControllerRole1Home.handleOpenExperienceWindow(); });
+		// Positions the Create button inside the regular search card
+		setupButtonUI(button_CreateLesson, "Helvetica", 12, 105, Pos.CENTER, 540, 113);
 
-		setupButtonUI(button_DeleteLesson, "Dialog", 14, 110, Pos.CENTER, 645, 185);
-		button_DeleteLesson.setOnAction((_) -> { ControllerRole1Home.handleDeleteLesson(); });
+		// Opens the existing Create Lesson form when the Create button is clicked
+		button_CreateLesson.setOnAction((_) -> ControllerRole1Home.handleCreateLesson());
 
-		// Row 3: Filter Query Search
-		setupLabelUI(label_FilterCategory, "Arial", 14, 140, Pos.BASELINE_LEFT, 20, 235);
-		setupTextUI(textfield_FilterCategory, "Arial", 14, 220, 150, 235, true);
-		
-		setupButtonUI(button_FilterCategory, "Dialog", 14, 110, Pos.CENTER, 390, 235);
-		button_FilterCategory.setOnAction((_) -> { ControllerRole1Home.handleReadFilteredSubset(); });
+		// Applies the primary sage button style to the Create button
+		stylePrimaryButton(button_CreateLesson);
 
-		// Row 4: Results & Error Message Display Area
+		// Positions the Add menu button beside the Create button
+		setupButtonUI(button_Add, "Helvetica", 12, 105, Pos.CENTER, 657, 113);
+
+		// Applies the secondary button style to the Add button
+		styleSecondaryButton(button_Add);
+
+		// Configures the Add popup
+		configureAddMenu();
+
+		// Advanced Search Fields
+
+		// Positions the Lesson ID label inside the advanced-search card
+		setupLabelUI(label_LessonId, "Helvetica", 12, 280, Pos.BASELINE_LEFT, 38, 263);
+
+		// Positions and sizes the Lesson ID field
+		setupTextUI(textfield_LessonId, "Helvetica", 13, 280, 38, 282, true);
+
+		// Applies the secondary sage text color to the Lesson ID label
+		label_LessonId.setStyle("-fx-text-fill: " + SECONDARY_TEXT + "; -fx-font-weight: bold;");
+
+		// Applies the modern input style to the Lesson ID field
+		styleTextField(textfield_LessonId);
+
+		// Keeps the original Title controls available to the controller but hides them from this layout
+		label_Title.setVisible(false);
+
+		// Hides the original Title field because title searches use the regular search bar
+		textfield_Title.setVisible(false);
+
+		// Applies the modern input style in case the retained Title field is used elsewhere
+		styleTextField(textfield_Title);
+
+		// Positions the Category label inside the advanced-search card
+		setupLabelUI(label_Category, "Helvetica", 12, 420, Pos.BASELINE_LEFT, 342, 263);
+
+		// Positions and sizes the Category field
+		setupTextUI(textfield_Category, "Helvetica", 13, 420, 342, 282, true);
+
+		// Applies the secondary sage text color to the Category label
+		label_Category.setStyle("-fx-text-fill: " + SECONDARY_TEXT + "; -fx-font-weight: bold;");
+
+		// Applies the modern input style to the Category field
+		styleTextField(textfield_Category);
+
+		// Hides My Lessons because the contributor's lessons will appear automatically
+		button_ReadAll.setVisible(false);
+
+		// Hides Examine because clicking a lesson card will open its details
+		button_ReadById.setVisible(false);
+
+		// Hides Update because it will appear inside the Lesson Details window
+		button_UpdateLesson.setVisible(false);
+
+		// Hides Experience because it will appear inside the Add menu
+		button_Experience.setVisible(false);
+
+		// Hides Delete because it will appear inside the Lesson Details window
+		button_DeleteLesson.setVisible(false);
+
+		// Main Search Controls
+
+		// Hides the original Filter Category label
+		label_FilterCategory.setVisible(false);
+
+		// Positions and sizes the main title-or-keyword search field
+		setupTextUI(textfield_FilterCategory, "Helvetica", 13, 570, 38, 157, true);
+
+		// Explains how to use the main search field
+		textfield_FilterCategory.setPromptText("Search by entering the lesson title or keyword, then press Enter");
+
+		// Applies the modern input-field style
+		styleTextField(textfield_FilterCategory);
+
+		// Runs the main search when Enter is pressed inside the search field
+		textfield_FilterCategory.setOnAction((_) -> performQuickSearch());
+
+		// Positions the Advanced Search button beside the main search field
+		setupButtonUI(button_AdvancedSearch, "Helvetica", 12, 142, Pos.CENTER, 620, 157);
+
+		// Applies the secondary sage button style
+		styleSecondaryButton(button_AdvancedSearch);
+
+		// Expands or collapses the advanced-search form
+		button_AdvancedSearch.setOnAction((_) -> setAdvancedSearchVisible(!pane_LessonCard.isVisible()));
+
+		// Changes the original filter button text to Search
+		button_FilterCategory.setText("Search");
+
+		// Positions the Search button on the right side of the advanced-search card
+		setupButtonUI(button_FilterCategory, "Helvetica", 12, 128, Pos.CENTER, 626, 334);
+
+		// Applies the primary sage button style
+		stylePrimaryButton(button_FilterCategory);
+
+		// Runs the advanced search when the Search button is clicked
+		button_FilterCategory.setOnAction((_) -> performAdvancedSearch());
+
+		// Runs the advanced search when Enter is pressed inside the Lesson ID field
+		textfield_LessonId.setOnAction((_) -> performAdvancedSearch());
+
+		// Runs the advanced search when Enter is pressed inside the Category field
+		textfield_Category.setOnAction((_) -> performAdvancedSearch());
+
+		// Starts the page with the advanced-search form collapsed
+		setAdvancedSearchVisible(false);
+
+		// Results Area
+
+		// Uses a monospaced font for temporary text-based results
 		textarea_Display.setFont(Font.font("Monospaced", 13));
+
+		// Positions the text-results area below the collapsed search card
 		textarea_Display.setLayoutX(20);
-		textarea_Display.setLayoutY(280);
+		textarea_Display.setLayoutY(266);
+
+		// Sizes the text-results area to fit the page width
 		textarea_Display.setMinWidth(width - 40);
 		textarea_Display.setMaxWidth(width - 40);
-		textarea_Display.setPrefHeight(230);
+		textarea_Display.setPrefHeight(252);
+
+		// Prevents users from editing displayed results
 		textarea_Display.setEditable(false);
+
+		// Wraps long result text within the display
 		textarea_Display.setWrapText(true);
+
+		// Explains where lesson results and messages will appear
+		textarea_Display.setPromptText("Your lesson details and status messages will appear here");
+
+		// Applies the modern results-area style
+		styleTextArea(textarea_Display);
+
+		// Positions the scrollable lesson-card results
+		scroll_MyLessons.setLayoutX(20);
+		scroll_MyLessons.setLayoutY(266);
+
+		// Sizes the scrollable lesson-card results
+		scroll_MyLessons.setPrefSize(width - 40, 302);
+
+		// Makes lesson cards expand to the available results width
+		scroll_MyLessons.setFitToWidth(true);
+
+		// Hides the lesson-card results until they are populated
+		scroll_MyLessons.setVisible(false);
+
+		// Removes the hidden lesson-card results from the active layout
+		scroll_MyLessons.setManaged(false);
+
+		// Applies the card styling to the scrollable results area
+		scroll_MyLessons.setStyle(
+				"-fx-background: " + SURFACE_COLOR + ";"
+				+ "-fx-background-color: " + SURFACE_COLOR + ";"
+				+ "-fx-border-color: " + BORDER_COLOR + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-border-radius: 10;"
+				+ "-fx-background-radius: 10;"
+				+ "-fx-padding: 10;");
+
+		// Adds spacing inside the lesson-card collection
+		box_MyLessons.setPadding(new Insets(4));
+
+		// Applies the white surface color behind the lesson cards
+		box_MyLessons.setStyle("-fx-background-color: " + SURFACE_COLOR + ";");
+
+		// Positions the Filter and Sort button above the results
+		setupButtonUI(button_FilterSort, "Helvetica", 11, 118, Pos.CENTER, 650, 228);
+
+		// Applies the secondary sage button style
+		styleSecondaryButton(button_FilterSort);
+
+		// Hides Filter and Sort until My Lessons is displayed
+		button_FilterSort.setVisible(false);
+
+		// Configures the Filter and Sort popup
+		configureFilterSortMenu();
+
+		// Positions the Back button below search results
+		setupButtonUI(button_BackToLessons, "Helvetica", 11, 90, Pos.CENTER, 22, 526);
+
+		// Applies the secondary sage button style
+		styleSecondaryButton(button_BackToLessons);
+
+		// Hides the Back button until a search is performed
+		button_BackToLessons.setVisible(false);
+
+		// Restores My Lessons when Back is clicked
+		button_BackToLessons.setOnAction((_) -> showMyLessons());
 		
 		// GUI Area 3
-        setupButtonUI(button_Logout, "Dialog", 18, 250, Pos.CENTER, 20, 540);
-        button_Logout.setOnAction((_) -> {ControllerRole1Home.performLogout(); });
-        
-        setupButtonUI(button_Quit, "Dialog", 18, 250, Pos.CENTER, 300, 540);
-        button_Quit.setOnAction((_) -> {ControllerRole1Home.performQuit(); });
+
+		// Hides the original footer Logout button
+		button_Logout.setVisible(false);
+
+		// Hides the original footer Quit button
+		button_Quit.setVisible(false);
+
+		// Applies the secondary sage style to Account Settings
+		styleSecondaryButton(button_UpdateThisUser);
+
+		// Configures the Account Settings popup
+		configureAccountMenu();
+
+		// Keeps the subtle page separator invisible against the background
+		line_Separator1.setStyle("-fx-stroke: " + PAGE_BACKGROUND + ";");
+
+		// Hides the original footer separator
+		line_Separator4.setVisible(false);
 
 		// This is the end of the GUI initialization code
 		
-		// Place all of the widget items into the Root Pane's list of children
-        theRootPane.getChildren().addAll(
-    			label_PageTitle, label_UserDetails, button_UpdateThisUser, line_Separator1,
-    	        line_Separator4, button_Logout, button_Quit, 
-    	        label_LessonId, textfield_LessonId, label_Title, textfield_Title, label_Category, textfield_Category,
-    	        button_CreateLesson, button_ReadAll, button_ReadById, button_UpdateLesson, button_Experience, button_DeleteLesson,
-    	        label_FilterCategory, textfield_FilterCategory, button_FilterCategory, textarea_Display
-    	        );
+		// Places the page cards behind their corresponding controls
+		theRootPane.getChildren().addAll(
+				pane_LessonCard,
+				pane_SearchCard,
+
+				// Adds the contributor heading and account controls
+				label_PageTitle,
+				label_Welcome,
+				label_UserDetails,
+				button_UpdateThisUser,
+
+				// Adds the section headings
+				label_LessonSection,
+				label_SearchSection,
+				label_ResultsSection,
+
+				// Adds the main search-card controls
+				button_CreateLesson,
+				button_Add,
+				textfield_FilterCategory,
+				button_AdvancedSearch,
+
+				// Adds the advanced-search controls
+				label_LessonId,
+				textfield_LessonId,
+				label_Title,
+				textfield_Title,
+				label_Category,
+				textfield_Category,
+				button_FilterCategory,
+
+				// Adds the results controls
+				button_FilterSort,
+				button_BackToLessons,
+				textarea_Display,
+				scroll_MyLessons,
+
+				// Retains the original hidden lesson controls
+				button_ReadAll,
+				button_ReadById,
+				button_UpdateLesson,
+				button_Experience,
+				button_DeleteLesson,
+				label_FilterCategory,
+
+				// Retains the existing page and session controls
+				line_Separator1,
+				line_Separator4,
+				button_Logout,
+				button_Quit);
+
 }
 	
 	
@@ -319,4 +719,1377 @@ public class ViewRole1Home {
 		t.setLayoutY(y);
 		t.setEditable(e);
 	}
+
+	/******
+	 * 
+	 * Expands or collapses the advanced lesson-search controls and repositions
+	 * the results area
+	 *
+	 * @param visible true to display advanced search or false to hide it
+	 * 
+	 */
+	
+	private static void setAdvancedSearchVisible(boolean visible) {
+
+		// Groups every control belonging to the advanced-search form
+		Node[] advancedControls = {
+				pane_LessonCard,
+				label_LessonSection,
+				label_LessonId,
+				textfield_LessonId,
+				label_Category,
+				textfield_Category,
+				button_FilterCategory
+		};
+
+		// Updates the visibility and layout participation of every advanced control
+		for (Node control : advancedControls) {
+			control.setVisible(visible);
+			control.setManaged(visible);
+		}
+
+		// Changes the button text to describe its current action
+		button_AdvancedSearch.setText(visible ? "Hide Advanced" : "Advanced Search");
+
+		// Moves the results heading beneath the expanded or collapsed search area
+		label_ResultsSection.setLayoutY(visible ? 395 : 236);
+
+		// Moves the Filter and Sort button with the results heading
+		button_FilterSort.setLayoutY(visible ? 386 : 228);
+
+		// Moves the text-results area beneath the advanced-search form
+		textarea_Display.setLayoutY(visible ? 425 : 266);
+
+		// Resizes the text-results area to fit the available space
+		textarea_Display.setPrefHeight(visible ? 93 : 252);
+
+		// Moves the lesson-card results beneath the advanced-search form
+		scroll_MyLessons.setLayoutY(visible ? 425 : 266);
+
+		// Checks whether the page is currently showing search results
+		boolean showingSearchResults = button_BackToLessons.isVisible();
+
+		// Resizes the lesson-card results based on the current page state
+		scroll_MyLessons.setPrefHeight(
+				visible
+						? (showingSearchResults ? 93 : 143)
+						: (showingSearchResults ? 252 : 302));
+
+		// Keeps the Back button aligned near the bottom of the page
+		button_BackToLessons.setLayoutY(526);
+	}
+
+	/******
+	 * 
+	 * Displays the text-results area and hides the lesson-card results
+	 * 
+	 */
+
+	private static void showTextResults() {
+
+		// Displays the text-results area
+		textarea_Display.setVisible(true);
+
+		// Allows the text-results area to participate in the layout
+		textarea_Display.setManaged(true);
+
+		// Hides the lesson-card results
+		scroll_MyLessons.setVisible(false);
+
+		// Removes the lesson-card results from the active layout
+		scroll_MyLessons.setManaged(false);
+
+		// Displays the Back button while search results are active
+		button_BackToLessons.setVisible(true);
+	}
+
+	/******
+	 * 
+	 * Displays lessons as clickable title cards
+	 *
+	 * @param lessons collection of lessons being displayed
+	 * 
+	 */
+
+	protected static void displayMyLessons(LessonsLearnedList lessons) {
+
+		// Removes any previously displayed lesson cards
+		box_MyLessons.getChildren().clear();
+
+		// Identifies the displayed cards as the contributor's lessons
+		label_ResultsSection.setText("MY LESSONS");
+
+		// Displays Filter and Sort for the contributor's lesson collection
+		button_FilterSort.setVisible(true);
+
+		// Hides the temporary text-results area
+		textarea_Display.setVisible(false);
+
+		// Removes the text-results area from the active layout
+		textarea_Display.setManaged(false);
+
+		// Displays the scrollable lesson-card results
+		scroll_MyLessons.setVisible(true);
+
+		// Adds the lesson-card results to the active layout
+		scroll_MyLessons.setManaged(true);
+
+		// Sizes the results based on whether advanced search is expanded
+		scroll_MyLessons.setPrefHeight(
+				pane_LessonCard.isVisible() ? 143 : 302);
+
+		// Hides Back while displaying the default My Lessons view
+		button_BackToLessons.setVisible(false);
+
+		// Creates one clickable title card for each lesson
+		for (LessonsLearned lesson : lessons.getLessons()) {
+
+			// Creates the lesson-title card
+			Label title = new Label(lesson.getTitle());
+
+			// Allows the card to fill the available results width
+			title.setMaxWidth(Double.MAX_VALUE);
+
+			// Defines the card's normal appearance
+			String base =
+					"-fx-background-color: " + SURFACE_COLOR + ";"
+					+ "-fx-text-fill: " + PRIMARY_TEXT + ";"
+					+ "-fx-border-color: " + BORDER_COLOR + ";"
+					+ "-fx-border-width: 1;"
+					+ "-fx-border-radius: 8;"
+					+ "-fx-background-radius: 8;"
+					+ "-fx-padding: 13 15 13 15;"
+					+ "-fx-font-family: 'Helvetica';"
+					+ "-fx-font-size: 14;"
+					+ "-fx-font-weight: bold;"
+					+ "-fx-cursor: hand;";
+
+			// Defines the soft sage hover appearance
+			String hover = base.replace(
+					"-fx-background-color: " + SURFACE_COLOR,
+					"-fx-background-color: " + HOVER_BACKGROUND);
+
+			// Applies the normal card appearance
+			title.setStyle(base);
+
+			// Applies the hover appearance when the pointer enters
+			title.setOnMouseEntered((_) -> title.setStyle(hover));
+
+			// Restores the normal appearance when the pointer exits
+			title.setOnMouseExited((_) -> title.setStyle(base));
+
+			// Opens the selected lesson in the Lesson Details popup
+			title.setOnMouseClicked((_) -> showLessonDetails(lesson));
+
+			// Adds the completed title card to the results
+			box_MyLessons.getChildren().add(title);
+		}
+	}
+
+	/******
+	 * 
+	 * Displays the lessons returned by a search
+	 *
+	 * @param lessons collection of lessons returned by the database
+	 * 
+	 */
+	
+	private static void displaySearchResults(LessonsLearnedList lessons) {
+
+		// Displays matches using the same clickable cards as My Lessons
+		displayMyLessons(lessons);
+
+		// Identifies the cards as search results
+		label_ResultsSection.setText("RESULTS");
+
+		// Hides Filter and Sort while displaying search results
+		button_FilterSort.setVisible(false);
+
+		// Resizes the results based on whether advanced search is expanded
+		scroll_MyLessons.setPrefHeight(
+				pane_LessonCard.isVisible() ? 93 : 252);
+
+		// Displays the Back button
+		button_BackToLessons.setVisible(true);
+
+		// Keeps the Back button above the results container
+		button_BackToLessons.toFront();
+	}
+
+	/******
+	 * 
+	 * Restores the contributor's default My Lessons view
+	 * 
+	 */
+
+	private static void showMyLessons() {
+
+		// Clears the main search field
+		textfield_FilterCategory.clear();
+
+		// Changes the section heading back to My Lessons
+		label_ResultsSection.setText("MY LESSONS");
+
+		// Displays Filter and Sort for the contributor's lesson collection
+		button_FilterSort.setVisible(true);
+
+		// Hides Back while the default view is active
+		button_BackToLessons.setVisible(false);
+
+		// Retrieves and displays the contributor's lessons
+		ControllerRole1Home.handleReadAllLessons();
+	}
+
+	/******
+	 * 
+	 * Searches for lessons using either a Lesson ID or category
+	 * 
+	 */
+
+	private static void performAdvancedSearch() {
+
+		// Changes the section heading to identify the displayed search results
+		label_ResultsSection.setText("RESULTS");
+
+		// Displays the text-results area for validation and empty-result messages
+		showTextResults();
+
+		// Hides Filter and Sort until lesson cards are implemented
+		button_FilterSort.setVisible(false);
+
+		// Checks whether the user entered a Lesson ID
+		if (!textfield_LessonId.getText().trim().isEmpty()) {
+			try {
+				// Converts the entered Lesson ID into an integer
+				int id = Integer.parseInt(textfield_LessonId.getText().trim());
+
+				// Retrieves the lesson associated with the entered ID
+				LessonsLearned lesson = theDatabase.getLessonById(id);
+
+				// Checks that the lesson exists and belongs to the active contributor
+				if (lesson != null && lesson.getAuthor().equals(theUser.getUserName())) {
+
+					// Creates a collection for the matching lesson
+					LessonsLearnedList match = new LessonsLearnedList();
+
+					// Adds the matching lesson to the result collection
+					match.addLesson(lesson);
+
+					// Displays the matching lesson
+					displaySearchResults(match);
+				} else {
+					// Explains that no accessible lesson matched the entered ID
+					textarea_Display.setText("No lesson record exists with ID " + id);
+				}
+			} catch (NumberFormatException exception) {
+				// Explains that Lesson ID must contain a number
+				textarea_Display.setText("Enter a valid numeric lesson ID");
+			}
+
+			// Stops after completing the Lesson ID search
+			return;
+		}
+
+		// Checks whether the user entered a category
+		if (!textfield_Category.getText().trim().isEmpty()) {
+
+			// Retrieves lessons matching the category and active contributor
+			LessonsLearnedList matches = theDatabase.getLessonsByFilter(
+					textfield_Category.getText().trim(),
+					theUser.getUserName());
+
+			// Checks whether the category search returned any lessons
+			if (matches.isEmpty()) {
+				// Explains that the category did not match any lessons
+				textarea_Display.setText("No lessons matched that category");
+			} else {
+				// Displays the lessons returned by the category search
+				displaySearchResults(matches);
+			}
+
+			// Stops after completing the category search
+			return;
+		}
+
+		// Explains that at least one advanced-search field is required
+		textarea_Display.setText("Enter a lesson ID or category to search");
+	}
+
+	/******
+	 * 
+	 * Searches the active contributor's lessons using a partial title or content keyword
+	 * 
+	 */
+
+	private static void performQuickSearch() {
+
+		// Changes the section heading to identify the displayed search results
+		label_ResultsSection.setText("RESULTS");
+
+		// Displays the text-results area
+		showTextResults();
+
+		// Reads and normalizes the entered search text
+		String query = textfield_FilterCategory.getText().trim().toLowerCase();
+
+		// Checks whether the user entered anything
+		if (query.isEmpty()) {
+			textarea_Display.setText("Enter a lesson title or keyword to search");
+			return;
+		}
+
+		// Retrieves every lesson created by the active contributor
+		LessonsLearnedList storedLessons =
+				theDatabase.getAllLessonsForContributor(theUser.getUserName());
+
+		// Creates a collection for lessons that match the search
+		LessonsLearnedList matches = new LessonsLearnedList();
+
+		// Checks each stored lesson for the entered title or keyword
+		for (LessonsLearned lesson : storedLessons.getLessons()) {
+
+			// Checks the searchable lesson fields for a partial match
+			if (containsKeyword(lesson.getTitle(), query)
+					|| containsKeyword(lesson.getProblemDescription(), query)
+					|| containsKeyword(lesson.getSolution(), query)
+					|| containsKeyword(lesson.getWhatWasDone(), query)
+					|| containsKeyword(lesson.getHowItWasDone(), query)
+					|| containsKeyword(lesson.getTeamEffort(), query)) {
+
+				// Adds the matching lesson to the result collection
+				matches.addLesson(lesson);
+			}
+		}
+
+		// Checks whether the search found any lessons
+		if (matches.isEmpty()) {
+			textarea_Display.setText(
+					"No lessons matched \"" + textfield_FilterCategory.getText().trim() + "\"");
+		} else {
+			// Displays the matching lessons
+			displaySearchResults(matches);
+		}
+	}
+
+	/******
+	 * 
+	 * Performs a null-safe and case-insensitive partial keyword comparison
+	 *
+	 * @param value lesson text being searched
+	 * @param query normalized keyword entered by the user
+	 * @return true when the lesson text contains the keyword
+	 * 
+	 */
+
+	private static boolean containsKeyword(String value, String query) {
+
+		// Returns whether the available text contains the keyword
+		return value != null && value.toLowerCase().contains(query);
+	}
+
+	/******
+	 * 
+	 * Builds a white card that visually groups related page controls.
+	 *
+	 * @param pane specifies the pane being styled as a card
+	 * @param x specifies the card's horizontal position
+	 * @param y specifies the card's vertical position
+	 * @param cardWidth specifies the card's width
+	 * @param cardHeight specifies the card's height
+	 * 
+	 */
+
+	private static void configureCard(
+			Pane pane,
+			double x,
+			double y,
+			double cardWidth,
+			double cardHeight) {
+
+		// Sets the card's horizontal position
+		pane.setLayoutX(x);
+
+		// Sets the card's vertical position
+		pane.setLayoutY(y);
+
+		// Sets the preferred width and height of the card
+		pane.setPrefSize(cardWidth, cardHeight);
+
+		// Prevents the decorative card from blocking its controls
+		pane.setMouseTransparent(true);
+
+		// Applies the white background, sage border, and rounded corners
+		pane.setStyle("-fx-background-color: " + SURFACE_COLOR + ";"
+				+ "-fx-border-color: " + BORDER_COLOR + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-border-radius: 12;"
+				+ "-fx-background-radius: 12;");
+	}
+
+	/******
+	 * 
+	 * Configures the compact uppercase heading used above a page section.
+	 *
+	 * @param label specifies the section-heading label
+	 * @param x specifies the heading's horizontal position
+	 * @param y specifies the heading's vertical position
+	 * 
+	 */
+
+	private static void setupSectionLabel(
+			Label label,
+			double x,
+			double y) {
+
+		// Configures the heading's font, width, alignment, and position
+		setupLabelUI(label, "Helvetica", 11, 220, Pos.BASELINE_LEFT, x, y);
+
+		// Applies the dark-sage section-heading appearance
+		label.setStyle("-fx-text-fill: " + ACCENT_COLOR + ";" + "-fx-font-weight: bold;");
+	}
+
+	/******
+	 * 
+	 * Applies the rounded sage styling used by editable text fields.
+	 *
+	 * @param field specifies the text field being styled
+	 * 
+	 */
+
+	private static void styleTextField(TextField field) {
+
+		// Applies the white surface, sage border, spacing, and text colors
+		field.setStyle("-fx-background-color: " + SURFACE_COLOR + ";"
+				+ "-fx-border-color: " + BORDER_COLOR + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-padding: 8 10 8 10;"
+				+ "-fx-text-fill: " + PRIMARY_TEXT + ";"
+				+ "-fx-prompt-text-fill: " + SECONDARY_TEXT + ";"
+				+ "-fx-focus-color: transparent;"
+				+ "-fx-faint-focus-color: transparent;");
+	}
+
+	/******
+	 * 
+	 * Styles the read-only results panel as a rounded white card.
+	 *
+	 * @param area specifies the text area being styled
+	 * 
+	 */
+
+	private static void styleTextArea(TextArea area) {
+
+		// Applies the white surface, sage border, spacing, and text colors
+		area.setStyle("-fx-control-inner-background: "
+				+ SURFACE_COLOR + ";"
+				+ "-fx-background-color: " + SURFACE_COLOR + ";"
+				+ "-fx-border-color: " + BORDER_COLOR + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-border-radius: 10;"
+				+ "-fx-background-radius: 10;"
+				+ "-fx-padding: 8;"
+				+ "-fx-text-fill: " + PRIMARY_TEXT + ";"
+				+ "-fx-focus-color: transparent;"
+				+ "-fx-faint-focus-color: transparent;");
+	}
+
+	/******
+	 * 
+	 * Styles a primary action using dark sage and a darker hover state.
+	 *
+	 * @param button specifies the primary button being styled
+	 * 
+	 */
+
+	private static void stylePrimaryButton(Button button) {
+
+		// Defines the primary button's normal appearance
+		String base = "-fx-background-color: " + ACCENT_COLOR + ";"
+				+ "-fx-text-fill: white;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-background-insets: 0;"
+				+ "-fx-padding: 8 14 8 14;"
+				+ "-fx-cursor: hand;"
+				+ "-fx-focus-color: transparent;"
+				+ "-fx-faint-focus-color: transparent;";
+
+		// Defines the primary button's darker hover appearance
+		String hover = "-fx-background-color: " + ACCENT_HOVER + ";"
+				+ "-fx-text-fill: white;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-background-insets: 0;"
+				+ "-fx-padding: 8 14 8 14;"
+				+ "-fx-cursor: hand;"
+				+ "-fx-focus-color: transparent;"
+				+ "-fx-faint-focus-color: transparent;";
+
+		// Applies the normal button appearance
+		button.setStyle(base);
+
+		// Applies the darker appearance when the pointer enters the button
+		button.setOnMouseEntered((_) -> button.setStyle(hover));
+
+		// Restores the normal appearance when the pointer leaves the button
+		button.setOnMouseExited((_) -> button.setStyle(base));
+	}
+
+	/******
+	 * 
+	 * Styles a secondary action with a subtle border and sage hover.
+	 *
+	 * @param button specifies the secondary button being styled
+	 * 
+	 */
+
+	private static void styleSecondaryButton(Button button) {
+
+		// Defines the secondary button's normal appearance
+		String base = "-fx-background-color: " + SURFACE_COLOR + ";"
+				+ "-fx-text-fill: " + PRIMARY_TEXT + ";"
+				+ "-fx-border-color: " + BORDER_COLOR + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-background-insets: 0;"
+				+ "-fx-padding: 8 14 8 14;"
+				+ "-fx-cursor: hand;"
+				+ "-fx-focus-color: transparent;"
+				+ "-fx-faint-focus-color: transparent;";
+
+		// Defines the secondary button's soft-sage hover appearance
+		String hover = "-fx-background-color: " + HOVER_BACKGROUND + ";"
+				+ "-fx-text-fill: " + PRIMARY_TEXT + ";"
+				+ "-fx-border-color: " + ACCENT_COLOR + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-background-insets: 0;"
+				+ "-fx-padding: 8 14 8 14;"
+				+ "-fx-cursor: hand;"
+				+ "-fx-focus-color: transparent;"
+				+ "-fx-faint-focus-color: transparent;";
+
+		// Applies the normal secondary-button appearance
+		button.setStyle(base);
+
+		// Applies the soft-sage appearance when the pointer enters
+		button.setOnMouseEntered((_) -> button.setStyle(hover));
+
+		// Restores the normal appearance when the pointer leaves
+		button.setOnMouseExited((_) -> button.setStyle(base));
+	}
+
+	/******
+	 * 
+	 * Positions a custom popup directly beneath its anchor button
+	 *
+	 * @param popup popup being displayed
+	 * @param anchor button used to position the popup
+	 * 
+	 */
+
+	private static void showPopupBelow(Popup popup, Button anchor) {
+
+		// Checks that the popup is closed and its button belongs to a scene
+		if (!popup.isShowing() && anchor.getScene() != null) {
+
+			// Calculates the screen position directly below the button
+			Point2D location = anchor.localToScreen(0, anchor.getHeight() + 6);
+
+			// Checks that JavaFX successfully calculated the position
+			if (location != null) {
+
+				// Displays the popup beneath the button
+				popup.show(
+						anchor.getScene().getWindow(),
+						location.getX(),
+						location.getY());
+			}
+		}
+	}
+
+	/******
+	 * 
+	 * Applies the hover appearance used by secondary menu buttons
+	 *
+	 * @param button button receiving the hover appearance
+	 * 
+	 */
+
+	private static void styleSecondaryButtonHover(Button button) {
+
+		// Applies the soft sage hover style
+		button.setStyle(
+				"-fx-background-color: " + HOVER_BACKGROUND + ";"
+				+ "-fx-text-fill: " + PRIMARY_TEXT + ";"
+				+ "-fx-border-color: " + ACCENT_COLOR + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-background-insets: 0;"
+				+ "-fx-padding: 8 14 8 14;"
+				+ "-fx-cursor: hand;"
+				+ "-fx-focus-color: transparent;"
+				+ "-fx-faint-focus-color: transparent;");
+	}
+
+	/******
+	 * 
+	 * Styles a clickable row inside a custom popup menu
+	 *
+	 * @param label clickable menu row
+	 * @param danger true when the action should use destructive red styling
+	 * 
+	 */
+	
+	private static void styleMenuAction(Label label, boolean danger) {
+
+		// Selects the normal or destructive text color
+		String textColor = danger ? "#B44747" : PRIMARY_TEXT;
+
+		// Selects the normal or destructive hover color
+		String hoverColor = danger ? "#F7E8E8" : HOVER_BACKGROUND;
+
+		// Defines the menu row's normal appearance
+		String base =
+				"-fx-background-color: " + SURFACE_COLOR + ";"
+				+ "-fx-text-fill: " + textColor + ";"
+				+ "-fx-font-family: 'Helvetica';"
+				+ "-fx-font-size: 13;"
+				+ "-fx-padding: 9 14 9 14;"
+				+ "-fx-background-radius: 6;"
+				+ "-fx-cursor: hand;";
+
+		// Defines the menu row's hover appearance
+		String hover =
+				"-fx-background-color: " + hoverColor + ";"
+				+ "-fx-text-fill: " + textColor + ";"
+				+ "-fx-font-family: 'Helvetica';"
+				+ "-fx-font-size: 13;"
+				+ "-fx-padding: 9 14 9 14;"
+				+ "-fx-background-radius: 6;"
+				+ "-fx-cursor: hand;";
+
+		// Gives the menu row a consistent width
+		label.setMinWidth(155);
+
+		// Applies the normal appearance
+		label.setStyle(base);
+
+		// Applies the hover appearance when the pointer enters
+		label.setOnMouseEntered((_) -> label.setStyle(hover));
+
+		// Restores the normal appearance when the pointer exits
+		label.setOnMouseExited((_) -> label.setStyle(base));
+	}
+
+	/******
+	 * 
+	 * Configures the Account Settings popup and its account-session actions
+	 * 
+	 */
+
+	private static void configureAccountMenu() {
+
+		// Gives the username row enough room for longer usernames
+		label_MenuUserName.setMinWidth(170);
+
+		// Applies the secondary text style to the username
+		label_MenuUserName.setStyle(
+				"-fx-text-fill: " + SECONDARY_TEXT + ";"
+				+ "-fx-font-family: 'Helvetica';"
+				+ "-fx-font-size: 12;"
+				+ "-fx-padding: 7 12 5 12;");
+
+		// Styles Account Updates as a normal menu action
+		styleMenuAction(label_AccountUpdates, false);
+
+		// Styles Logout as a normal menu action
+		styleMenuAction(label_Logout, false);
+
+		// Styles Quit as a destructive menu action
+		styleMenuAction(label_Quit, true);
+
+		// Creates a divider beneath the username
+		Separator accountSeparator = new Separator();
+
+		// Creates a divider between account and session actions
+		Separator sessionSeparator = new Separator();
+
+		// Arranges the menu rows vertically
+		VBox menuContent = new VBox(
+				2,
+				label_MenuUserName,
+				accountSeparator,
+				label_AccountUpdates,
+				sessionSeparator,
+				label_Logout,
+				label_Quit);
+
+		// Gives the menu a consistent minimum width
+		menuContent.setMinWidth(185);
+
+		// Applies the popup card style
+		menuContent.setStyle(
+				"-fx-background-color: " + SURFACE_COLOR + ";"
+				+ "-fx-border-color: " + BORDER_COLOR + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-padding: 5;"
+				+ "-fx-effect: dropshadow(gaussian, rgba(38, 51, 45, 0.18), 12, 0.15, 0, 4);");
+
+		// Adds the menu content only once
+		if (menu_AccountSettings.getContent().isEmpty()) {
+			menu_AccountSettings.getContent().add(menuContent);
+		}
+
+		// Closes the menu when the user clicks elsewhere
+		menu_AccountSettings.setAutoHide(true);
+
+		// Allows Escape to close the menu
+		menu_AccountSettings.setHideOnEscape(true);
+
+		// Opens the existing account-update page
+		label_AccountUpdates.setOnMouseClicked((_) -> {
+			menu_AccountSettings.hide();
+			ControllerRole1Home.performUpdate();
+		});
+
+		// Logs out the active contributor
+		label_Logout.setOnMouseClicked((_) -> {
+			menu_AccountSettings.hide();
+			ControllerRole1Home.performLogout();
+		});
+
+		// Quits the application
+		label_Quit.setOnMouseClicked((_) -> {
+			menu_AccountSettings.hide();
+			ControllerRole1Home.performQuit();
+		});
+
+		// Opens the menu when Account Settings is clicked
+		button_UpdateThisUser.setOnAction((_) -> showAccountMenu());
+
+		// Opens the menu and applies its hover style when the pointer enters
+		button_UpdateThisUser.setOnMouseEntered((_) -> {
+			styleSecondaryButtonHover(button_UpdateThisUser);
+			showAccountMenu();
+		});
+	}
+
+	/******
+	 * 
+	 * Displays the Account Settings menu beneath its button
+	 * 
+	 */
+	
+	private static void showAccountMenu() {
+
+		// Positions and displays the account menu
+		showPopupBelow(menu_AccountSettings, button_UpdateThisUser);
+	}
+
+	/******
+	 * 
+	 * Configures the Add popup for lesson-related additions
+	 * 
+	 */
+
+	private static void configureAddMenu() {
+
+		// Styles Experience as a normal menu action
+		styleMenuAction(label_AddExperience, false);
+
+		// Places Experience inside the popup
+		VBox menuContent = new VBox(label_AddExperience);
+
+		// Gives the Add menu a consistent minimum width
+		menuContent.setMinWidth(165);
+
+		// Applies the popup card style
+		menuContent.setStyle(
+				"-fx-background-color: " + SURFACE_COLOR + ";"
+				+ "-fx-border-color: " + BORDER_COLOR + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-padding: 5;"
+				+ "-fx-effect: dropshadow(gaussian, rgba(38, 51, 45, 0.18), 12, 0.15, 0, 4);");
+
+		// Adds the popup content only once
+		if (menu_Add.getContent().isEmpty()) {
+			menu_Add.getContent().add(menuContent);
+		}
+
+		// Closes the menu when the user clicks elsewhere
+		menu_Add.setAutoHide(true);
+
+		// Allows Escape to close the menu
+		menu_Add.setHideOnEscape(true);
+
+		// Opens the existing Experience form
+		label_AddExperience.setOnMouseClicked((_) -> {
+			menu_Add.hide();
+			ControllerRole1Home.handleOpenExperienceWindow();
+		});
+
+		// Opens the menu when Add is clicked
+		button_Add.setOnAction((_) -> showAddMenu());
+
+		// Opens the menu and applies its hover style when the pointer enters
+		button_Add.setOnMouseEntered((_) -> {
+			styleSecondaryButtonHover(button_Add);
+			showAddMenu();
+		});
+	}
+
+	/******
+	 * 
+	 * Displays the Add menu beneath its button
+	 * 
+	 */
+
+	private static void showAddMenu() {
+
+		// Positions and displays the Add menu
+		showPopupBelow(menu_Add, button_Add);
+	}
+
+	/******
+	 * 
+	 * Places the selected lesson into the existing lesson fields
+	 *
+	 * @param lesson lesson selected by the contributor
+	 * 
+	 */
+
+	private static void selectLesson(LessonsLearned lesson) {
+
+		// Places the selected lesson ID into the Lesson ID field
+		textfield_LessonId.setText(String.valueOf(lesson.getLessonId()));
+
+		// Places the selected lesson title into the retained Title field
+		textfield_Title.setText(lesson.getTitle());
+
+		// Places the selected lesson category into the Category field
+		textfield_Category.setText(lesson.getCategory());
+	}
+
+	/******
+	 * 
+	 * Applies red destructive-action styling to a button
+	 *
+	 * @param button destructive action button being styled
+	 * 
+	 */
+
+	private static void styleDeleteButton(Button button) {
+
+		// Defines the normal destructive-action appearance
+		String base =
+				"-fx-background-color: " + SURFACE_COLOR + ";"
+				+ "-fx-text-fill: #B44747;"
+				+ "-fx-border-color: #E3BABA;"
+				+ "-fx-border-width: 1;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-padding: 8 14 8 14;"
+				+ "-fx-cursor: hand;";
+
+		// Defines the destructive-action hover appearance
+		String hover =
+				"-fx-background-color: #F7E8E8;"
+				+ "-fx-text-fill: #9B3A3A;"
+				+ "-fx-border-color: #C96A6A;"
+				+ "-fx-border-width: 1;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-padding: 8 14 8 14;"
+				+ "-fx-cursor: hand;";
+
+		// Applies the normal destructive-action appearance
+		button.setStyle(base);
+
+		// Applies the hover appearance when the pointer enters
+		button.setOnMouseEntered((_) -> button.setStyle(hover));
+
+		// Restores the normal appearance when the pointer exits
+		button.setOnMouseExited((_) -> button.setStyle(base));
+	}
+
+	/******
+	 * 
+	 * Opens the selected lesson in a smaller details window
+	 *
+	 * @param lesson lesson whose information will be displayed
+	 * 
+	 */
+
+	protected static void showLessonDetails(LessonsLearned lesson) {
+
+		// Creates the Lesson Details window
+		Stage detailStage = new Stage();
+
+		// Keeps the detail window associated with the contributor page
+		detailStage.initModality(Modality.WINDOW_MODAL);
+
+		// Sets the contributor page as the owner
+		detailStage.initOwner(theStage);
+
+		// Sets the window title
+		detailStage.setTitle("Lesson Details");
+
+		// Creates the lesson-title heading
+		Label heading = new Label(lesson.getTitle());
+
+		// Allows a long lesson title to wrap
+		heading.setWrapText(true);
+
+		// Allows the heading to use the available header width
+		heading.setMaxWidth(Double.MAX_VALUE);
+
+		// Applies the heading style
+		heading.setStyle(
+				"-fx-font-family: 'Helvetica';"
+				+ "-fx-font-size: 22;"
+				+ "-fx-font-weight: bold;"
+				+ "-fx-text-fill: " + PRIMARY_TEXT + ";");
+
+		// Creates the lesson-information section
+		VBox details = new VBox(
+				11,
+				createDetailLabel("Lesson ID", String.valueOf(lesson.getLessonId())),
+				createDetailLabel("Category", lesson.getCategory()),
+				createDetailLabel("Author", lesson.getAuthor()),
+				createDetailLabel("Problem Description", lesson.getProblemDescription()),
+				createDetailLabel("Solution", lesson.getSolution()),
+				createDetailLabel("Time Spent", lesson.getTimeSpentHours() + " hours"),
+				createDetailLabel("What Was Done", lesson.getWhatWasDone()),
+				createDetailLabel("How It Was Done", lesson.getHowItWasDone()),
+				createDetailLabel("Team Effort", lesson.getTeamEffort()));
+
+		// Creates the Close button
+		Button close = new Button("Close");
+
+		// Applies the primary sage button style
+		stylePrimaryButton(close);
+
+		// Allows Enter to activate Close
+		close.setDefaultButton(true);
+
+		// Closes the detail window
+		close.setOnAction((_) -> detailStage.close());
+
+		// Creates the Update button
+		Button update = new Button("Update");
+
+		// Applies the secondary button style
+		styleSecondaryButton(update);
+
+		// Opens the existing Update form for the selected lesson
+		update.setOnAction((_) -> {
+			selectLesson(lesson);
+			detailStage.close();
+			ControllerRole1Home.handleOpenUpdateWindow();
+		});
+
+		// Creates the Delete button
+		Button delete = new Button("Delete");
+
+		// Applies the destructive-action style
+		styleDeleteButton(delete);
+
+		// Runs the existing Delete action for the selected lesson
+		delete.setOnAction((_) -> {
+			selectLesson(lesson);
+			detailStage.close();
+			ControllerRole1Home.handleDeleteLesson();
+		});
+
+		// Allows the heading to occupy unused horizontal space
+		HBox.setHgrow(heading, Priority.ALWAYS);
+
+		// Places Update and Delete in the upper-right corner
+		HBox header = new HBox(10, heading, update, delete);
+
+		// Aligns the header actions
+		header.setAlignment(Pos.TOP_RIGHT);
+
+		// Places Close in a separate lower-right action row
+		HBox closeAction = new HBox(close);
+
+		// Aligns Close to the right
+		closeAction.setAlignment(Pos.CENTER_RIGHT);
+
+		// Arranges the header, details, and Close action vertically
+		VBox content = new VBox(16, header, details, closeAction);
+
+		// Adds space around the popup content
+		content.setPadding(new Insets(24));
+
+		// Applies the page background color
+		content.setStyle("-fx-background-color: " + PAGE_BACKGROUND + ";");
+
+		// Makes long lesson details scrollable
+		ScrollPane scroll = new ScrollPane(content);
+
+		// Makes the content fill the popup width
+		scroll.setFitToWidth(true);
+
+		// Applies the sage background to the scrollable area
+		scroll.setStyle(
+				"-fx-background: " + PAGE_BACKGROUND + ";"
+				+ "-fx-background-color: " + PAGE_BACKGROUND + ";");
+
+		// Adds the popup content to its scene
+		detailStage.setScene(new Scene(scroll, 570, 500));
+
+		// Keeps the popup at its intended size
+		detailStage.setResizable(false);
+
+		// Displays the popup and waits for it to close
+		detailStage.showAndWait();
+	}
+
+	/******
+	 * 
+	 * Creates one labeled information block for the Lesson Details window
+	 *
+	 * @param name field name displayed above the value
+	 * @param value lesson information being displayed
+	 * @return vertically arranged field name and value
+	 * 
+	 */
+	
+	private static VBox createDetailLabel(String name, String value) {
+
+		// Creates the uppercase field name
+		Label nameLabel = new Label(name.toUpperCase());
+
+		// Applies the accent style to the field name
+		nameLabel.setStyle(
+				"-fx-font-family: 'Helvetica';"
+				+ "-fx-font-size: 10;"
+				+ "-fx-font-weight: bold;"
+				+ "-fx-text-fill: " + ACCENT_COLOR + ";");
+
+		// Displays a fallback when the lesson field is empty
+		Label valueLabel = new Label(
+				value == null || value.isBlank() ? "Not provided" : value);
+
+		// Allows long lesson information to wrap
+		valueLabel.setWrapText(true);
+
+		// Limits the value to the popup content width
+		valueLabel.setMaxWidth(500);
+
+		// Applies the primary text style to the value
+		valueLabel.setStyle(
+				"-fx-font-family: 'Helvetica';"
+				+ "-fx-font-size: 13;"
+				+ "-fx-text-fill: " + PRIMARY_TEXT + ";");
+
+		// Returns the completed information block
+		return new VBox(3, nameLabel, valueLabel);
+	}
+
+	/******
+	 * 
+	 * Applies the updated UI style to a dropdown
+	 *
+	 * @param comboBox dropdown being styled
+	 * 
+	 */
+
+	private static void styleComboBox(ComboBox<String> comboBox) {
+
+		// Applies the smooth white field and sage border style
+		comboBox.setStyle(
+				"-fx-background-color: " + SURFACE_COLOR + ";"
+				+ "-fx-border-color: " + BORDER_COLOR + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-border-radius: 7;"
+				+ "-fx-background-radius: 7;"
+				+ "-fx-font-family: 'Helvetica';"
+				+ "-fx-font-size: 12;");
+	}
+
+	/******
+	 * 
+	 * Applies the updated UI style to a popup label
+	 *
+	 * @param label popup label being styled
+	 * 
+	 */
+
+	private static void stylePopupLabel(Label label) {
+
+		// Applies the secondary heading style
+		label.setStyle(
+				"-fx-text-fill: " + SECONDARY_TEXT + ";"
+				+ "-fx-font-family: 'Helvetica';"
+				+ "-fx-font-size: 11;"
+				+ "-fx-font-weight: bold;");
+	}
+
+	/******
+	 * 
+	 * Configures the Filter and Sort popup controls
+	 * 
+	 */
+
+	private static void configureFilterSortMenu() {
+
+		// Sets the category dropdown width
+		combo_CategoryFilter.setPrefWidth(210);
+
+		// Displays the default category instruction
+		combo_CategoryFilter.setPromptText("All Categories");
+
+		// Sets the sorting dropdown width
+		combo_SortOrder.setPrefWidth(210);
+
+		// Adds the available sorting choices
+		combo_SortOrder.getItems().setAll(
+				"Newest first",
+				"Oldest first",
+				"Title A–Z",
+				"Title Z–A",
+				"Category A–Z");
+
+		// Selects the default sorting order
+		combo_SortOrder.setValue("Newest first");
+
+		// Styles the category dropdown
+		styleComboBox(combo_CategoryFilter);
+
+		// Styles the sorting dropdown
+		styleComboBox(combo_SortOrder);
+
+		// Creates the category heading
+		Label categoryLabel = new Label("Filter by category");
+
+		// Creates the sorting heading
+		Label sortLabel = new Label("Sort lessons");
+
+		// Styles the category heading
+		stylePopupLabel(categoryLabel);
+
+		// Styles the sorting heading
+		stylePopupLabel(sortLabel);
+
+		// Styles the Apply button
+		stylePrimaryButton(button_ApplyFilterSort);
+
+		// Styles the Clear button
+		styleSecondaryButton(button_ClearFilterSort);
+
+		// Arranges the popup action buttons horizontally
+		HBox actions = new HBox(
+				8,
+				button_ClearFilterSort,
+				button_ApplyFilterSort);
+
+		// Aligns the popup actions to the right
+		actions.setAlignment(Pos.CENTER_RIGHT);
+
+		// Arranges the dropdowns and actions vertically
+		VBox content = new VBox(
+				7,
+				categoryLabel,
+				combo_CategoryFilter,
+				sortLabel,
+				combo_SortOrder,
+				actions);
+
+		// Applies the popup content background and spacing
+		content.setStyle(
+				"-fx-padding: 10;"
+				+ "-fx-background-color: " + SURFACE_COLOR + ";");
+
+		// Wraps the custom controls inside the context menu
+		CustomMenuItem contentItem = new CustomMenuItem(content, false);
+
+		// Places the custom content into the menu
+		menu_FilterSort.getItems().setAll(contentItem);
+
+		// Applies the popup card style
+		menu_FilterSort.setStyle(
+				"-fx-background-color: " + SURFACE_COLOR + ";"
+				+ "-fx-border-color: " + BORDER_COLOR + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-padding: 0;");
+
+		// Opens the Filter and Sort popup
+		button_FilterSort.setOnAction((_) -> showFilterSortMenu());
+
+		// Applies the selected filtering and sorting choices
+		button_ApplyFilterSort.setOnAction((_) -> applyFilterAndSort());
+
+		// Restores the default filtering and sorting choices
+		button_ClearFilterSort.setOnAction((_) -> {
+			combo_CategoryFilter.setValue("All Categories");
+			combo_SortOrder.setValue("Newest first");
+			applyFilterAndSort();
+		});
+
+	}
+
+	/******
+	 * 
+	 * Loads the contributor's available categories and opens Filter and Sort
+	 * 
+	 */
+
+	private static void showFilterSortMenu() {
+
+		// Remembers the currently selected category
+		String currentCategory = combo_CategoryFilter.getValue();
+
+		// Retrieves every lesson created by the active contributor
+		LessonsLearnedList lessons = theDatabase.getAllLessonsForContributor(theUser.getUserName());
+
+		// Creates an alphabetically ordered collection of unique categories
+		Set<String> categories = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+
+		// Checks every lesson for an available category
+		for (LessonsLearned lesson : lessons.getLessons()) {
+
+			// Adds each nonempty category once
+			if (lesson.getCategory() != null
+					&& !lesson.getCategory().isBlank()) {
+				categories.add(lesson.getCategory());
+			}
+		}
+
+		// Restores the default category option
+		combo_CategoryFilter.getItems().setAll("All Categories");
+
+		// Adds the contributor's available lesson categories
+		combo_CategoryFilter.getItems().addAll(categories);
+
+		// Restores the previous selection when it is still available
+		combo_CategoryFilter.setValue(
+				currentCategory != null
+						&& combo_CategoryFilter.getItems().contains(currentCategory)
+						? currentCategory
+						: "All Categories");
+
+		// Opens the popup beneath the Filter and Sort button
+		if (!menu_FilterSort.isShowing()) {
+			menu_FilterSort.show(
+					button_FilterSort,
+					Side.BOTTOM,
+					0,
+					5);
+		}
+	}
+
+	/******
+	 * 
+	 * Applies the selected category filter and sorting order
+	 * 
+	 */
+	
+	private static void applyFilterAndSort() {
+
+		// Retrieves every lesson created by the active contributor
+		LessonsLearnedList storedLessons = theDatabase.getAllLessonsForContributor(theUser.getUserName());
+
+		// Creates a modifiable list for filtering and sorting
+		List<LessonsLearned> lessons = new ArrayList<>(storedLessons.getLessons());
+
+		// Reads the selected category
+		String category = combo_CategoryFilter.getValue();
+
+		// Removes lessons that do not match the selected category
+		if (category != null && !category.equals("All Categories")) {
+			lessons.removeIf((lesson) -> !category.equalsIgnoreCase(lesson.getCategory()));
+		}
+
+		// Reads the selected sorting order
+		String order = combo_SortOrder.getValue();
+
+		// Stores the sorting rule that will be applied
+		Comparator<LessonsLearned> comparator;
+
+		// Sorts lower lesson IDs before higher IDs
+		if ("Oldest first".equals(order)) {
+			comparator = Comparator.comparingInt(LessonsLearned::getLessonId);
+
+		// Sorts lesson titles alphabetically
+		} else if ("Title A–Z".equals(order)) {
+			comparator =
+					Comparator.comparing(
+							LessonsLearned::getTitle,
+							String.CASE_INSENSITIVE_ORDER);
+
+		// Sorts lesson titles in reverse alphabetical order
+		} else if ("Title Z–A".equals(order)) {
+			comparator =
+					Comparator.comparing(
+							LessonsLearned::getTitle,
+							String.CASE_INSENSITIVE_ORDER)
+					.reversed();
+
+		// Sorts categories alphabetically and then sorts matching titles
+		} else if ("Category A–Z".equals(order)) {
+			comparator =
+					Comparator.comparing(
+							LessonsLearned::getCategory,
+							String.CASE_INSENSITIVE_ORDER)
+					.thenComparing(
+							LessonsLearned::getTitle,
+							String.CASE_INSENSITIVE_ORDER);
+
+		// Sorts higher lesson IDs before lower IDs
+		} else {
+			comparator =
+					Comparator.comparingInt(LessonsLearned::getLessonId)
+					.reversed();
+		}
+
+		// Applies the selected sorting rule
+		lessons.sort(comparator);
+
+		// Converts the filtered list into the project's lesson collection
+		LessonsLearnedList results =
+				new LessonsLearnedList(lessons);
+
+		// Checks whether the selected filter returned any lessons
+		if (results.isEmpty()) {
+
+			// Displays the text-results area
+			showTextResults();
+
+			// Keeps the default section heading
+			label_ResultsSection.setText("MY LESSONS");
+
+			// Keeps Filter and Sort available
+			button_FilterSort.setVisible(true);
+
+			// Hides Back because this remains the default My Lessons view
+			button_BackToLessons.setVisible(false);
+
+			// Explains that the selected filter returned no lessons
+			textarea_Display.setText(
+					"No lessons matched the selected filter");
+		} else {
+			// Displays the filtered and sorted lesson cards
+			displayMyLessons(results);
+		}
+
+		// Closes the Filter and Sort popup
+		menu_FilterSort.hide();
+
+	}
+
+
 }
