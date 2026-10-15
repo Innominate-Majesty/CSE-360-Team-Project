@@ -40,7 +40,7 @@ import javafx.stage.Stage;
  * 
  * <p> Title: ViewRole1Home Class. </p>
  * 
- * <p> Description: The Java/FX-based Role1 Home Page.  The page is a stub for some role needed for
+ * <p> Description: The Java/FX-based Contributor Home Page.  The page is a stub for some role needed for
  * the application.  The widgets on this page are likely the minimum number and kind for other role
  * pages that may be needed.</p>
  * 
@@ -50,7 +50,7 @@ import javafx.stage.Stage;
  * 
  * @version 1.00		2025-08-20 Initial version
  * @version 1.01		2026-10-04 Added Contributor role commands
- * @version 1.02 		2026-10-12 Updated UI 
+ * @version 1.02 		2026-10-12 Updated Contributor Home Page UI 
  *  
  */
 
@@ -237,21 +237,21 @@ public class ViewRole1Home {
 	 * <p> Method: displayRole1Home(Stage ps, User user) </p>
 	 * 
 	 * <p> Description: This method is the single entry point from outside this package to cause
-	 * the Role1 Home page to be displayed.
+	 * the Contributor home page to be displayed.
 	 * 
-	 * It first sets up every shared attributes so we don't have to pass parameters.
+	 * It first establishes shared attributes to avoid repeatedly passing the same parameters.
 	 * 
 	 * It then checks to see if the page has been setup.  If not, it instantiates the class, 
-	 * initializes all the static aspects of the GIUI widgets (e.g., location on the page, font,
+	 * initializes all the static aspects of the GUI widgets (e.g., location on the page, font,
 	 * size, and any methods to be performed).
 	 * 
 	 * After the instantiation, the code then populates the elements that change based on the user
 	 * and the system's current state.  It then sets the Scene onto the stage, and makes it visible
 	 * to the user.
 	 * 
-	 * @param ps specifies the JavaFX Stage to be used for this GUI and it's methods
+	 * @param ps specifies the JavaFX Stage to be used for this GUI and its methods
 	 * 
-	 * @param user specifies the User for this GUI and it's methods
+	 * @param user specifies the User for this GUI and its methods
 	 * 
 	 */
 
@@ -268,7 +268,7 @@ public class ViewRole1Home {
 		// state of the system.
 		theDatabase.getUserAccountDetails(user.getUserName());
 		applicationMain.FoundationsMain.activeHomePage = theRole;
-		
+
 		// Stores the active username in the original user details label
 		label_UserDetails.setText("User: " + theUser.getUserName());
 
@@ -307,14 +307,14 @@ public class ViewRole1Home {
 	}
 	
 	/**********
-	 * <p> Method: ViewRole1Home() </p>
+	 * <p> Constructor: ViewRole1Home() </p>
 	 * 
 	 * <p> Description: This method initializes all the elements of the graphical user interface.
 	 * This method determines the location, size, font, color, and change and event handlers for
 	 * each GUI object.</p>
 	 * 
 	 * This is a singleton and is only performed once.  Subsequent uses fill in the changeable
-	 * fields using the displayRole2Home method.</p>
+	 * fields using the displayRole1Home method.</p>
 	 * 
 	 */
 	private ViewRole1Home() {
@@ -654,23 +654,23 @@ public class ViewRole1Home {
 }
 	
 	
-	/*-********************************************************************************************
-
-	Helper methods to reduce code length
-
-	 */
-	
-	/**********
-	 * Private local method to initialize the standard fields for a label
+	/******
+	 * 
+	 * <p> Method: setupLabelUI() </p>
+	 * 
+	 * <p> Description: Private local method to initialize the standard fields for
+	 * a label. </p>
 	 * 
 	 * @param l		The Label object to be initialized
 	 * @param ff	The font to be used
 	 * @param f		The size of the font to be used
-	 * @param w		The width of the Button
+	 * @param w		The width of the Label
 	 * @param p		The alignment (e.g. left, centered, or right)
 	 * @param x		The location from the left edge (x axis)
 	 * @param y		The location from the top (y axis)
+	 * 
 	 */
+
 	private static void setupLabelUI(Label l, String ff, double f, double w, Pos p, double x, 
 			double y){
 		l.setFont(Font.font(ff, f));
@@ -680,8 +680,12 @@ public class ViewRole1Home {
 		l.setLayoutY(y);		
 	}
 	
-	/**********
-	 * Private local method to initialize the standard fields for a button
+	/******
+	 * 
+	 * <p> Method: setupButtonUI() </p>
+	 * 
+	 * <p> Description: Private local method to initialize the standard fields for
+	 * a button. </p>
 	 * 
 	 * @param b		The Button object to be initialized
 	 * @param ff	The font to be used
@@ -690,7 +694,9 @@ public class ViewRole1Home {
 	 * @param p		The alignment (e.g. left, centered, or right)
 	 * @param x		The location from the left edge (x axis)
 	 * @param y		The location from the top (y axis)
+	 * 
 	 */
+
 	private static void setupButtonUI(Button b, String ff, double f, double w, Pos p, double x, 
 			double y){
 		b.setFont(Font.font(ff, f));
@@ -700,17 +706,23 @@ public class ViewRole1Home {
 		b.setLayoutY(y);		
 	}
 	
-	/**********
-	 * Private local method to initialize standard fields for a textfield widget.
+	/******
 	 * 
-	 * @param t the TextField object to initialize
-	 * @param ff the font family name
-	 * @param f the size of the font
-	 * @param w the layout width of the field
-	 * @param x the location from the left edge (x axis)
-	 * @param y the location from the top edge (y axis)
-	 * @param e editable flag
+	 * <p> Method: setupTextUI() </p>
+	 * 
+	 * <p> Description: Private local method to initialize the standard fields for
+	 * a text field. </p>
+	 * 
+	 * @param t		The TextField object to initialize
+	 * @param ff	The font family name
+	 * @param f		The size of the font
+	 * @param w		The layout width of the field
+	 * @param x		The location from the left edge (x axis)
+	 * @param y		The location from the top edge (y axis)
+	 * @param e		The editable flag
+	 * 
 	 */
+
 	private static void setupTextUI(TextField t, String ff, double f, double w, double x, double y, boolean e) {
 		t.setFont(Font.font(ff, f));
 		t.setMinWidth(w);
@@ -722,9 +734,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Expands or collapses the advanced lesson-search controls and repositions
-	 * the results area
-	 *
+	 * <p> Method: setAdvancedSearchVisible() </p>
+	 * 
+	 * <p> Description: Expands or collapses the advanced lesson-search controls
+	 * and repositions the results area to fit the current page layout. </p>
+	 * 
 	 * @param visible true to display advanced search or false to hide it
 	 * 
 	 */
@@ -781,7 +795,10 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Displays the text-results area and hides the lesson-card results
+	 * <p> Method: showTextResults() </p>
+	 * 
+	 * <p> Description: Displays the text-results area and hides the lesson-card
+	 * results area. </p>
 	 * 
 	 */
 
@@ -805,8 +822,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Displays lessons as clickable title cards
-	 *
+	 * <p> Method: displayMyLessons() </p>
+	 * 
+	 * <p> Description: Displays the contributor's lessons as clickable title
+	 * cards in the My Lessons results area. </p>
+	 * 
 	 * @param lessons collection of lessons being displayed
 	 * 
 	 */
@@ -888,8 +908,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Displays the lessons returned by a search
-	 *
+	 * <p> Method: displaySearchResults() </p>
+	 * 
+	 * <p> Description: Displays lessons returned by a search using the same
+	 * clickable title cards used by My Lessons. </p>
+	 * 
 	 * @param lessons collection of lessons returned by the database
 	 * 
 	 */
@@ -918,7 +941,10 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Restores the contributor's default My Lessons view
+	 * <p> Method: showMyLessons() </p>
+	 * 
+	 * <p> Description: Restores the contributor's default My Lessons view, clears
+	 * the main search field, and reloads the contributor's stored lessons. </p>
 	 * 
 	 */
 
@@ -942,7 +968,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Searches for lessons using either a Lesson ID or category
+	 * <p> Method: performAdvancedSearch() </p>
+	 * 
+	 * <p> Description: Searches the active contributor's lessons using either a
+	 * Lesson ID or category and displays matching lessons or a validation
+	 * message. </p>
 	 * 
 	 */
 
@@ -1017,7 +1047,10 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Searches the active contributor's lessons using a partial title or content keyword
+	 * <p> Method: performQuickSearch() </p>
+	 * 
+	 * <p> Description: Searches the active contributor's lessons using a partial
+	 * title or content keyword and displays the matching lesson cards. </p>
 	 * 
 	 */
 
@@ -1073,8 +1106,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Performs a null-safe and case-insensitive partial keyword comparison
-	 *
+	 * <p> Method: containsKeyword() </p>
+	 * 
+	 * <p> Description: Performs a null-safe and case-insensitive partial keyword
+	 * comparison. </p>
+	 * 
 	 * @param value lesson text being searched
 	 * @param query normalized keyword entered by the user
 	 * @return true when the lesson text contains the keyword
@@ -1089,8 +1125,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Builds a white card that visually groups related page controls.
-	 *
+	 * <p> Method: configureCard() </p>
+	 * 
+	 * <p> Description: Builds a white card that visually groups related page
+	 * controls. </p>
+	 * 
 	 * @param pane specifies the pane being styled as a card
 	 * @param x specifies the card's horizontal position
 	 * @param y specifies the card's vertical position
@@ -1128,8 +1167,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Configures the compact uppercase heading used above a page section.
-	 *
+	 * <p> Method: setupSectionLabel() </p>
+	 * 
+	 * <p> Description: Configures the compact uppercase heading displayed above a
+	 * page section. </p>
+	 * 
 	 * @param label specifies the section-heading label
 	 * @param x specifies the heading's horizontal position
 	 * @param y specifies the heading's vertical position
@@ -1150,8 +1192,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Applies the rounded sage styling used by editable text fields.
-	 *
+	 * <p> Method: styleTextField() </p>
+	 * 
+	 * <p> Description: Applies the rounded sage styling used by editable text
+	 * fields. </p>
+	 * 
 	 * @param field specifies the text field being styled
 	 * 
 	 */
@@ -1173,8 +1218,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Styles the read-only results panel as a rounded white card.
-	 *
+	 * <p> Method: styleTextArea() </p>
+	 * 
+	 * <p> Description: Styles the read-only results panel as a rounded white
+	 * card. </p>
+	 * 
 	 * @param area specifies the text area being styled
 	 * 
 	 */
@@ -1197,8 +1245,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Styles a primary action using dark sage and a darker hover state.
-	 *
+	 * <p> Method: stylePrimaryButton() </p>
+	 * 
+	 * <p> Description: Styles a primary action using dark sage and a darker hover
+	 * state. </p>
+	 * 
 	 * @param button specifies the primary button being styled
 	 * 
 	 */
@@ -1239,8 +1290,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Styles a secondary action with a subtle border and sage hover.
-	 *
+	 * <p> Method: styleSecondaryButton() </p>
+	 * 
+	 * <p> Description: Styles a secondary action with a subtle border and sage
+	 * hover state. </p>
+	 * 
 	 * @param button specifies the secondary button being styled
 	 * 
 	 */
@@ -1285,8 +1339,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Positions a custom popup directly beneath its anchor button
-	 *
+	 * <p> Method: showPopupBelow() </p>
+	 * 
+	 * <p> Description: Positions and displays a custom popup directly beneath its
+	 * anchor button. </p>
+	 * 
 	 * @param popup popup being displayed
 	 * @param anchor button used to position the popup
 	 * 
@@ -1314,8 +1371,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Applies the hover appearance used by secondary menu buttons
-	 *
+	 * <p> Method: styleSecondaryButtonHover() </p>
+	 * 
+	 * <p> Description: Applies the hover appearance used by secondary menu
+	 * buttons. </p>
+	 * 
 	 * @param button button receiving the hover appearance
 	 * 
 	 */
@@ -1339,8 +1399,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Styles a clickable row inside a custom popup menu
-	 *
+	 * <p> Method: styleMenuAction() </p>
+	 * 
+	 * <p> Description: Styles a clickable row inside a custom popup menu using
+	 * either normal or destructive-action colors. </p>
+	 * 
 	 * @param label clickable menu row
 	 * @param danger true when the action should use destructive red styling
 	 * 
@@ -1389,7 +1452,10 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Configures the Account Settings popup and its account-session actions
+	 * <p> Method: configureAccountMenu() </p>
+	 * 
+	 * <p> Description: Configures the Account Settings popup and connects its
+	 * account-update, logout, and quit actions. </p>
 	 * 
 	 */
 
@@ -1484,7 +1550,9 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Displays the Account Settings menu beneath its button
+	 * <p> Method: showAccountMenu() </p>
+	 * 
+	 * <p> Description: Displays the Account Settings menu beneath its button. </p>
 	 * 
 	 */
 	
@@ -1496,7 +1564,10 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Configures the Add popup for lesson-related additions
+	 * <p> Method: configureAddMenu() </p>
+	 * 
+	 * <p> Description: Configures the Add popup and connects its lesson-experience
+	 * action. </p>
 	 * 
 	 */
 
@@ -1550,7 +1621,9 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Displays the Add menu beneath its button
+	 * <p> Method: showAddMenu() </p>
+	 * 
+	 * <p> Description: Displays the Add menu beneath its button. </p>
 	 * 
 	 */
 
@@ -1562,8 +1635,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Places the selected lesson into the existing lesson fields
-	 *
+	 * <p> Method: selectLesson() </p>
+	 * 
+	 * <p> Description: Places the selected lesson's identifying information into
+	 * the existing lesson fields for controller compatibility. </p>
+	 * 
 	 * @param lesson lesson selected by the contributor
 	 * 
 	 */
@@ -1582,8 +1658,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Applies red destructive-action styling to a button
-	 *
+	 * <p> Method: styleDeleteButton() </p>
+	 * 
+	 * <p> Description: Applies red destructive-action styling and hover behavior
+	 * to a button. </p>
+	 * 
 	 * @param button destructive action button being styled
 	 * 
 	 */
@@ -1624,8 +1703,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Opens the selected lesson in a smaller details window
-	 *
+	 * <p> Method: showLessonDetails() </p>
+	 * 
+	 * <p> Description: Opens the selected lesson in a smaller details window and
+	 * provides Update, Delete, and Close actions. </p>
+	 * 
 	 * @param lesson lesson whose information will be displayed
 	 * 
 	 */
@@ -1758,8 +1840,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Creates one labeled information block for the Lesson Details window
-	 *
+	 * <p> Method: createDetailLabel() </p>
+	 * 
+	 * <p> Description: Creates one labeled and wrapped information block for the
+	 * Lesson Details window. </p>
+	 * 
 	 * @param name field name displayed above the value
 	 * @param value lesson information being displayed
 	 * @return vertically arranged field name and value
@@ -1800,8 +1885,10 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Applies the updated UI style to a dropdown
-	 *
+	 * <p> Method: styleComboBox() </p>
+	 * 
+	 * <p> Description: Applies the updated UI style to a dropdown control. </p>
+	 * 
 	 * @param comboBox dropdown being styled
 	 * 
 	 */
@@ -1821,8 +1908,11 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Applies the updated UI style to a popup label
-	 *
+	 * <p> Method: stylePopupLabel() </p>
+	 * 
+	 * <p> Description: Applies the updated UI style to a label displayed inside a
+	 * popup menu. </p>
+	 * 
 	 * @param label popup label being styled
 	 * 
 	 */
@@ -1839,7 +1929,10 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Configures the Filter and Sort popup controls
+	 * <p> Method: configureFilterSortMenu() </p>
+	 * 
+	 * <p> Description: Configures the Filter and Sort popup controls, styling,
+	 * choices, and action handlers. </p>
 	 * 
 	 */
 
@@ -1944,7 +2037,10 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Loads the contributor's available categories and opens Filter and Sort
+	 * <p> Method: showFilterSortMenu() </p>
+	 * 
+	 * <p> Description: Loads the contributor's available lesson categories and
+	 * displays the Filter and Sort popup. </p>
 	 * 
 	 */
 
@@ -1994,7 +2090,10 @@ public class ViewRole1Home {
 
 	/******
 	 * 
-	 * Applies the selected category filter and sorting order
+	 * <p> Method: applyFilterAndSort() </p>
+	 * 
+	 * <p> Description: Applies the selected category filter and sorting order to
+	 * the contributor's lessons and displays the resulting lesson cards. </p>
 	 * 
 	 */
 	

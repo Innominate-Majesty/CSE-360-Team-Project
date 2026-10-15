@@ -21,21 +21,23 @@ import javafx.stage.Stage;
 /*******
  * <p> Title: ControllerRole1Home Class. </p>
  * 
- * <p> Description: The Java/FX-based Role 1 Home Page.  This class provides the controller
- * actions basic on the user's use of the JavaFX GUI widgets defined by the View class.
+ * <p> Description: The JavaFX-based Role 1 Home Page controller. This class provides
+ * the controller actions based on the user's interaction with the JavaFX GUI widgets
+ * defined by the View class.
  * 
- * This page is a stub for establish future roles for the application.
+ * This controller supports contributor lesson creation, searching, viewing, updating,
+ * deleting, and experience management.
  * 
- * The class has been written assuming that the View or the Model are the only class methods that
- * can invoke these methods.  This is why each has been declared at "protected".  Do not change any
- * of these methods to public.</p>
+ * The class assumes that its protected methods are invoked by the View or Model
+ * classes within this package. </p>
  * 
  * <p> Copyright: Lynn Robert Carter © 2025 </p>
  * 
  * @author Lynn Robert Carter
  * 
  * @version 1.00		2025-08-17 Initial version
- * @version 1.01		2025-09-16 Update Javadoc documentation *  
+ * @version 1.01		2025-09-16 Update Javadoc documentation
+ * 
  */
 
 public class ControllerRole1Home {
@@ -97,9 +99,8 @@ public class ControllerRole1Home {
 	/**********
 	 * <p> Method: handleCreateLesson() </p>
 	 * 
-	 * <p> Description: Handles creating a lesson by reading user input from ViewRole1Home,
-	 * applying boundary and non-null validation, and invoking the database insertion.
-	 * Formats and outputs the exact test plan messages upon success or error. </p>
+	 * <p> Description: Opens the Create Lesson form where the contributor can enter
+	 * the information required to create a new lesson. </p>
 	 */
 
 	protected static void handleCreateLesson() {
@@ -109,10 +110,13 @@ public class ControllerRole1Home {
 	}
 
 	/**********
+	 * 
 	 * <p> Method: handleReadAllLessons() </p>
 	 * 
-	 * <p> Description: Retrieves all lessons authored by the active contributor or specified user.
-	 * Outputs empty list notices or the populated LessonsLearnedList. </p>
+	 * <p> Description: Retrieves all lessons created by the active contributor. The
+	 * lessons are displayed as clickable title cards, or an empty-result message is
+	 * displayed when the contributor has not created any lessons. </p>
+	 * 
 	 */
 	
 	protected static void handleReadAllLessons() {
@@ -189,9 +193,12 @@ public class ControllerRole1Home {
 	/**********
 	 * <p> Method: handleReadFilteredSubset() </p>
 	 * 
-	 * <p> Description: Filters stored lessons by category query. Rejects empty queries
-	 * and displays the returned LessonsLearnedList subset. </p>
+	 * <p> Description: Reads the entered filter value and retrieves lessons matching
+	 * the category or keyword for the active contributor. An error message is displayed
+	 * when the search value is blank. </p>
+	 * 
 	 */
+
 	protected static void handleReadFilteredSubset() {
 		String filter = ViewRole1Home.textfield_FilterCategory.getText();
 		if (filter == null || filter.trim().isEmpty()) {
@@ -291,8 +298,7 @@ public class ControllerRole1Home {
 				+ "-fx-text-fill: #203029;");
 
 		// Creates the lesson-details section heading
-		Label coreHeading =
-				createFormSectionLabel("LESSON DETAILS");
+		Label coreHeading = createFormSectionLabel("LESSON DETAILS");
 
 		// Creates the experience section heading
 		Label experienceHeading = createFormSectionLabel("EXPERIENCE");
@@ -1165,6 +1171,7 @@ public class ControllerRole1Home {
 	}
 
 	/******
+	 * 
 	 * <p> Method: styleFormPrimaryButton() </p>
 	 * 
 	 * <p> Description: Applies the primary sage style to a lesson-form
