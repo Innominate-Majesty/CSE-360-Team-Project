@@ -3,9 +3,7 @@ package guiDeleteUser;
 import java.util.ArrayList;
 import javafx.beans.value.ObservableValue;
 import database.Database;
-import guiDeleteUser.ViewDeleteUser;
 import javafx.collections.FXCollections;
-import javafx.geometry.Pos;
 import javafx.scene.control.ComboBox;
 
 /*******

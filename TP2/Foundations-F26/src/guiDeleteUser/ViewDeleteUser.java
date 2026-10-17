@@ -12,12 +12,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import database.Database;
 import entityClasses.User;
-import guiDeleteUser.ControllerDeleteUser;
 import guiDeleteUser.ViewDeleteUser;
 
 /*******
@@ -119,7 +117,10 @@ public class ViewDeleteUser {
 	protected static Pane theRootPane;			// The Pane that holds all the GUI widgets 
 	protected static User theUser;				// The current user of the application
 	
-	public static Scene theDeleteUserScene = null;	// The Scene each invocation populates
+	/**
+	 * The Scene each invocation populates
+	 */
+	public static Scene theDeleteUserScene = null;
 	protected static String theSelectedUser = "";	// The user who is being deleted
 
 
@@ -181,8 +182,8 @@ public class ViewDeleteUser {
 	 * This method determines the location, size, font, color, and change and event handlers for
 	 * each GUI object. </p>
 	 * 
-	 * This is a singleton, so this is performed just one.  Subsequent uses fill in the changeable
-	 * fields using the displayAddRempoveRoles method.</p>
+	 * <p> This is a singleton, so this is performed just one.  Subsequent uses fill in the
+	 * changeable fields using the displayAddRempoveRoles method. </p>
 	 * 
 	 */
 	public ViewDeleteUser() {

@@ -16,5 +16,8 @@ package guiDeleteUser;
  */
 
 public class ModelDeleteUser {
-    
+	/**
+	 * Default constructor is not used.
+	 */
+	public ModelDeleteUser(){}
 }
