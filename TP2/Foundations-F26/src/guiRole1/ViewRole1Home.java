@@ -192,6 +192,9 @@ public class ViewRole1Home {
 
 	// Expands or collapses the Lesson ID and Category search fields
 	protected static Button button_AdvancedSearch = new Button("Advanced Search");
+	
+	// Clears all text fields for new inputs
+	protected static Button button_ClearSearch = new Button("Clear Search");
 		
 	// Output area for records, status updates, and test-case error messages
 	protected static TextArea textarea_Display = new TextArea();
@@ -455,7 +458,7 @@ public class ViewRole1Home {
 		label_FilterCategory.setVisible(false);
 
 		// Positions and sizes the main title-or-keyword search field
-		setupTextUI(textfield_FilterCategory, "Helvetica", 13, 570, 38, 157, true);
+		setupTextUI(textfield_FilterCategory, "Helvetica", 13, 420, 38, 157, true);
 
 		// Explains how to use the main search field
 		textfield_FilterCategory.setPromptText("Search by entering the lesson title or keyword, then press Enter");
@@ -468,12 +471,21 @@ public class ViewRole1Home {
 
 		// Positions the Advanced Search button beside the main search field
 		setupButtonUI(button_AdvancedSearch, "Helvetica", 12, 142, Pos.CENTER, 620, 157);
-
+		
 		// Applies the secondary sage button style
 		styleSecondaryButton(button_AdvancedSearch);
 
 		// Expands or collapses the advanced-search form
 		button_AdvancedSearch.setOnAction((_) -> setAdvancedSearchVisible(!pane_LessonCard.isVisible()));
+		
+		// Positions the Clear Search button beside the main search field
+		setupButtonUI(button_ClearSearch, "Helvetica", 12, 142, Pos.CENTER, 468, 157);
+		
+		// Applies the secondary sage button style
+		styleSecondaryButton(button_ClearSearch);
+
+		// Clears text fields
+		button_ClearSearch.setOnAction((_) -> clearSearchFields());
 
 		// Changes the original filter button text to Search
 		button_FilterCategory.setText("Search");
@@ -621,6 +633,7 @@ public class ViewRole1Home {
 				button_Add,
 				textfield_FilterCategory,
 				button_AdvancedSearch,
+				button_ClearSearch,
 
 				// Adds the advanced-search controls
 				label_LessonId,
@@ -818,6 +831,24 @@ public class ViewRole1Home {
 
 		// Displays the Back button while search results are active
 		button_BackToLessons.setVisible(true);
+	}
+	
+	/******
+	 * 
+	 * <p> Method: clearSearchFields() </p>
+	 * 
+	 * <p> Description: Clears all text fields so that they are empty for a fresh search. </p>
+	 * 
+	 * 
+	 */
+	
+	private static void clearSearchFields() {
+		
+		textfield_FilterCategory.clear();
+		textfield_LessonId.clear();
+		textfield_Title.clear();
+		textfield_Category .clear();
+		
 	}
 
 	/******
