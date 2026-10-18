@@ -13,10 +13,10 @@ import java.util.List;
  * <p>Copyright: ASU Team 15 (Fall 2026)</p>
  * 
  * @author Alexander Murray
- * not yet @author Venus Ho
- * not yet @author Alan Shimp
- * not yet @author Caleb Beaven
- * not yet @author Krithik Duraisamy
+ * @author Venus Ho
+ * @author Alan Shimp
+ * @author Caleb Beaven
+ * @author Krithik Duraisamy
  * 
  * @version 1.00	2026-10-03 Initial File
  */
@@ -37,7 +37,7 @@ public class LessonsLearnedList {
 	}
 	
 	/**
-	 * <p> Constructor: LessonsLearnedList(List<LessonsLearned> lessons) </p>
+	 * <p> Constructor: LessonsLearnedList(List{@code<LessonsLearned>} lessons) </p>
 	 * 
 	 * <p> Description: Parameterized constructor wrapping an existing list of lessons. </p>
 	 * 

@@ -21,6 +21,16 @@ public class LessonsLearnedTest {
 	private static int testsPassed = 0;
 	private static int testsFailed = 0;
 
+    /******
+     * <p> Constructor: LessonsLearnedTest() </p>
+     * 
+     * <p> Description: Default constructor </p>
+     * 
+     */
+	public LessonsLearnedTest() {
+		//Default Constructor
+	}
+
 	/**
 	 * Main entry point to execute all 21 test cases sequentially and output summary results.
 	 * 

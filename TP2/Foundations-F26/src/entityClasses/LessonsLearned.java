@@ -9,12 +9,13 @@ package entityClasses;
  * <p>Copyright: ASU Team 15 (Fall 2026)</p>
  * 
  * @author Alexander Murray
- * Not yet @author Venus Ho
- * Not yet @author Alan Shimp
- * Not yet @author Caleb Beaven
- * Not yet @author Krithik Duraisamy
+ * @author Venus Ho
+ * @author Alan Shimp
+ * @author Caleb Beaven
+ * @author Krithik Duraisamy
  * 
  * @version 1.00	2026-10-03 Initial File
+ * @version 1.1		2026-10-17 Updated Javadoc
  */
 public class LessonsLearned {
 	
@@ -106,6 +107,7 @@ public class LessonsLearned {
 	 * 
 	 * <p> Description: Convenience constructor for creating a new lesson prior to database ID assignment.</p>
 	 * 
+	 * @param lessonId - the unique integer identifier of the lesson
 	 * @param title - the title of the lesson (must be between 5 and 100 characters)
 	 * @param category - the category of the lesson (cannot be blank)
 	 * @param author - the author/contributor username.
