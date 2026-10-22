@@ -10,10 +10,14 @@ import database.Database;
 import entityClasses.LessonsLearned;
 import entityClasses.LessonsLearnedList;
 import entityClasses.User;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.binding.NumberBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -28,6 +32,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
@@ -216,16 +221,20 @@ public class ViewContributorHome {
 	// This is the end of the GUI objects for the page.
 	
 	// These attributes are used to configure the page and populate it with this user's information
-	private static ViewContributorHome theView;		// Used to determine if instantiation of the class
-												// is needed
+	private static ViewContributorHome theView;		// Used to determine if instantiation of the class is needed
 
 	// Reference for the in-memory database so this package has access
 	private static Database theDatabase = applicationMain.FoundationsMain.database;
 
-	protected static Stage theStage;			// The Stage that JavaFX has established for us	
+	protected static Stage theStage;			// The Stage that JavaFX has established for us
 	protected static Pane theRootPane;			// The Pane that holds all the GUI widgets
 	protected static User theUser;				// The current logged in User
-	
+
+	// Centers the scaled Contributor page inside the available window
+	private static StackPane theResponsiveRoot;
+
+	// Groups the original fixed layout so it can scale as one complete page
+	private static Group theScaledContent;
 
 	private static Scene theViewContributorHomeScene;	// The shared Scene each invocation populates
 	protected static final int theRole = 2;		// Admin: 1; Contributor: 2; Curator: 3
@@ -320,16 +329,35 @@ public class ViewContributorHome {
 	 * fields using the displayContributorHome method.</p>
 	 * 
 	 */
+
 	private ViewContributorHome() {
 
-		// Creates the root pane that contains all controls on this page.
+		// Creates the original Contributor page layout
 		theRootPane = new Pane();
 
-		// Applies the muted-sage background to the complete page.
+		// Preserves the dimensions used by the existing control coordinates
+		theRootPane.setPrefSize(width, height);
+		theRootPane.setMinSize(width, height);
+		theRootPane.setMaxSize(width, height);
+
+		// Applies the muted sage background to the original page
 		theRootPane.setStyle("-fx-background-color: " + PAGE_BACKGROUND + ";");
 
-		// Creates the scene using the project’s standard window dimensions.
-		theViewContributorHomeScene = new Scene(theRootPane, width, height);
+		// Groups every page control so the complete interface scales together
+		theScaledContent = new Group(theRootPane);
+
+		// Centers the scaled page inside the available window
+		theResponsiveRoot = new StackPane(theScaledContent);
+		theResponsiveRoot.setAlignment(Pos.CENTER);
+
+		// Extends the sage background into unused window space
+		theResponsiveRoot.setStyle("-fx-background-color: " + PAGE_BACKGROUND + ";");
+
+		// Creates the scene using the responsive container
+		theViewContributorHomeScene = new Scene(theResponsiveRoot, width, height);
+
+		// Connects the page scale to the current window dimensions
+		configureResponsiveLayout();
 		
 		// Set the title for the window
 		
@@ -2219,6 +2247,33 @@ public class ViewContributorHome {
 		// Closes the Filter and Sort popup
 		menu_FilterSort.hide();
 
+	}
+
+	/******
+	 * 
+	 * <p> Method: configureResponsiveLayout() </p>
+	 * 
+	 * <p> Description: Scales the complete Contributor interface to fit the
+	 * available window while preserving its original proportions and positions. </p>
+	 * 
+	 */
+
+	private static void configureResponsiveLayout() {
+
+		// Calculates the horizontal scale supported by the window
+		DoubleBinding widthScale = theResponsiveRoot.widthProperty().divide(width);
+
+		// Calculates the vertical scale supported by the window
+		DoubleBinding heightScale = theResponsiveRoot.heightProperty().divide(height);
+
+		// Uses the smaller scale so no page content is cut off
+		NumberBinding pageScale = Bindings.min(widthScale, heightScale);
+
+		// Scales the complete page horizontally
+		theScaledContent.scaleXProperty().bind(pageScale);
+
+		// Scales the complete page vertically
+		theScaledContent.scaleYProperty().bind(pageScale);
 	}
 
 

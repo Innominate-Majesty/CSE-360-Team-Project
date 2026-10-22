@@ -1,20 +1,25 @@
 package guiCurator;
 
+import database.Database;
+import entityClasses.User;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.binding.NumberBinding;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
-import database.Database;
-import entityClasses.User;
 
 
 /*******
@@ -115,8 +120,15 @@ public class ViewCuratorHome {
 	// Reference for the in-memory database so this package has access
 	private static Database theDatabase = applicationMain.FoundationsMain.database;
 
-	protected static Stage theStage;			// The Stage that JavaFX has established for us	
-	protected static Pane theRootPane;			// The Pane that holds all the GUI widgets
+	protected static Stage theStage;			// The Stage that JavaFX has established for us
+	protected static Pane theRootPane;			// The Pane that holds all the GUI widgets	
+
+	// Centers the scaled Curator page inside the available window
+	private static StackPane theResponsiveRoot;
+
+	// Groups the Curator page so all widgets scale together
+	private static Group theScaledContent;
+
 	protected static User theUser;				// The current logged in User
 	
 	private static Scene theCuratorHomeScene;		// The shared Scene each invocation populates
@@ -137,7 +149,7 @@ public class ViewCuratorHome {
 	 * It first sets up every shared attributes so we don't have to pass parameters.
 	 * 
 	 * It then checks to see if the page has been setup.  If not, it instantiates the class, 
-	 * initializes all the static aspects of the GIUI widgets (e.g., location on the page, font,
+	 * initializes all the static aspects of the GUI widgets (e.g., location on the page, font,
 	 * size, and any methods to be performed).
 	 * 
 	 * After the instantiation, the code then populates the elements that change based on the user
@@ -207,11 +219,27 @@ public class ViewCuratorHome {
 		// Creates the pane that contains the Curator page
 		theRootPane = new Pane();
 
+		// Keeps the original Curator page dimensions
+		theRootPane.setPrefSize(width, height);
+		theRootPane.setMinSize(width, height);
+		theRootPane.setMaxSize(width, height);
+
 		// Applies the muted sage page background
 		theRootPane.setStyle("-fx-background-color: " + PAGE_BACKGROUND + ";");
 
-		// Creates the Curator scene
-		theCuratorHomeScene = new Scene(theRootPane, width, height);
+		// Groups every Curator page element so they scale together
+		theScaledContent = new Group(theRootPane);
+
+		// Centers the scaled page inside the available window
+		theResponsiveRoot = new StackPane(theScaledContent);
+		theResponsiveRoot.setAlignment(Pos.CENTER);
+		theResponsiveRoot.setStyle("-fx-background-color: " + PAGE_BACKGROUND + ";");
+
+		// Creates the responsive Curator scene
+		theCuratorHomeScene = new Scene(theResponsiveRoot, width, height);
+
+		// Configures proportional scaling for the page
+		configureResponsiveLayout();
 		
 		// Set the title for the window
 		
@@ -529,4 +557,35 @@ public class ViewCuratorHome {
 					location.getY());
 		}
 	}
+
+	/******
+	 * 
+	 * <p> Method: configureResponsiveLayout() </p>
+	 * 
+	 * <p> Description: Scales the complete Curator interface to fit the
+	 * available window while preserving its original proportions and positions. </p>
+	 * 
+	 */
+
+	private static void configureResponsiveLayout() {
+
+		// Calculates the available horizontal scale
+		DoubleBinding widthScale =
+				theResponsiveRoot.widthProperty().divide(width);
+
+		// Calculates the available vertical scale
+		DoubleBinding heightScale =
+				theResponsiveRoot.heightProperty().divide(height);
+
+		// Uses the smaller scale to prevent the page from being cut off
+		NumberBinding pageScale =
+				Bindings.min(widthScale, heightScale);
+
+		// Scales the page horizontally
+		theScaledContent.scaleXProperty().bind(pageScale);
+
+		// Scales the page vertically
+		theScaledContent.scaleYProperty().bind(pageScale);
+	}
+
 }
