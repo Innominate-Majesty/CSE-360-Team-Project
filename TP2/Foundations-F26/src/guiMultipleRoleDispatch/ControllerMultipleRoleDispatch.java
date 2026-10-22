@@ -70,11 +70,11 @@ public class ControllerMultipleRoleDispatch {
 					guiMultipleRoleDispatch.ViewMultipleRoleDispatch.theStage, 
 					guiMultipleRoleDispatch.ViewMultipleRoleDispatch.theUser);
 			
-		// See if Role2
-		} else if (role.compareTo("Role2") == 0) {
+		// See if Curator
+		} else if (role.compareTo("Curator") == 0) {
 			
-			// It is Role 2 Role
-			guiRole2.ViewRole2Home.displayRole2Home(
+			// It is Curator Role
+			guiCurator.ViewCuratorHome.displayCuratorHome(
 					guiMultipleRoleDispatch.ViewMultipleRoleDispatch.theStage, 
 					guiMultipleRoleDispatch.ViewMultipleRoleDispatch.theUser);
 			

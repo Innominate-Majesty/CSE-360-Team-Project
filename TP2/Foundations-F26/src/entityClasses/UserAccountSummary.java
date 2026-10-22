@@ -34,8 +34,8 @@ public class UserAccountSummary{
     // Stores whether the user account has the existing Contributor assignment
     private boolean contributor;
 
-    // Stores whether the user account has the existing Role2 assignment
-    private boolean role2;
+    // Stores whether the user account has the existing Curator assignment
+    private boolean curator;
 
     /******
      * 
@@ -51,11 +51,11 @@ public class UserAccountSummary{
      * @param emailAddress specifies the user's email address
      * @param adminRole specifies whether the account has the Admin role
      * @param contributor specifies whether the account has the existing Contributor assignment
-     * @param role2 specifies whether the account has the existing Role2 assignment
+     * @param curator specifies whether the account has the existing Curator assignment
      * 
      */
 
-    public UserAccountSummary(String userName, String firstName, String middleName, String lastName, String preferredFirstName, String emailAddress, boolean adminRole, boolean contributor, boolean role2){
+    public UserAccountSummary(String userName, String firstName, String middleName, String lastName, String preferredFirstName, String emailAddress, boolean adminRole, boolean contributor, boolean curator){
 
         // Stores the provided username
         this.userName = userName;
@@ -81,8 +81,8 @@ public class UserAccountSummary{
         // Stores whether the account has Contributor
         this.contributor = contributor;
 
-        // Stores whether the account has Role2
-        this.role2 = role2;
+        // Stores whether the account has Curator
+        this.curator = curator;
 
     }
 
@@ -224,18 +224,18 @@ public class UserAccountSummary{
 
     /******
      * 
-     * <p> Method: getRole2() </p>
+     * <p> Method: getCurator() </p>
      * 
-     * <p> Description: Returns whether this account has the existing Role2 assignment </p>
+     * <p> Description: Returns whether this account has the existing Curator assignment </p>
      * 
-     * @return true when the account has Role2...otherwise, false
+     * @return true when the account has Curator...otherwise, false
      * 
      */
 
-    public boolean getRole2() {
+    public boolean getCurator() {
 
-        // Returns the stored Role2 value
-        return role2;
+        // Returns the stored Curator value
+        return curator;
         
     }
 
@@ -299,7 +299,7 @@ public class UserAccountSummary{
      * <p> Method: getDisplayRoles() </p>
      *
      * <p> Description: Converts the stored role values into readable role names.
-     * Contributor and Role2 retain their current names until their meanings are defined
+     * Contributor and Curator retain their current names until their meanings are defined
      * during TP2. </p>
      *
      * @return the account's formatted role names
@@ -326,14 +326,14 @@ public class UserAccountSummary{
             displayedRoles.append("Contributor");
         }
 
-        // Checks whether the account has Role2
-        if (role2) {
+        // Checks whether the account has Curator
+        if (curator) {
 
             // Adds a separator when another role is already displayed
             if (displayedRoles.length() > 0) displayedRoles.append(", ");
 
-            // Adds Role2 to the readable list
-            displayedRoles.append("Role2");
+            // Adds Curator to the readable list
+            displayedRoles.append("Curator");
         }
 
         // Checks whether the account has no assigned roles

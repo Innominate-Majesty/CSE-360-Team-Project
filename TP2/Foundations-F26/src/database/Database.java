@@ -49,7 +49,7 @@ public class Database {
 	private String currentEmailAddress;
 	private boolean currentAdminRole;
 	private boolean currentNewContributor;
-	private boolean currentNewRole2;
+	private boolean currentNewCurator;
 	private String tempPassword;
 
 	/**
@@ -99,12 +99,15 @@ public class Database {
 				+ "emailAddress VARCHAR(255), "
 				+ "adminRole BOOL DEFAULT FALSE, "
 				+ "newContributor BOOL DEFAULT FALSE, "
-				+ "newRole2 BOOL DEFAULT FALSE, "
+				+ "newCurator BOOL DEFAULT FALSE, "
 				+ "tempPassword VARCHAR(255))";
 		statement.execute(userTable);
 
 		// Updates an existing TP2 database to use the Contributor column name
 		migrateContributorColumn();
+
+		// Updates an existing TP2 database to use the Curator column name
+		migrateCuratorColumn();
 		
 		// Create the invitation codes table
 	    String invitationCodesTable = "CREATE TABLE IF NOT EXISTS InvitationCodes ("
@@ -113,7 +116,7 @@ public class Database {
 	            + "role VARCHAR(32))";
 	    statement.execute(invitationCodesTable);
 
-	    // Allows existing invitation tables to store the longer Contributor role name
+	    // Allows existing invitation tables to store the longer named roles
 	    statement.execute("ALTER TABLE InvitationCodes ALTER COLUMN role VARCHAR(32)");
 	}
 
@@ -137,6 +140,31 @@ public class Database {
 					+ legacyColumn + " TO newContributor");
 		} else if (legacyExists) {
 			statement.executeUpdate("UPDATE userDB SET newContributor = TRUE WHERE "
+					+ legacyColumn + " = TRUE");
+			statement.execute("ALTER TABLE userDB DROP COLUMN " + legacyColumn);
+		}
+	}
+
+	/******
+	 *
+	 * <p> Method: migrateCuratorColumn() </p>
+	 *
+	 * <p> Description: Renames the legacy curator-role column in an existing
+	 * database while preserving every stored role assignment. </p>
+	 *
+	 * @throws SQLException if the database metadata or schema cannot be updated
+	 *
+	 */
+	private void migrateCuratorColumn() throws SQLException {
+		String legacyColumn = "NEW" + "ROLE" + "2";
+		boolean legacyExists = columnExists("USERDB", legacyColumn);
+		boolean curatorExists = columnExists("USERDB", "NEWCURATOR");
+
+		if (legacyExists && !curatorExists) {
+			statement.execute("ALTER TABLE userDB RENAME COLUMN "
+					+ legacyColumn + " TO newCurator");
+		} else if (legacyExists) {
+			statement.executeUpdate("UPDATE userDB SET newCurator = TRUE WHERE "
 					+ legacyColumn + " = TRUE");
 			statement.execute("ALTER TABLE userDB DROP COLUMN " + legacyColumn);
 		}
@@ -220,8 +248,8 @@ public class Database {
 		else if (role.equals("Contributor")) {
 			columnName = "newContributor";
 		}
-		else if (role.equals("Role2")) {
-			columnName = "newRole2";
+		else if (role.equals("Curator")) {
+			columnName = "newCurator";
 		}
 		else {
 			return 0;
@@ -247,7 +275,7 @@ public class Database {
 	 */
 	public void register(User user) throws SQLException {
 		String insertUser = "INSERT INTO userDB (userName, password, firstName, middleName, "
-				+ "lastName, preferredFirstName, emailAddress, adminRole, newContributor, newRole2) "
+				+ "lastName, preferredFirstName, emailAddress, adminRole, newContributor, newCurator) "
 				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement pstmt = connection.prepareStatement(insertUser)) {
 			currentUsername = user.getUserName();
@@ -277,8 +305,8 @@ public class Database {
 			currentNewContributor = user.getNewContributor();
 			pstmt.setBoolean(9, currentNewContributor);
 			
-			currentNewRole2 = user.getNewRole2();
-			pstmt.setBoolean(10, currentNewRole2);
+			currentNewCurator = user.getNewCurator();
+			pstmt.setBoolean(10, currentNewCurator);
 			
 			pstmt.executeUpdate();
 		}
@@ -316,7 +344,7 @@ public class Database {
 		List<UserAccountSummary> accountSummaries = new ArrayList<UserAccountSummary>();
 
 		String query = "SELECT userName, firstName, middleName, lastName, " 
-				+ "preferredFirstName, emailAddress, adminRole, newContributor, newRole2 " 
+				+ "preferredFirstName, emailAddress, adminRole, newContributor, newCurator " 
 				+ "FROM userDB " 
 				+ "ORDER BY lastName, firstName, userName";
 
@@ -332,7 +360,7 @@ public class Database {
 							rs.getString("emailAddress"), 
 							rs.getBoolean("adminRole"), 
 							rs.getBoolean("newContributor"), 
-							rs.getBoolean("newRole2"));
+							rs.getBoolean("newCurator"));
 					accountSummaries.add(accountSummary);
 				}
 			}
@@ -381,14 +409,14 @@ public class Database {
 	}
 
 	/**
-	 * Validates a Role2 user's credentials against the database.
+	 * Validates a Curator user's credentials against the database.
 	 * 
-	 * @param user specifies the specific user attempting to log in under Role2
-	 * @return {@code true} if the specified user has been authenticated under Role2, else {@code false}
+	 * @param user specifies the specific user attempting to log in under Curator
+	 * @return {@code true} if the specified user has been authenticated under Curator, else {@code false}
 	 */
-	public boolean loginRole2(User user) {
+	public boolean loginCurator(User user) {
 		String query = "SELECT * FROM userDB WHERE userName = ? AND password = ? AND "
-				+ "newRole2 = TRUE";
+				+ "newCurator = TRUE";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			pstmt.setString(1, user.getUserName());
 			pstmt.setString(2, user.getPassword());
@@ -430,7 +458,7 @@ public class Database {
 		int numberOfRoles = 0;
 		if (user.getAdminRole()) numberOfRoles++;
 		if (user.getNewContributor()) numberOfRoles++;
-		if (user.getNewRole2()) numberOfRoles++;
+		if (user.getNewCurator()) numberOfRoles++;
 		return numberOfRoles;
 	}	
 
@@ -791,7 +819,7 @@ public class Database {
 	    	currentEmailAddress = rs.getString(8);
 	    	currentAdminRole = rs.getBoolean(9);
 	    	currentNewContributor = rs.getBoolean(10);
-	    	currentNewRole2 = rs.getBoolean(11);
+	    	currentNewCurator = rs.getBoolean(11);
 	    	tempPassword = rs.getString(12);
 			return true;
 	    } catch (SQLException e) {
@@ -803,7 +831,7 @@ public class Database {
 	 * Updates a specified role for a specified user and refreshes the cached state.
 	 * 
 	 * @param username is the username of the user
-	 * @param role string that specifies the role to update ("Admin", "Contributor", or "Role2")
+	 * @param role string that specifies the role to update ("Admin", "Contributor", or "Curator")
 	 * @param value string that specifies "true" or "false"
 	 * @return {@code true} if the update was successful, else {@code false}
 	 */
@@ -838,16 +866,16 @@ public class Database {
 				return false;
 			}
 		}
-		if (role.compareTo("Role2") == 0) {
-			String query = "UPDATE userDB SET newRole2 = ? WHERE username = ?";
+		if (role.compareTo("Curator") == 0) {
+			String query = "UPDATE userDB SET newCurator = ? WHERE username = ?";
 			try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 				pstmt.setString(1, value);
 				pstmt.setString(2, username);
 				pstmt.executeUpdate();
 				if (value.compareTo("true") == 0)
-					currentNewRole2 = true;
+					currentNewCurator = true;
 				else
-					currentNewRole2 = false;
+					currentNewCurator = false;
 				return true;
 			} catch (SQLException e) {
 				return false;
@@ -939,11 +967,11 @@ public class Database {
 	public boolean getCurrentNewContributor() { return currentNewContributor; }
 
 	/**
-	 * Gets the current user's Role2 status.
+	 * Gets the current user's Curator status.
 	 * 
-	 * @return {@code true} if this user has Role2, else {@code false}
+	 * @return {@code true} if this user has Curator, else {@code false}
 	 */
-	public boolean getCurrentNewRole2() { return currentNewRole2; }
+	public boolean getCurrentNewCurator() { return currentNewCurator; }
 
 	/**
 	 * Debugging method that dumps the entire userDB table to the console.

@@ -24,7 +24,7 @@ public class User {
     private String emailAddress;
     private boolean adminRole;
     private boolean contributor;
-    private boolean role2;
+    private boolean curator;
     
     /**
      * Default constructor for the User class.
@@ -45,7 +45,7 @@ public class User {
      * @param ea specifies the user's email address
      * @param r1 specifies the Admin role flag
      * @param r2 specifies the Contributor flag
-     * @param r3 specifies the Role2 flag
+     * @param r3 specifies the Curator flag
      */
     public User(String userName, String password, String fn, String mn, String ln, String pfn, 
     		String ea, boolean r1, boolean r2, boolean r3) {
@@ -58,7 +58,7 @@ public class User {
         this.emailAddress = ea;
         this.adminRole = r1;
         this.contributor = r2;
-        this.role2 = r3;
+        this.curator = r3;
     }
 
     /**
@@ -80,12 +80,12 @@ public class User {
     }
 
     /**
-     * Sets the Role2 status.
+     * Sets the Curator status.
      * 
-     * @param role {@code true} if this user plays Role2, else {@code false}
+     * @param role {@code true} if this user plays Curator, else {@code false}
      */
-    public void setRole2User(boolean role) {
-    	this.role2 = role;
+    public void setCuratorUser(boolean role) {
+    	this.curator = role;
     }
 
     /**
@@ -201,11 +201,11 @@ public class User {
 	public boolean getNewContributor() { return contributor; }
 
     /**
-     * Gets the current value of the Role2 attribute.
+     * Gets the current value of the Curator attribute.
      * 
-     * @return {@code true} if the user has Role2, else {@code false}
+     * @return {@code true} if the user has Curator, else {@code false}
      */
-    public boolean getNewRole2() { return role2; }
+    public boolean getNewCurator() { return curator; }
 
     /**
      * Calculates the total number of roles this user holds.
@@ -216,7 +216,7 @@ public class User {
     	int numRoles = 0;
     	if (adminRole) numRoles++;
     	if (contributor) numRoles++;
-    	if (role2) numRoles++;
+    	if (curator) numRoles++;
     	return numRoles;
     }
 }

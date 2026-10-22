@@ -228,7 +228,7 @@ public class ViewContributorHome {
 	
 
 	private static Scene theViewContributorHomeScene;	// The shared Scene each invocation populates
-	protected static final int theRole = 2;		// Admin: 1; Contributor: 2; Role2: 3
+	protected static final int theRole = 2;		// Admin: 1; Contributor: 2; Curator: 3
 
 	/*-*******************************************************************************************
 

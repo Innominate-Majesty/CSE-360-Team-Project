@@ -5,6 +5,7 @@ entityClasses
 guiAddRemoveRoles
 guiAdminHome
 guiContributor
+guiCurator
 guiDeleteUser
 guiFirstAdmin
 guiListUsers
@@ -12,7 +13,6 @@ guiMultipleRoleDispatch
 guiNewAccount
 guiOneTimePasswordSet
 guiPasswordChange
-guiRole2
 guiTools
 guiUserLogin
 guiUserUpdate

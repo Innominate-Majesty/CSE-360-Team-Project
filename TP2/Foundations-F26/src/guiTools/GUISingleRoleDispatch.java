@@ -76,8 +76,8 @@ public class GUISingleRoleDispatch {
 			guiAdminHome.ViewAdminHome.displayAdminHome(ps, user);
 		} else if (user.getNewContributor()) {
 			guiContributor.ViewContributorHome.displayContributorHome(ps, user);
-		} else if (user.getNewRole2()) {
-			guiRole2.ViewRole2Home.displayRole2Home(ps, user);
+		} else if (user.getNewCurator()) {
+			guiCurator.ViewCuratorHome.displayCuratorHome(ps, user);
 		} else {
 			// Invalid role
 			System.out.println("*** ERROR *** GUISingleRoleDispatch was asked to dispatch to " +

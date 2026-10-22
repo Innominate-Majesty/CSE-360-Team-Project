@@ -1,10 +1,10 @@
-package guiRole2;
+package guiCurator;
 
 
 /*******
- * <p> Title: ControllerRole2Home Class. </p>
+ * <p> Title: ControllerCuratorHome Class. </p>
  * 
- * <p> Description: The Java/FX-based Role 2 Home Page.  This class provides the controller
+ * <p> Description: The Java/FX-based Curator Home Page.  This class provides the controller
  * actions basic on the user's use of the JavaFX GUI widgets defined by the View class.
  * 
  * This page is a stub for establish future roles for the application.
@@ -21,7 +21,7 @@ package guiRole2;
  * @version 1.01		2025-09-16 Update Javadoc documentation *  
  */
 
-public class ControllerRole2Home {
+public class ControllerCuratorHome {
 	
 	/*-*******************************************************************************************
 
@@ -36,7 +36,7 @@ public class ControllerRole2Home {
 	/**
 	 * Default constructor is not used.
 	 */
-	public ControllerRole2Home() {
+	public ControllerCuratorHome() {
 	}
 
 	/**********
@@ -47,7 +47,7 @@ public class ControllerRole2Home {
 	 * 
 	 */
 	protected static void performUpdate () {
-		guiUserUpdate.ViewUserUpdate.displayUserUpdate(ViewRole2Home.theStage, ViewRole2Home.theUser);
+		guiUserUpdate.ViewUserUpdate.displayUserUpdate(ViewCuratorHome.theStage, ViewCuratorHome.theUser);
 	}	
 
 	/**********
@@ -59,7 +59,7 @@ public class ControllerRole2Home {
 	 * 
 	 */
 	protected static void performLogout() {
-		guiUserLogin.ViewUserLogin.displayUserLogin(ViewRole2Home.theStage);
+		guiUserLogin.ViewUserLogin.displayUserLogin(ViewCuratorHome.theStage);
 	}
 	
 	/**********

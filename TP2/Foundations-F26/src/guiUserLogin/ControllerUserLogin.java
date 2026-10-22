@@ -126,7 +126,7 @@ public class ControllerUserLogin {
 				theDatabase.getCurrentMiddleName(), theDatabase.getCurrentLastName(),
 				theDatabase.getCurrentPreferredFirstName(), theDatabase.getCurrentEmailAddress(),
 				theDatabase.getCurrentAdminRole(),
-				theDatabase.getCurrentNewContributor(), theDatabase.getCurrentNewRole2());
+				theDatabase.getCurrentNewContributor(), theDatabase.getCurrentNewCurator());
 
 		// See which home page dispatch to use
 		int numberOfRoles = theDatabase.getNumberOfRoles(user);
@@ -145,10 +145,10 @@ public class ControllerUserLogin {
 				if (loginResult) {
 					guiContributor.ViewContributorHome.displayContributorHome(theStage, user);
 				}
-			} else if (user.getNewRole2()) {
-				loginResult = theDatabase.loginRole2(user);
+			} else if (user.getNewCurator()) {
+				loginResult = theDatabase.loginCurator(user);
 				if (loginResult) {
-					guiRole2.ViewRole2Home.displayRole2Home(theStage, user);
+					guiCurator.ViewCuratorHome.displayCuratorHome(theStage, user);
 				}
 				// Other roles
 			} else {
