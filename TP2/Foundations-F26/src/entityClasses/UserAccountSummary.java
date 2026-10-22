@@ -31,8 +31,8 @@ public class UserAccountSummary{
     // Stores whether the user account has the Admin role
     private boolean adminRole;
 
-    // Stores whether the user account has the existing Role1 assignment
-    private boolean role1;
+    // Stores whether the user account has the existing Contributor assignment
+    private boolean contributor;
 
     // Stores whether the user account has the existing Role2 assignment
     private boolean role2;
@@ -50,12 +50,12 @@ public class UserAccountSummary{
      * @param preferredFirstName specifies the user's preferred first name
      * @param emailAddress specifies the user's email address
      * @param adminRole specifies whether the account has the Admin role
-     * @param role1 specifies whether the account has the existing Role1 assignment
+     * @param contributor specifies whether the account has the existing Contributor assignment
      * @param role2 specifies whether the account has the existing Role2 assignment
      * 
      */
 
-    public UserAccountSummary(String userName, String firstName, String middleName, String lastName, String preferredFirstName, String emailAddress, boolean adminRole, boolean role1, boolean role2){
+    public UserAccountSummary(String userName, String firstName, String middleName, String lastName, String preferredFirstName, String emailAddress, boolean adminRole, boolean contributor, boolean role2){
 
         // Stores the provided username
         this.userName = userName;
@@ -78,8 +78,8 @@ public class UserAccountSummary{
         // Stores whether the account has the Admin role
         this.adminRole = adminRole;
 
-        // Stores whether the account has Role1
-        this.role1 = role1;
+        // Stores whether the account has Contributor
+        this.contributor = contributor;
 
         // Stores whether the account has Role2
         this.role2 = role2;
@@ -207,18 +207,18 @@ public class UserAccountSummary{
 
     /******
      * 
-     * <p> Method: getRole1() </p>
+     * <p> Method: getContributor() </p>
      * 
-     * <p> Description: Returns whether this account has the existing Role1 assignment </p>
+     * <p> Description: Returns whether this account has the existing Contributor assignment </p>
      * 
-     * @return true when the account has Role1...otherwise, false
+     * @return true when the account has Contributor...otherwise, false
      * 
      */
 
-    public boolean getRole1() {
+    public boolean getContributor() {
 
-        // Returns the stored Role1 value
-        return role1;
+        // Returns the stored Contributor value
+        return contributor;
         
     }
 
@@ -299,7 +299,7 @@ public class UserAccountSummary{
      * <p> Method: getDisplayRoles() </p>
      *
      * <p> Description: Converts the stored role values into readable role names.
-     * Role1 and Role2 retain their current names until their meanings are defined
+     * Contributor and Role2 retain their current names until their meanings are defined
      * during TP2. </p>
      *
      * @return the account's formatted role names
@@ -316,14 +316,14 @@ public class UserAccountSummary{
             displayedRoles.append("Admin");
         }
 
-        // Checks whether the account has Role1
-        if (role1) {
+        // Checks whether the account has Contributor
+        if (contributor) {
 
             // Adds a separator when another role is already displayed
             if (displayedRoles.length() > 0) displayedRoles.append(", ");
 
-            // Adds Role1 to the readable list
-            displayedRoles.append("Role1");
+            // Adds Contributor to the readable list
+            displayedRoles.append("Contributor");
         }
 
         // Checks whether the account has Role2

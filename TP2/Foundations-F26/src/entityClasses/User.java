@@ -23,7 +23,7 @@ public class User {
     private String preferredFirstName;
     private String emailAddress;
     private boolean adminRole;
-    private boolean role1;
+    private boolean contributor;
     private boolean role2;
     
     /**
@@ -44,7 +44,7 @@ public class User {
      * @param pfn specifies the user's preferred first name
      * @param ea specifies the user's email address
      * @param r1 specifies the Admin role flag
-     * @param r2 specifies the Role1 flag
+     * @param r2 specifies the Contributor flag
      * @param r3 specifies the Role2 flag
      */
     public User(String userName, String password, String fn, String mn, String ln, String pfn, 
@@ -57,7 +57,7 @@ public class User {
         this.preferredFirstName = pfn;
         this.emailAddress = ea;
         this.adminRole = r1;
-        this.role1 = r2;
+        this.contributor = r2;
         this.role2 = r3;
     }
 
@@ -71,12 +71,12 @@ public class User {
     }
 
     /**
-     * Sets the Role1 status.
+     * Sets the Contributor status.
      * 
-     * @param role {@code true} if this user plays Role1, else {@code false}
+     * @param role {@code true} if this user plays Contributor, else {@code false}
      */
-    public void setRole1User(boolean role) {
-    	this.role1 = role;
+    public void setContributorUser(boolean role) {
+    	this.contributor = role;
     }
 
     /**
@@ -194,11 +194,11 @@ public class User {
     public boolean getAdminRole() { return adminRole; }
 
     /**
-     * Gets the current value of the Role1 attribute.
+     * Gets the current value of the Contributor attribute.
      * 
-     * @return {@code true} if the user has Role1, else {@code false}
+     * @return {@code true} if the user has Contributor, else {@code false}
      */
-	public boolean getNewRole1() { return role1; }
+	public boolean getNewContributor() { return contributor; }
 
     /**
      * Gets the current value of the Role2 attribute.
@@ -215,7 +215,7 @@ public class User {
     public int getNumRoles() {
     	int numRoles = 0;
     	if (adminRole) numRoles++;
-    	if (role1) numRoles++;
+    	if (contributor) numRoles++;
     	if (role2) numRoles++;
     	return numRoles;
     }

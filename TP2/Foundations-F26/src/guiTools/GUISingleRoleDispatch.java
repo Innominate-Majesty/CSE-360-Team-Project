@@ -74,8 +74,8 @@ public class GUISingleRoleDispatch {
 
 		if (user.getAdminRole()) {
 			guiAdminHome.ViewAdminHome.displayAdminHome(ps, user);
-		} else if (user.getNewRole1()) {
-			guiRole1.ViewRole1Home.displayRole1Home(ps, user);
+		} else if (user.getNewContributor()) {
+			guiContributor.ViewContributorHome.displayContributorHome(ps, user);
 		} else if (user.getNewRole2()) {
 			guiRole2.ViewRole2Home.displayRole2Home(ps, user);
 		} else {

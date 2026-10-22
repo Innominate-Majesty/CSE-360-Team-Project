@@ -1,9 +1,10 @@
-module:TP1Final
+module:TP2Final
 applicationMain
 database
 entityClasses
 guiAddRemoveRoles
 guiAdminHome
+guiContributor
 guiDeleteUser
 guiFirstAdmin
 guiListUsers
@@ -11,7 +12,6 @@ guiMultipleRoleDispatch
 guiNewAccount
 guiOneTimePasswordSet
 guiPasswordChange
-guiRole1
 guiRole2
 guiTools
 guiUserLogin

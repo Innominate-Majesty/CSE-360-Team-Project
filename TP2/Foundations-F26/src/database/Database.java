@@ -48,7 +48,7 @@ public class Database {
 	private String currentPreferredFirstName;
 	private String currentEmailAddress;
 	private boolean currentAdminRole;
-	private boolean currentNewRole1;
+	private boolean currentNewContributor;
 	private boolean currentNewRole2;
 	private String tempPassword;
 
@@ -98,17 +98,67 @@ public class Database {
 				+ "preferredFirstName VARCHAR(255), "
 				+ "emailAddress VARCHAR(255), "
 				+ "adminRole BOOL DEFAULT FALSE, "
-				+ "newRole1 BOOL DEFAULT FALSE, "
+				+ "newContributor BOOL DEFAULT FALSE, "
 				+ "newRole2 BOOL DEFAULT FALSE, "
 				+ "tempPassword VARCHAR(255))";
 		statement.execute(userTable);
+
+		// Updates an existing TP2 database to use the Contributor column name
+		migrateContributorColumn();
 		
 		// Create the invitation codes table
 	    String invitationCodesTable = "CREATE TABLE IF NOT EXISTS InvitationCodes ("
 	            + "code VARCHAR(10) PRIMARY KEY, "
 	    		+ "emailAddress VARCHAR(255), "
-	            + "role VARCHAR(10))";
+	            + "role VARCHAR(32))";
 	    statement.execute(invitationCodesTable);
+
+	    // Allows existing invitation tables to store the longer Contributor role name
+	    statement.execute("ALTER TABLE InvitationCodes ALTER COLUMN role VARCHAR(32)");
+	}
+
+	/******
+	 *
+	 * <p> Method: migrateContributorColumn() </p>
+	 *
+	 * <p> Description: Renames the legacy contributor-role column in an existing
+	 * database while preserving every stored role assignment. </p>
+	 *
+	 * @throws SQLException if the database metadata or schema cannot be updated
+	 *
+	 */
+	private void migrateContributorColumn() throws SQLException {
+		String legacyColumn = "NEW" + "ROLE" + "1";
+		boolean legacyExists = columnExists("USERDB", legacyColumn);
+		boolean contributorExists = columnExists("USERDB", "NEWCONTRIBUTOR");
+
+		if (legacyExists && !contributorExists) {
+			statement.execute("ALTER TABLE userDB RENAME COLUMN "
+					+ legacyColumn + " TO newContributor");
+		} else if (legacyExists) {
+			statement.executeUpdate("UPDATE userDB SET newContributor = TRUE WHERE "
+					+ legacyColumn + " = TRUE");
+			statement.execute("ALTER TABLE userDB DROP COLUMN " + legacyColumn);
+		}
+	}
+
+	/******
+	 *
+	 * <p> Method: columnExists() </p>
+	 *
+	 * <p> Description: Checks the connected database metadata for a table column. </p>
+	 *
+	 * @param tableName table containing the requested column
+	 * @param columnName column whose existence is being checked
+	 * @return true when the specified column exists
+	 * @throws SQLException if the database metadata cannot be read
+	 *
+	 */
+	private boolean columnExists(String tableName, String columnName) throws SQLException {
+		try (ResultSet columns = connection.getMetaData().getColumns(
+				null, null, tableName, columnName)) {
+			return columns.next();
+		}
 	}
 
 	/**
@@ -167,8 +217,8 @@ public class Database {
 		if (role.equals("Admin")) {
 			columnName = "adminRole";
 		}
-		else if (role.equals("Role1")) {
-			columnName = "newRole1";
+		else if (role.equals("Contributor")) {
+			columnName = "newContributor";
 		}
 		else if (role.equals("Role2")) {
 			columnName = "newRole2";
@@ -197,7 +247,7 @@ public class Database {
 	 */
 	public void register(User user) throws SQLException {
 		String insertUser = "INSERT INTO userDB (userName, password, firstName, middleName, "
-				+ "lastName, preferredFirstName, emailAddress, adminRole, newRole1, newRole2) "
+				+ "lastName, preferredFirstName, emailAddress, adminRole, newContributor, newRole2) "
 				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement pstmt = connection.prepareStatement(insertUser)) {
 			currentUsername = user.getUserName();
@@ -224,8 +274,8 @@ public class Database {
 			currentAdminRole = user.getAdminRole();
 			pstmt.setBoolean(8, currentAdminRole);
 			
-			currentNewRole1 = user.getNewRole1();
-			pstmt.setBoolean(9, currentNewRole1);
+			currentNewContributor = user.getNewContributor();
+			pstmt.setBoolean(9, currentNewContributor);
 			
 			currentNewRole2 = user.getNewRole2();
 			pstmt.setBoolean(10, currentNewRole2);
@@ -266,7 +316,7 @@ public class Database {
 		List<UserAccountSummary> accountSummaries = new ArrayList<UserAccountSummary>();
 
 		String query = "SELECT userName, firstName, middleName, lastName, " 
-				+ "preferredFirstName, emailAddress, adminRole, newRole1, newRole2 " 
+				+ "preferredFirstName, emailAddress, adminRole, newContributor, newRole2 " 
 				+ "FROM userDB " 
 				+ "ORDER BY lastName, firstName, userName";
 
@@ -281,7 +331,7 @@ public class Database {
 							rs.getString("preferredFirstName"), 
 							rs.getString("emailAddress"), 
 							rs.getBoolean("adminRole"), 
-							rs.getBoolean("newRole1"), 
+							rs.getBoolean("newContributor"), 
 							rs.getBoolean("newRole2"));
 					accountSummaries.add(accountSummary);
 				}
@@ -311,14 +361,14 @@ public class Database {
 	}
 	
 	/**
-	 * Validates a Role1 user's credentials against the database.
+	 * Validates a Contributor user's credentials against the database.
 	 * 
-	 * @param user specifies the specific user attempting to log in under Role1
-	 * @return {@code true} if the specified user has been authenticated under Role1, else {@code false}
+	 * @param user specifies the specific user attempting to log in under Contributor
+	 * @return {@code true} if the specified user has been authenticated under Contributor, else {@code false}
 	 */
-	public boolean loginRole1(User user) {
+	public boolean loginContributor(User user) {
 		String query = "SELECT * FROM userDB WHERE userName = ? AND password = ? AND "
-				+ "newRole1 = TRUE";
+				+ "newContributor = TRUE";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			pstmt.setString(1, user.getUserName());
 			pstmt.setString(2, user.getPassword());
@@ -379,7 +429,7 @@ public class Database {
 	public int getNumberOfRoles(User user) {
 		int numberOfRoles = 0;
 		if (user.getAdminRole()) numberOfRoles++;
-		if (user.getNewRole1()) numberOfRoles++;
+		if (user.getNewContributor()) numberOfRoles++;
 		if (user.getNewRole2()) numberOfRoles++;
 		return numberOfRoles;
 	}	
@@ -740,7 +790,7 @@ public class Database {
 	    	currentPreferredFirstName = rs.getString(7);
 	    	currentEmailAddress = rs.getString(8);
 	    	currentAdminRole = rs.getBoolean(9);
-	    	currentNewRole1 = rs.getBoolean(10);
+	    	currentNewContributor = rs.getBoolean(10);
 	    	currentNewRole2 = rs.getBoolean(11);
 	    	tempPassword = rs.getString(12);
 			return true;
@@ -753,7 +803,7 @@ public class Database {
 	 * Updates a specified role for a specified user and refreshes the cached state.
 	 * 
 	 * @param username is the username of the user
-	 * @param role string that specifies the role to update ("Admin", "Role1", or "Role2")
+	 * @param role string that specifies the role to update ("Admin", "Contributor", or "Role2")
 	 * @param value string that specifies "true" or "false"
 	 * @return {@code true} if the update was successful, else {@code false}
 	 */
@@ -773,16 +823,16 @@ public class Database {
 				return false;
 			}
 		}
-		if (role.compareTo("Role1") == 0) {
-			String query = "UPDATE userDB SET newRole1 = ? WHERE username = ?";
+		if (role.compareTo("Contributor") == 0) {
+			String query = "UPDATE userDB SET newContributor = ? WHERE username = ?";
 			try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 				pstmt.setString(1, value);
 				pstmt.setString(2, username);
 				pstmt.executeUpdate();
 				if (value.compareTo("true") == 0)
-					currentNewRole1 = true;
+					currentNewContributor = true;
 				else
-					currentNewRole1 = false;
+					currentNewContributor = false;
 				return true;
 			} catch (SQLException e) {
 				return false;
@@ -882,11 +932,11 @@ public class Database {
 	public boolean getCurrentAdminRole() { return currentAdminRole; }
 
 	/**
-	 * Gets the current user's Role1 status.
+	 * Gets the current user's Contributor status.
 	 * 
-	 * @return {@code true} if this user has Role1, else {@code false}
+	 * @return {@code true} if this user has Contributor, else {@code false}
 	 */
-	public boolean getCurrentNewRole1() { return currentNewRole1; }
+	public boolean getCurrentNewContributor() { return currentNewContributor; }
 
 	/**
 	 * Gets the current user's Role2 status.
