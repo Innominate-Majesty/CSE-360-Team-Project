@@ -1299,4 +1299,193 @@ public class Database {
 		}
 		return false;
 	}
+	
+	/**
+	 * <p> Method: createExperienceTable() </p>
+	 * 
+	 * <p> Description: Ensures the database table for Experience exists. </p>
+	 */
+	public void createExperienceTable() {
+		String sql = "CREATE TABLE IF NOT EXISTS experiences ("
+				+ "experienceId INT PRIMARY KEY AUTO_INCREMENT, "
+				+ "lessonId INT, "
+				+ "author VARCHAR(255) NOT NULL, "
+				+ "timeSpentHours DOUBLE DEFAULT 0.0, "
+				+ "whatWasDone VARCHAR(4000) DEFAULT '', "
+				+ "howItWasDone VARCHAR(4000) DEFAULT '', "
+				+ "teamEffort VARCHAR(4000) DEFAULT '', "
+				+ "timeLocked BOOLEAN DEFAULT FALSE, "
+				+ "whatLocked BOOLEAN DEFAULT FALSE, "
+				+ "howLocked BOOLEAN DEFAULT FALSE, "
+				+ "effortLocked BOOLEAN DEFAULT FALSE);";
+		try (java.sql.Statement stmt = connection.createStatement()) {
+			stmt.execute(sql);
+		} catch (java.sql.SQLException e) {
+			System.err.println("Error initializing lessons_learned table: " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * <p> Method: createExperience() </p>
+	 * 
+	 * <p> Description: Inserts a new experience into the database. </p>
+	 * 
+	 * @param experience - the LessonsLearned object to persist
+	 * @return true if successful; false otherwise
+	 */
+	public boolean createExperience(entityClasses.Experience experience) {
+		createExperienceTable();
+		String sql = "INSERT INTO experiences(lessonId, author, timeSpentHours, whatWasDone, "
+				+ "howItWasDone, teamEffort, timeLocked, whatLocked, howLocked, "
+				+ "effortLocked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+			pstmt.setInt(1, experience.getLessonId());
+			pstmt.setString(2, experience.getAuthor());
+			pstmt.setDouble(3, experience.getTime());
+			pstmt.setString(4, experience.getWhat());
+			pstmt.setString(5, experience.getHow());
+			pstmt.setString(6, experience.getEffort());
+			pstmt.setBoolean(8, experience.getTimeLocked());
+			pstmt.setBoolean(9, experience.getWhatLocked());
+			pstmt.setBoolean(10, experience.getHowLocked());
+			pstmt.setBoolean(11, experience.getEffortLocked());
+			int affected = pstmt.executeUpdate();
+			if (affected > 0) {
+				try (java.sql.ResultSet rs = pstmt.getGeneratedKeys()) {
+					if (rs.next()) {
+						experience.setExperienceId(rs.getInt(1));
+					}
+				}
+				return true;
+			}
+		} catch (java.sql.SQLException e) {
+			System.err.println("Database insert error: " + e.getMessage());
+		}
+		return false;
+	}
+	
+	/**
+	 * <p> Method: getExperienceById() </p>
+	 * 
+	 * <p> Description: Retrieves a single experience by ID. </p>
+	 * 
+	 * @param experienceId - the primary key identifier
+	 * @return the Experience object, or null if not found
+	 */
+	public entityClasses.Experience getExperienceById(int experienceId) {
+		createExperienceTable();
+		String sql = "SELECT * FROM experience WHERE experienceId = ?";
+		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql)) {
+			pstmt.setInt(1, experienceId);
+			try (java.sql.ResultSet rs = pstmt.executeQuery()) {
+				if (rs.next()) {
+					return new entityClasses.Experience(
+							rs.getInt("experienceId"),
+							rs.getInt("lessonId"),
+							rs.getString("author"),
+							rs.getDouble("timeSpentHours"),
+							rs.getString("whatWasDone"),
+							rs.getString("howItWasDone"),
+							rs.getString("teamEffort"),
+							rs.getBoolean("timeLocked"),
+							rs.getBoolean("whatLocked"),
+							rs.getBoolean("howLocked"),
+							rs.getBoolean("effortLocked")
+					);
+				}
+			}
+		} catch (java.sql.SQLException e) {
+			System.err.println("Database lookup error: " + e.getMessage());
+		}
+		return null;
+	}
+	
+	/**
+	 * <p> Method: getAllExperiencesForLesson() </p>
+	 * 
+	 * <p> Description: Retrieves all experiences associated with a given lesson. </p>
+	 * 
+	 * @param lesson - the lesson ID
+	 * @return an ExperiencesList of results
+	 */
+	public entityClasses.ExperiencesList getAllExperiencesForLesson(int lessonId) {
+		createExperiencesTable();
+		entityClasses.ExperiencesList list = new entityClasses.ExperiencesList();
+		String sql = "SELECT * FROM experiences WHERE lessonId = ?";
+		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql)) {
+			pstmt.setString(1, lessonId);
+			try (java.sql.ResultSet rs = pstmt.executeQuery()) {
+				while (rs.next()) {
+					list.addExperience(new entityClasses.Experience(
+							rs.getInt("experienceId"),
+							rs.getInt("lessonId"),
+							rs.getString("author"),
+							rs.getDouble("timeSpentHours"),
+							rs.getString("whatWasDone"),
+							rs.getString("howItWasDone"),
+							rs.getString("teamEffort"),
+							rs.getBoolean("timeLocked"),
+							rs.getBoolean("whatLocked"),
+							rs.getBoolean("howLocked"),
+							rs.getBoolean("effortLocked")
+					));
+				}
+			}
+		} catch (java.sql.SQLException e) {
+			System.err.println("Database query error: " + e.getMessage());
+		}
+		return list;
+	}
+	
+	/**
+	 * <p> Method: updateExperience() </p>
+	 * 
+	 * <p> Description: Updates information for an existing experience. </p>
+	 * 
+	 * @param experience - the updated Experience instance
+	 * @return true if updated; false otherwise
+	 */
+	public boolean updateExperience(entityClasses.Experience experience) {
+		createExperienceTable();
+		String sql = "UPDATE experiences SET timeSpentHours = ?, whatWasDone = ?, "
+				+ "howItWasDone = ?, teamEffort = ?, timeLocked = ?, whatLocked = ?, "
+				+ "howLocked = ?, effortLocked = ? WHERE experienceId = ?";
+		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql)) {
+			pstmt.setDouble(1, experience.getTime());
+			pstmt.setString(2, experience.getWhat());
+			pstmt.setString(3, experience.getHow());
+			pstmt.setString(4, experience.getEffort());
+			pstmt.setBoolean(5, experience.getTimeLocked());
+			pstmt.setBoolean(6, experience.getWhatLocked());
+			pstmt.setBoolean(7, experience.getHowLocked());
+			pstmt.setBoolean(8, experience.getEffortLocked());
+			pstmt.setInt(9, experience.getExperienceId());
+			int rows = pstmt.executeUpdate();
+			return rows > 0;
+		} catch (java.sql.SQLException e) {
+			System.err.println("Database full update error: " + e.getMessage());
+		}
+		return false;
+	}
+	
+	/**
+	 * <p> Method: deleteExperience() </p>
+	 * 
+	 * <p> Description: Permanently deletes an experience from the database. </p>
+	 * 
+	 * @param experienceId - the ID of the experience to delete
+	 * @return true if record existed and was removed; false if record does not exist
+	 */
+	public boolean deleteExperience(int experienceId) {
+		createExperiencesTable();
+		String sql = "DELETE FROM experiences WHERE experienceId = ?";
+		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql)) {
+			pstmt.setInt(1, experienceId);
+			int rows = pstmt.executeUpdate();
+			return rows > 0;
+		} catch (java.sql.SQLException e) {
+			System.err.println("Database delete error: " + e.getMessage());
+		}
+		return false;
+	}
 }

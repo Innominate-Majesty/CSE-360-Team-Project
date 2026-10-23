@@ -25,11 +25,6 @@ public class Experience {
 	private String whatWasDone;			// Experience Info
 	private String howItWasDone;		// Experience Set Up
 	private String teamEffort;			// How Much Effort?
-	private int index;					// Index in the list of experiences for this lesson
-	private Experience prev;			// Previous experience in the list of experiences for this
-										// lesson
-	private Experience next;			// Next experience in the list of experiences for this
-										// lesson
 	private boolean[] locked = {false, false, false, false};	// Tracks the locked status of
 															//timeSpentHours, whatWasDone,
 															//howItWasDone, and teamEffort as an
@@ -48,9 +43,6 @@ public class Experience {
     	whatWasDone = "";
     	howItWasDone = "";
     	teamEffort = "";
-    	index = -1;
-    	prev = null;
-    	next = null;
     	locked[0] = false;
     	locked[1] = false;
     	locked[2] = false;
@@ -88,9 +80,6 @@ public class Experience {
 		this.whatWasDone = whatWasDone;
 		this.howItWasDone = howItWasDone;
 		this.teamEffort = teamEffort;
-		index = -1;
-		prev = null;
-		next = null;
     	locked[0] = false;
     	locked[1] = false;
     	locked[2] = false;
@@ -162,33 +151,6 @@ public class Experience {
     public String getEffort() { return teamEffort; }
     
     /*****
-     * <p> Method: int getIndex() </p>
-     * 
-     * <p> Description: This getter returns the index. </p>
-     * 
-     * @return an int of the experience's index
-     */
-    public int getIndex() { return index; }
-    
-    /*****
-     * <p> Method: Experience getPrev() </p>
-     * 
-     * <p> Description: This getter returns the previous experience. </p>
-     * 
-     * @return an Experience that's previous in the linked list
-     */
-    public Experience getPrev() { return prev; }
-    
-    /*****
-     * <p> Method: Experience getNext() </p>
-     * 
-     * <p> Description: This getter returns the next experience. </p>
-     * 
-     * @return an Experience that's next in the linked list
-     */
-    public Experience getNext() { return next; }
-    
-    /*****
      * <p> Method: boolean getExpLocked() </p>
      * 
      * <p> Description: This getter returns the locked status of the experience. </p>
@@ -234,6 +196,31 @@ public class Experience {
      * @return a boolean true if the teamEffort attribute is locked or false if not
      */
     public boolean getEffortLocked() { return locked[3]; }
+    
+    /**
+	 * <p> Method: validateId() </p>
+	 * 
+	 * <p> Description: Validates that an experience ID is a positive integer. </p>
+	 * 
+	 * @param id - the experience ID integer
+	 * @throws IllegalArgumentException if id is less than or equal to 0
+	 */
+	public static void validateId(int id) {
+		if (id <= 0) {
+			throw new IllegalArgumentException("Experience ID must be a positive integer.");
+		}
+	}
+	
+	/**
+	 * <p> Method: setExperienceId() </p>
+	 * 
+	 * <p> Description: Sets the unique identifier of the experience. </p>
+	 * 
+	 * @param experienceId - the experienceId integer to set
+	 */
+	public void setExperienceId(int experienceId) {
+		this.experienceId = experienceId;
+	}
     
     /**
 	 * <p> Method: validateTime() </p>
@@ -322,40 +309,6 @@ public class Experience {
 			return true;
 		}
 	}
-	
-	/*****
-	 * <p> Method: void setIndex(int newIndex) </p>
-	 * 
-	 * <p> Description: Changes the index of the experience in the list. Should only be called if
-	 * this experience is being added or one before it in the list is being deleted, so it is
-	 * protected and should only be called by the LessonsLearned class. </p>
-	 * 
-	 * @param newIndex is the new index of the experience.
-	 * 
-	 */
-	protected void setIndex(int newIndex) { index = newIndex; }
-	
-	/*****
-	 * <p> Method: void setPrev(Experience newPrev) </p>
-	 * 
-	 * <p> Description: Changes the previous experience in the list. Called under the same
-	 * circumstances as setIndex. </p>
-	 * 
-	 * @param newPrev is the new previous experience.
-	 * 
-	 */
-	protected void setPrev(Experience newPrev) { prev = newPrev; }
-	
-	/*****
-	 * <p> Method: void setNext(Experience newNext) </p>
-	 * 
-	 * <p> Description: Changes the nextexperience in the list. Called under the same
-	 * circumstances as setIndex. </p>
-	 * 
-	 * @param newNext is the new next experience.
-	 * 
-	 */
-	protected void setNext(Experience newNext) { prev = newNext; }
 	
 	/*****
 	 * <p> Method: void lockUnlockExperience() </p>
