@@ -16,6 +16,7 @@ package entityClasses;
  * 
  * @version 1.00	2026-10-03 Initial File
  * @version 1.1		2026-10-17 Updated Javadoc
+ * @version 1.11	2026-10-22 Updated validateFields to trim title
  */
 public class LessonsLearned {
 	
@@ -142,7 +143,7 @@ public class LessonsLearned {
 	 * @throws IllegalArgumentException if validation constraints are violated
 	 */
 	public static void validateFields(String title, String category, String problemDescription, String solution) {
-		if (title == null || title.length() < 5 || title.length() > 100) {
+		if (title == null || title.trim().length() < 5 || title.trim().length() > 100) {
 			throw new IllegalArgumentException("Title must be between 5 and 100 characters.");
 		}
 		if (category == null || category.trim().isEmpty() || 

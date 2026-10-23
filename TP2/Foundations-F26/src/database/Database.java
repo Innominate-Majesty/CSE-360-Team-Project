@@ -1137,6 +1137,9 @@ public class Database {
 	 * @return the LessonsLearned object, or null if not found
 	 */
 	public entityClasses.LessonsLearned getLessonById(int lessonId) {
+		if (lessonId <= 0) {
+			throw new IllegalArgumentException("Lesson ID must be a positive integer.");
+		}
 		createLessonsLearnedTable();
 		String sql = "SELECT * FROM lessons_learned WHERE lessonId = ?";
 		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -1211,6 +1214,9 @@ public class Database {
 	 * @return a LessonsLearnedList of matching records
 	 */
 	public entityClasses.LessonsLearnedList getLessonsByFilter(String category, String author) {
+		if (category == null || category.trim().isEmpty()) {
+			throw new IllegalArgumentException("Search query cannot be blank. Enter a valid keyword or category.");
+		}
 		createLessonsLearnedTable();
 		entityClasses.LessonsLearnedList list = new entityClasses.LessonsLearnedList();
 		String sql = "SELECT * FROM lessons_learned WHERE category = ? AND author = ?";
@@ -1279,6 +1285,9 @@ public class Database {
 	 * @return true if record existed and was removed; false if record does not exist
 	 */
 	public boolean deleteLesson(int lessonId) {
+		if (lessonId <= 0) {
+			throw new IllegalArgumentException("Lesson ID must be a positive integer.");
+		}
 		createLessonsLearnedTable();
 		String sql = "DELETE FROM lessons_learned WHERE lessonId = ?";
 		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql)) {
