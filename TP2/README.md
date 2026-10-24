@@ -1,6 +1,7 @@
 ### TP2 Details ###
 
 Introduction
+
 The goal of this team project phase is to add functionality to the TP1 requirements and build on the TP1 and HW2 experiences of the team to produce a TP2 submission.  Similar to Team Project Phase 1, this phase’s assignment requires a coherent team solution based on the various solutions each individual produced for the two Parts of the HW2 submission.
 
 The First Part: The HW2 application enhanced the Foundations code by adding the GUI and supporting methods to create lessons learned and lists of lessons learned.  This is crucial for TP2, so the team must explore the various implementations and select one or parts of several that move the project forward.
