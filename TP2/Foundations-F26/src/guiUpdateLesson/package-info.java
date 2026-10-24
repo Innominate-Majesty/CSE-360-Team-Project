@@ -6,8 +6,8 @@
  * the contributor's changes. The Model retrieves and saves the selected Lesson and
  * Experience records in the database. </p>
  *
- * @author Alexander Murray
  * @author Venus Ho
+ * @author Alexander Murray
  * @author Alan Shimp
  * @author Caleb Beaven
  * @author Krithik Duraisamy

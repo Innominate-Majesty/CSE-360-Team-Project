@@ -14,13 +14,13 @@ import entityClasses.LessonsLearned;
  *
  * <p> Copyright: Lynn Robert Carter © 2025 </p>
  *
- * @author Alexander Murray
  * @author Venus Ho
+ * @author Alexander Murray
  * @author Alan Shimp
  * @author Caleb Beaven
  * @author Krithik Duraisamy
  *
- * @version 1.00		2026-10-23 Initial version
+ * @version 1.0         2026-10-23 Initial version after MVC refactoring
  *
  */
 

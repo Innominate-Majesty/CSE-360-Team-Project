@@ -6,8 +6,8 @@
  * information entered by the contributor. The Model saves the Lesson and Experience
  * and removes the Lesson if the Experience cannot be saved. </p>
  *
- * @author Alexander Murray
  * @author Venus Ho
+ * @author Alexander Murray
  * @author Alan Shimp
  * @author Caleb Beaven
  * @author Krithik Duraisamy

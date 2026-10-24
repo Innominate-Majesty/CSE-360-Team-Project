@@ -26,7 +26,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
@@ -47,9 +46,17 @@ import javafx.stage.Stage;
  * 
  * @author Lynn Robert Carter
  * 
- * @version 1.00		2025-08-20 Initial version
- * @version 1.01		2026-10-04 Added Contributor role commands
- * @version 1.02 		2026-10-12 Updated Contributor Home Page UI 
+ * @author Venus Ho
+ * @author Alexander Murray
+ * @author Alan Shimp
+ * @author Caleb Beaven
+ * @author Krithik Duraisamy
+ * 
+ * @version 1.0         2025-08-20 Initial version
+ * @version 2.0         2026-10-04 Added Contributor role commands
+ * @version 2.1         2026-10-12 Updated Contributor Home Page UI
+ * @version 2.2         2026-10-22 Added dynamic window resizing
+ * @version 2.3         2026-10-23 Updated class after refactoring
  *  
  */
 

@@ -20,17 +20,17 @@ import guiUpdateLesson.ControllerUpdateLesson;
  * 
  * @author Lynn Robert Carter
  * 
- * @author Alexander Murray
  * @author Venus Ho
+ * @author Alexander Murray
  * @author Alan Shimp
  * @author Caleb Beaven
  * @author Krithik Duraisamy
  * 
- * @version 1.00        2025-08-17 Initial version
- * @version 1.01        2025-09-16 Update Javadoc documentation
+ * @version 1.0         2025-08-17 Initial version
+ * @version 1.1         2025-09-16 Updated Javadoc documentation
  * 
- * @version 2.0 		2026-10-22 Refactor class name
- * @version 2.1			2026-10-23 Update class
+ * @version 2.0         2026-10-22 Refactored class name from Role1 to Contributor
+ * @version 2.1         2026-10-23 Delegated features to separate MVC packages
  * 
  */
 public class ControllerContributorHome {

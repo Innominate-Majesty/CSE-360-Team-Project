@@ -6,8 +6,8 @@
  * that the selected Lesson belongs to the contributor. The Model retrieves and saves
  * Experience records in the database. The locking data is for TP3. </p>
  *
- * @author Alexander Murray
  * @author Venus Ho
+ * @author Alexander Murray
  * @author Alan Shimp
  * @author Caleb Beaven
  * @author Krithik Duraisamy

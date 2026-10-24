@@ -7,8 +7,8 @@
  * actions. The Model retrieves the Lesson and Experiences and deletes the Lesson when
  * requested. </p>
  *
- * @author Alexander Murray
  * @author Venus Ho
+ * @author Alexander Murray
  * @author Alan Shimp
  * @author Caleb Beaven
  * @author Krithik Duraisamy

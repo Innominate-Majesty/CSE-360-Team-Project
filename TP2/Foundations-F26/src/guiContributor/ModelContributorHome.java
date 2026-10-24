@@ -24,9 +24,16 @@ import entityClasses.LessonsLearnedList;
  * 
  * @author Lynn Robert Carter
  * 
- * @version 1.00		2025-08-15 Initial version
- * @version 1.01		2025-09-13 Updated JavaDoc description
- * @version 1.02		2026-10-23 Added Contributor lesson data operations
+ * @author Venus Ho
+ * @author Alexander Murray
+ * @author Alan Shimp
+ * @author Caleb Beaven
+ * @author Krithik Duraisamy
+ * 
+ * @version 1.0         2025-08-15 Initial version
+ * @version 1.1         2025-09-13 Updated Javadoc description
+ * @version 2.0         2026-10-23 Added Contributor lesson data operations
+ * @version 2.1         2026-10-23 Updated class after refactoring
  *  
  */
 

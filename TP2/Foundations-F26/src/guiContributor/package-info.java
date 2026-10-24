@@ -6,8 +6,8 @@
  * actions and opens the correct page for each feature. The Model retrieves, searches,
  * filters, and sorts the contributor's lessons. </p>
  *
- * @author Alexander Murray
  * @author Venus Ho
+ * @author Alexander Murray
  * @author Alan Shimp
  * @author Caleb Beaven
  * @author Krithik Duraisamy
