@@ -1,12 +1,7 @@
 package guiContributor;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
-import database.Database;
 import entityClasses.LessonsLearned;
 import entityClasses.LessonsLearnedList;
 import entityClasses.User;
@@ -36,7 +31,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
-import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 
@@ -223,9 +217,6 @@ public class ViewContributorHome {
 	// These attributes are used to configure the page and populate it with this user's information
 	private static ViewContributorHome theView;		// Used to determine if instantiation of the class is needed
 
-	// Reference for the in-memory database so this package has access
-	private static Database theDatabase = applicationMain.FoundationsMain.database;
-
 	protected static Stage theStage;			// The Stage that JavaFX has established for us
 	protected static Pane theRootPane;			// The Pane that holds all the GUI widgets
 	protected static User theUser;				// The current logged in User
@@ -278,7 +269,7 @@ public class ViewContributorHome {
 		
 		// Populate the dynamic aspects of the GUI with the data from the user and the current
 		// state of the system.
-		theDatabase.getUserAccountDetails(user.getUserName());
+		ModelContributorHome.loadUserAccountDetails(user.getUserName());
 		applicationMain.FoundationsMain.activeHomePage = theRole;
 
 		// Stores the active username in the original user details label
@@ -958,7 +949,8 @@ public class ViewContributorHome {
 			title.setOnMouseExited((_) -> title.setStyle(base));
 
 			// Opens the selected lesson in the Lesson Details popup
-			title.setOnMouseClicked((_) -> showLessonDetails(lesson));
+			title.setOnMouseClicked((_) ->
+					ControllerContributorHome.handleOpenLessonDetails(lesson));
 
 			// Adds the completed title card to the results
 			box_MyLessons.getChildren().add(title);
@@ -1053,7 +1045,9 @@ public class ViewContributorHome {
 				int id = Integer.parseInt(textfield_LessonId.getText().trim());
 
 				// Retrieves the lesson associated with the entered ID
-				LessonsLearned lesson = theDatabase.getLessonById(id);
+				LessonsLearned lesson = ModelContributorHome.getContributorLessonById(
+						id,
+						theUser.getUserName());
 
 				// Checks that the lesson exists and belongs to the active contributor
 				if (lesson != null && lesson.getAuthor().equals(theUser.getUserName())) {
@@ -1083,7 +1077,7 @@ public class ViewContributorHome {
 		if (!textfield_Category.getText().trim().isEmpty()) {
 
 			// Retrieves lessons matching the category and active contributor
-			LessonsLearnedList matches = theDatabase.getLessonsByFilter(
+			LessonsLearnedList matches = ModelContributorHome.getLessonsByFilter(
 					textfield_Category.getText().trim(),
 					theUser.getUserName());
 
@@ -1130,28 +1124,10 @@ public class ViewContributorHome {
 			return;
 		}
 
-		// Retrieves every lesson created by the active contributor
-		LessonsLearnedList storedLessons =
-				theDatabase.getAllLessonsForContributor(theUser.getUserName());
-
-		// Creates a collection for lessons that match the search
-		LessonsLearnedList matches = new LessonsLearnedList();
-
-		// Checks each stored lesson for the entered title or keyword
-		for (LessonsLearned lesson : storedLessons.getLessons()) {
-
-			// Checks the searchable lesson fields for a partial match
-			if (containsKeyword(lesson.getTitle(), query)
-					|| containsKeyword(lesson.getProblemDescription(), query)
-					|| containsKeyword(lesson.getSolution(), query)
-					|| containsKeyword(lesson.getWhatWasDone(), query)
-					|| containsKeyword(lesson.getHowItWasDone(), query)
-					|| containsKeyword(lesson.getTeamEffort(), query)) {
-
-				// Adds the matching lesson to the result collection
-				matches.addLesson(lesson);
-			}
-		}
+		// Retrieves lessons matching the entered title or keyword
+		LessonsLearnedList matches = ModelContributorHome.searchLessons(
+				query,
+				theUser.getUserName());
 
 		// Checks whether the search found any lessons
 		if (matches.isEmpty()) {
@@ -1161,25 +1137,6 @@ public class ViewContributorHome {
 			// Displays the matching lessons
 			displaySearchResults(matches);
 		}
-	}
-
-	/******
-	 * 
-	 * <p> Method: containsKeyword() </p>
-	 * 
-	 * <p> Description: Performs a null-safe and case-insensitive partial keyword
-	 * comparison. </p>
-	 * 
-	 * @param value lesson text being searched
-	 * @param query normalized keyword entered by the user
-	 * @return true when the lesson text contains the keyword
-	 * 
-	 */
-
-	private static boolean containsKeyword(String value, String query) {
-
-		// Returns whether the available text contains the keyword
-		return value != null && value.toLowerCase().contains(query);
 	}
 
 	/******
@@ -1717,233 +1674,6 @@ public class ViewContributorHome {
 
 	/******
 	 * 
-	 * <p> Method: styleDeleteButton() </p>
-	 * 
-	 * <p> Description: Applies red destructive-action styling and hover behavior
-	 * to a button. </p>
-	 * 
-	 * @param button destructive action button being styled
-	 * 
-	 */
-
-	private static void styleDeleteButton(Button button) {
-
-		// Defines the normal destructive-action appearance
-		String base =
-				"-fx-background-color: " + SURFACE_COLOR + ";"
-				+ "-fx-text-fill: #B44747;"
-				+ "-fx-border-color: #E3BABA;"
-				+ "-fx-border-width: 1;"
-				+ "-fx-border-radius: 8;"
-				+ "-fx-background-radius: 8;"
-				+ "-fx-padding: 8 14 8 14;"
-				+ "-fx-cursor: hand;";
-
-		// Defines the destructive-action hover appearance
-		String hover =
-				"-fx-background-color: #F7E8E8;"
-				+ "-fx-text-fill: #9B3A3A;"
-				+ "-fx-border-color: #C96A6A;"
-				+ "-fx-border-width: 1;"
-				+ "-fx-border-radius: 8;"
-				+ "-fx-background-radius: 8;"
-				+ "-fx-padding: 8 14 8 14;"
-				+ "-fx-cursor: hand;";
-
-		// Applies the normal destructive-action appearance
-		button.setStyle(base);
-
-		// Applies the hover appearance when the pointer enters
-		button.setOnMouseEntered((_) -> button.setStyle(hover));
-
-		// Restores the normal appearance when the pointer exits
-		button.setOnMouseExited((_) -> button.setStyle(base));
-	}
-
-	/******
-	 * 
-	 * <p> Method: showLessonDetails() </p>
-	 * 
-	 * <p> Description: Opens the selected lesson in a smaller details window and
-	 * provides Update, Delete, and Close actions. </p>
-	 * 
-	 * @param lesson lesson whose information will be displayed
-	 * 
-	 */
-
-	protected static void showLessonDetails(LessonsLearned lesson) {
-
-		// Creates the Lesson Details window
-		Stage detailStage = new Stage();
-
-		// Keeps the detail window associated with the contributor page
-		detailStage.initModality(Modality.WINDOW_MODAL);
-
-		// Sets the contributor page as the owner
-		detailStage.initOwner(theStage);
-
-		// Sets the window title
-		detailStage.setTitle("Lesson Details");
-
-		// Creates the lesson-title heading
-		Label heading = new Label(lesson.getTitle());
-
-		// Allows a long lesson title to wrap
-		heading.setWrapText(true);
-
-		// Allows the heading to use the available header width
-		heading.setMaxWidth(Double.MAX_VALUE);
-
-		// Applies the heading style
-		heading.setStyle(
-				"-fx-font-family: 'Helvetica';"
-				+ "-fx-font-size: 22;"
-				+ "-fx-font-weight: bold;"
-				+ "-fx-text-fill: " + PRIMARY_TEXT + ";");
-
-		// Creates the lesson-information section
-		VBox details = new VBox(
-				11,
-				createDetailLabel("Lesson ID", String.valueOf(lesson.getLessonId())),
-				createDetailLabel("Category", lesson.getCategory()),
-				createDetailLabel("Author", lesson.getAuthor()),
-				createDetailLabel("Problem Description", lesson.getProblemDescription()),
-				createDetailLabel("Solution", lesson.getSolution()),
-				createDetailLabel("Time Spent", lesson.getTimeSpentHours() + " hours"),
-				createDetailLabel("What Was Done", lesson.getWhatWasDone()),
-				createDetailLabel("How It Was Done", lesson.getHowItWasDone()),
-				createDetailLabel("Team Effort", lesson.getTeamEffort()));
-
-		// Creates the Close button
-		Button close = new Button("Close");
-
-		// Applies the primary sage button style
-		stylePrimaryButton(close);
-
-		// Allows Enter to activate Close
-		close.setDefaultButton(true);
-
-		// Closes the detail window
-		close.setOnAction((_) -> detailStage.close());
-
-		// Creates the Update button
-		Button update = new Button("Update");
-
-		// Applies the secondary button style
-		styleSecondaryButton(update);
-
-		// Opens the existing Update form for the selected lesson
-		update.setOnAction((_) -> {
-			selectLesson(lesson);
-			detailStage.close();
-			ControllerContributorHome.handleOpenUpdateWindow();
-		});
-
-		// Creates the Delete button
-		Button delete = new Button("Delete");
-
-		// Applies the destructive-action style
-		styleDeleteButton(delete);
-
-		// Runs the existing Delete action for the selected lesson
-		delete.setOnAction((_) -> {
-			selectLesson(lesson);
-			detailStage.close();
-			ControllerContributorHome.handleDeleteLesson();
-		});
-
-		// Allows the heading to occupy unused horizontal space
-		HBox.setHgrow(heading, Priority.ALWAYS);
-
-		// Places Update and Delete in the upper-right corner
-		HBox header = new HBox(10, heading, update, delete);
-
-		// Aligns the header actions
-		header.setAlignment(Pos.TOP_RIGHT);
-
-		// Places Close in a separate lower-right action row
-		HBox closeAction = new HBox(close);
-
-		// Aligns Close to the right
-		closeAction.setAlignment(Pos.CENTER_RIGHT);
-
-		// Arranges the header, details, and Close action vertically
-		VBox content = new VBox(16, header, details, closeAction);
-
-		// Adds space around the popup content
-		content.setPadding(new Insets(24));
-
-		// Applies the page background color
-		content.setStyle("-fx-background-color: " + PAGE_BACKGROUND + ";");
-
-		// Makes long lesson details scrollable
-		ScrollPane scroll = new ScrollPane(content);
-
-		// Makes the content fill the popup width
-		scroll.setFitToWidth(true);
-
-		// Applies the sage background to the scrollable area
-		scroll.setStyle(
-				"-fx-background: " + PAGE_BACKGROUND + ";"
-				+ "-fx-background-color: " + PAGE_BACKGROUND + ";");
-
-		// Adds the popup content to its scene
-		detailStage.setScene(new Scene(scroll, 570, 500));
-
-		// Keeps the popup at its intended size
-		detailStage.setResizable(false);
-
-		// Displays the popup and waits for it to close
-		detailStage.showAndWait();
-	}
-
-	/******
-	 * 
-	 * <p> Method: createDetailLabel() </p>
-	 * 
-	 * <p> Description: Creates one labeled and wrapped information block for the
-	 * Lesson Details window. </p>
-	 * 
-	 * @param name field name displayed above the value
-	 * @param value lesson information being displayed
-	 * @return vertically arranged field name and value
-	 * 
-	 */
-	
-	private static VBox createDetailLabel(String name, String value) {
-
-		// Creates the uppercase field name
-		Label nameLabel = new Label(name.toUpperCase());
-
-		// Applies the accent style to the field name
-		nameLabel.setStyle(
-				"-fx-font-family: 'Helvetica';"
-				+ "-fx-font-size: 10;"
-				+ "-fx-font-weight: bold;"
-				+ "-fx-text-fill: " + ACCENT_COLOR + ";");
-
-		// Displays a fallback when the lesson field is empty
-		Label valueLabel = new Label(
-				value == null || value.isBlank() ? "Not provided" : value);
-
-		// Allows long lesson information to wrap
-		valueLabel.setWrapText(true);
-
-		// Limits the value to the popup content width
-		valueLabel.setMaxWidth(500);
-
-		// Applies the primary text style to the value
-		valueLabel.setStyle(
-				"-fx-font-family: 'Helvetica';"
-				+ "-fx-font-size: 13;"
-				+ "-fx-text-fill: " + PRIMARY_TEXT + ";");
-
-		// Returns the completed information block
-		return new VBox(3, nameLabel, valueLabel);
-	}
-
-	/******
-	 * 
 	 * <p> Method: styleComboBox() </p>
 	 * 
 	 * <p> Description: Applies the updated UI style to a dropdown control. </p>
@@ -2108,21 +1838,9 @@ public class ViewContributorHome {
 		// Remembers the currently selected category
 		String currentCategory = combo_CategoryFilter.getValue();
 
-		// Retrieves every lesson created by the active contributor
-		LessonsLearnedList lessons = theDatabase.getAllLessonsForContributor(theUser.getUserName());
-
-		// Creates an alphabetically ordered collection of unique categories
-		Set<String> categories = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-
-		// Checks every lesson for an available category
-		for (LessonsLearned lesson : lessons.getLessons()) {
-
-			// Adds each nonempty category once
-			if (lesson.getCategory() != null
-					&& !lesson.getCategory().isBlank()) {
-				categories.add(lesson.getCategory());
-			}
-		}
+		// Retrieves the contributor's alphabetically ordered categories
+		Set<String> categories = ModelContributorHome.getContributorCategories(
+				theUser.getUserName());
 
 		// Restores the default category option
 		combo_CategoryFilter.getItems().setAll("All Categories");
@@ -2158,68 +1876,17 @@ public class ViewContributorHome {
 	
 	private static void applyFilterAndSort() {
 
-		// Retrieves every lesson created by the active contributor
-		LessonsLearnedList storedLessons = theDatabase.getAllLessonsForContributor(theUser.getUserName());
-
-		// Creates a modifiable list for filtering and sorting
-		List<LessonsLearned> lessons = new ArrayList<>(storedLessons.getLessons());
-
 		// Reads the selected category
 		String category = combo_CategoryFilter.getValue();
-
-		// Removes lessons that do not match the selected category
-		if (category != null && !category.equals("All Categories")) {
-			lessons.removeIf((lesson) -> !category.equalsIgnoreCase(lesson.getCategory()));
-		}
 
 		// Reads the selected sorting order
 		String order = combo_SortOrder.getValue();
 
-		// Stores the sorting rule that will be applied
-		Comparator<LessonsLearned> comparator;
-
-		// Sorts lower lesson IDs before higher IDs
-		if ("Oldest first".equals(order)) {
-			comparator = Comparator.comparingInt(LessonsLearned::getLessonId);
-
-		// Sorts lesson titles alphabetically
-		} else if ("Title A–Z".equals(order)) {
-			comparator =
-					Comparator.comparing(
-							LessonsLearned::getTitle,
-							String.CASE_INSENSITIVE_ORDER);
-
-		// Sorts lesson titles in reverse alphabetical order
-		} else if ("Title Z–A".equals(order)) {
-			comparator =
-					Comparator.comparing(
-							LessonsLearned::getTitle,
-							String.CASE_INSENSITIVE_ORDER)
-					.reversed();
-
-		// Sorts categories alphabetically and then sorts matching titles
-		} else if ("Category A–Z".equals(order)) {
-			comparator =
-					Comparator.comparing(
-							LessonsLearned::getCategory,
-							String.CASE_INSENSITIVE_ORDER)
-					.thenComparing(
-							LessonsLearned::getTitle,
-							String.CASE_INSENSITIVE_ORDER);
-
-		// Sorts higher lesson IDs before lower IDs
-		} else {
-			comparator =
-					Comparator.comparingInt(LessonsLearned::getLessonId)
-					.reversed();
-		}
-
-		// Applies the selected sorting rule
-		lessons.sort(comparator);
-
-		// Converts the filtered list into the project's lesson collection
-		LessonsLearnedList results =
-				new LessonsLearnedList(lessons);
+		// Retrieves lessons after the Model applies the selected filter and order
+		LessonsLearnedList results = ModelContributorHome.filterAndSortLessons(
+				theUser.getUserName(),
+				category,
+				order);
 
 		// Checks whether the selected filter returned any lessons
 		if (results.isEmpty()) {

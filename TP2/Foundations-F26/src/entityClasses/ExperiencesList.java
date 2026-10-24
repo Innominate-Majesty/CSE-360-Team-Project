@@ -10,7 +10,7 @@ import java.util.List;
  * as any subset of them (e.g., matching a category filter or contributor query). Supports
  * empty, single, and large collections of Experience instances. </p>
  * 
- * <p>Copyright: ASU Team 15 (Fall 2026)</p>
+ * <p> Copyright: ASU Team 15 (Fall 2026)</p>
  * 
  * @author Alexander Murray
  * @author Venus Ho
@@ -19,6 +19,7 @@ import java.util.List;
  * @author Krithik Duraisamy
  * 
  * @version 1.00	2026-10-22 Initial File
+ * @version 1.01	2026-10-23 Updated constructor
  */
 public class ExperiencesList {
 	
@@ -43,7 +44,8 @@ public class ExperiencesList {
 	 * 
 	 * @param experiences the List of Experience entities to wrap
 	 */
-	public LessonsLearnedList(List<Experience> experiences) {
+
+	public ExperiencesList(List<Experience> experiences) {
 		if (experiences != null) {
 			this.experiences = new ArrayList<>(experiences);
 		} else {

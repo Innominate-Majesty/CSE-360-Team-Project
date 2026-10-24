@@ -10,7 +10,6 @@ package entityClasses;
  * 
  * @author Alan G. Shimp
  * 
- * 
  */
 
 public class Experience {
@@ -31,7 +30,7 @@ public class Experience {
 															//array of booleans
 	
 	/*****
-     * <p> Method: Experience() </p>
+     * <p> Constructor: Experience() </p>
      * 
      * <p> Description: This default constructor is not used in this system. </p>
      */
@@ -50,7 +49,7 @@ public class Experience {
     }
 	
 	/*****
-	 * <p> Method: Experience(int experienceId, int lessonId, String author, double timeSpentHours,
+	 * <p> Constructor: Experience(int experienceId, int lessonId, String author, double timeSpentHours,
 	 * String whatWasDone, String howItWasDone, String teamEffort) </p>
 	 * 
 	 * <p> Description: This constructor is used to establish experience entity objects. </p>
@@ -73,6 +72,7 @@ public class Experience {
 	 */
 	public Experience(int experienceId, int lessonId, String author, double timeSpentHours,
 			String whatWasDone, String howItWasDone, String teamEffort) {
+
 		this.experienceId = experienceId;
 		this.lessonId = lessonId;
 		this.author = author;
@@ -80,10 +80,11 @@ public class Experience {
 		this.whatWasDone = whatWasDone;
 		this.howItWasDone = howItWasDone;
 		this.teamEffort = teamEffort;
-    	locked[0] = false;
-    	locked[1] = false;
-    	locked[2] = false;
-    	locked[3] = false;
+    	this.locked[0] = false;
+    	this.locked[1] = false;
+    	this.locked[2] = false;
+    	this.locked[3] = false;
+
 	}
 	
 	/*****

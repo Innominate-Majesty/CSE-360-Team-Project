@@ -1279,25 +1279,113 @@ public class Database {
 	/**
 	 * <p> Method: deleteLesson() </p>
 	 * 
-	 * <p> Description: Permanently deletes a lesson from the database. </p>
+	 * <p> Description: Permanently deletes a lesson and every Experience associated
+	 * with its Lesson ID. The operations use one transaction so partial deletion
+	 * does not leave inconsistent database records. </p>
 	 * 
 	 * @param lessonId - the ID of the lesson to delete
-	 * @return true if record existed and was removed; false if record does not exist
+	 * @return true if the lesson existed and was removed; false otherwise
 	 */
 	public boolean deleteLesson(int lessonId) {
+
+		// Validates the Lesson ID
 		if (lessonId <= 0) {
-			throw new IllegalArgumentException("Lesson ID must be a positive integer.");
+			throw new IllegalArgumentException(
+					"Lesson ID must be a positive integer.");
 		}
+
+		// Ensures the Lesson table exists
 		createLessonsLearnedTable();
-		String sql = "DELETE FROM lessons_learned WHERE lessonId = ?";
-		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql)) {
-			pstmt.setInt(1, lessonId);
-			int rows = pstmt.executeUpdate();
-			return rows > 0;
-		} catch (java.sql.SQLException e) {
-			System.err.println("Database delete error: " + e.getMessage());
+
+		// Ensures the Experience table exists
+		createExperienceTable();
+
+		// Defines the command for deleting associated Experiences
+		String deleteExperiences =
+				"DELETE FROM experiences WHERE lessonId = ?";
+
+		// Defines the command for deleting the lesson
+		String deleteLesson =
+				"DELETE FROM lessons_learned WHERE lessonId = ?";
+
+		// Stores the connection's original transaction setting
+		boolean originalAutoCommit = true;
+
+		try {
+			// Remembers whether automatic commits were enabled
+			originalAutoCommit =
+					connection.getAutoCommit();
+
+			// Begins one transaction for both deletion operations
+			connection.setAutoCommit(false);
+
+			// Prepares both deletion commands
+			try (
+					PreparedStatement experienceStatement =
+							connection.prepareStatement(
+									deleteExperiences);
+					PreparedStatement lessonStatement =
+							connection.prepareStatement(
+									deleteLesson)) {
+
+				// Identifies the Experiences associated with the lesson
+				experienceStatement.setInt(
+						1,
+						lessonId);
+
+				// Deletes every associated Experience
+				experienceStatement.executeUpdate();
+
+				// Identifies the lesson being deleted
+				lessonStatement.setInt(
+						1,
+						lessonId);
+
+				// Deletes the selected lesson
+				int lessonRows =
+						lessonStatement.executeUpdate();
+
+				// Checks whether the lesson existed
+				if (lessonRows > 0) {
+
+					// Permanently saves both deletion operations
+					connection.commit();
+					return true;
+				}
+
+				// Reverses the operations when the lesson did not exist
+				connection.rollback();
+				return false;
+			}
+		} catch (SQLException exception) {
+
+			// Attempts to reverse incomplete deletion operations
+			try {
+				connection.rollback();
+			} catch (SQLException rollbackException) {
+				System.err.println(
+						"Database rollback error: "
+						+ rollbackException.getMessage());
+			}
+
+			// Reports the database deletion error
+			System.err.println(
+					"Database delete error: "
+					+ exception.getMessage());
+
+			return false;
+		} finally {
+
+			// Restores the connection's original transaction setting
+			try {
+				connection.setAutoCommit(
+						originalAutoCommit);
+			} catch (SQLException exception) {
+				System.err.println(
+						"Database transaction reset error: "
+						+ exception.getMessage());
+			}
 		}
-		return false;
 	}
 	
 	/**
@@ -1345,10 +1433,10 @@ public class Database {
 			pstmt.setString(4, experience.getWhat());
 			pstmt.setString(5, experience.getHow());
 			pstmt.setString(6, experience.getEffort());
-			pstmt.setBoolean(8, experience.getTimeLocked());
-			pstmt.setBoolean(9, experience.getWhatLocked());
-			pstmt.setBoolean(10, experience.getHowLocked());
-			pstmt.setBoolean(11, experience.getEffortLocked());
+			pstmt.setBoolean(7, experience.getTimeLocked());
+			pstmt.setBoolean(8, experience.getWhatLocked());
+			pstmt.setBoolean(9, experience.getHowLocked());
+			pstmt.setBoolean(10, experience.getEffortLocked());
 			int affected = pstmt.executeUpdate();
 			if (affected > 0) {
 				try (java.sql.ResultSet rs = pstmt.getGeneratedKeys()) {
@@ -1374,7 +1462,7 @@ public class Database {
 	 */
 	public entityClasses.Experience getExperienceById(int experienceId) {
 		createExperienceTable();
-		String sql = "SELECT * FROM experience WHERE experienceId = ?";
+		String sql = "SELECT * FROM experiences WHERE experienceId = ?";
 		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql)) {
 			pstmt.setInt(1, experienceId);
 			try (java.sql.ResultSet rs = pstmt.executeQuery()) {
@@ -1386,11 +1474,11 @@ public class Database {
 							rs.getDouble("timeSpentHours"),
 							rs.getString("whatWasDone"),
 							rs.getString("howItWasDone"),
-							rs.getString("teamEffort"),
-							rs.getBoolean("timeLocked"),
-							rs.getBoolean("whatLocked"),
-							rs.getBoolean("howLocked"),
-							rs.getBoolean("effortLocked")
+							rs.getString("teamEffort")
+							// rs.getBoolean("timeLocked"),
+							// rs.getBoolean("whatLocked"),
+							// rs.getBoolean("howLocked"),
+							// rs.getBoolean("effortLocked")
 					);
 				}
 			}
@@ -1408,12 +1496,13 @@ public class Database {
 	 * @param lesson - the lesson ID
 	 * @return an ExperiencesList of results
 	 */
+
 	public entityClasses.ExperiencesList getAllExperiencesForLesson(int lessonId) {
-		createExperiencesTable();
+		createExperienceTable();
 		entityClasses.ExperiencesList list = new entityClasses.ExperiencesList();
 		String sql = "SELECT * FROM experiences WHERE lessonId = ?";
 		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql)) {
-			pstmt.setString(1, lessonId);
+			pstmt.setInt(1, lessonId);
 			try (java.sql.ResultSet rs = pstmt.executeQuery()) {
 				while (rs.next()) {
 					list.addExperience(new entityClasses.Experience(
@@ -1423,11 +1512,11 @@ public class Database {
 							rs.getDouble("timeSpentHours"),
 							rs.getString("whatWasDone"),
 							rs.getString("howItWasDone"),
-							rs.getString("teamEffort"),
-							rs.getBoolean("timeLocked"),
-							rs.getBoolean("whatLocked"),
-							rs.getBoolean("howLocked"),
-							rs.getBoolean("effortLocked")
+							rs.getString("teamEffort")
+							// rs.getBoolean("timeLocked"),
+							// rs.getBoolean("whatLocked"),
+							// rs.getBoolean("howLocked"),
+							// rs.getBoolean("effortLocked")
 					));
 				}
 			}
@@ -1477,7 +1566,7 @@ public class Database {
 	 * @return true if record existed and was removed; false if record does not exist
 	 */
 	public boolean deleteExperience(int experienceId) {
-		createExperiencesTable();
+		createExperienceTable();
 		String sql = "DELETE FROM experiences WHERE experienceId = ?";
 		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql)) {
 			pstmt.setInt(1, experienceId);
