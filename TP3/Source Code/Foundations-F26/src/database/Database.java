@@ -16,13 +16,19 @@ import entityClasses.UserAccountSummary;
  * <p>Copyright: Lynn Robert Carter © 2025</p>
  * 
  * @author Lynn Robert Carter
- * @author Alan G. Shimp
+ * 
+ * @author Venus Ho
+ * @author Alexander Murray
+ * @author Alan Shimp
+ * @author Caleb Beaven
+ * @author Krithik Duraisamy
  * 
  * @version 2.00        2025-04-29 Updated and expanded from the version produced by Pravalika 
  *                             Mukkiri and Ishwarya Hidkimath Basavaraj
  * @version 2.01        2025-12-17 Minor updates for Spring 2026
- * @version 2.02        2026-09-12 Added deleteUser() method for TP1
- * @version 2.03        2026-09-16 Added updatePassword() method for TP1
+ * 
+ * @version 3.00        2026-09-12 Added deleteUser() method for TP1
+ * @version 3.1        2026-09-16 Added updatePassword() method for TP1
  */
 public class Database {
 
@@ -1082,9 +1088,15 @@ public class Database {
 				+ "whatWasDone VARCHAR(4000) DEFAULT '', "
 				+ "howItWasDone VARCHAR(4000) DEFAULT '', "
 				+ "teamEffort VARCHAR(4000) DEFAULT '', "
-				+ "isLocked BOOLEAN DEFAULT FALSE);";
+				+ "isLocked BOOLEAN DEFAULT FALSE, "
+				+ "published BOOLEAN DEFAULT FALSE NOT NULL);";
 		try (java.sql.Statement stmt = connection.createStatement()) {
 			stmt.execute(sql);
+
+			// Adds publication support to databases created before TP3
+			stmt.execute("ALTER TABLE lessons_learned "
+					+ "ADD COLUMN IF NOT EXISTS published "
+					+ "BOOLEAN DEFAULT FALSE NOT NULL");
 		} catch (java.sql.SQLException e) {
 			System.err.println("Error initializing lessons_learned table: " + e.getMessage());
 		}
@@ -1100,8 +1112,8 @@ public class Database {
 	 */
 	public boolean createLesson(entityClasses.LessonsLearned lesson) {
 		createLessonsLearnedTable();
-		String sql = "INSERT INTO lessons_learned(title, category, author, problemDescription, solution, timeSpentHours, whatWasDone, howItWasDone, teamEffort, isLocked) "
-				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO lessons_learned(title, category, author, problemDescription, solution, timeSpentHours, whatWasDone, howItWasDone, teamEffort, isLocked, published) "
+				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
 			pstmt.setString(1, lesson.getTitle());
 			pstmt.setString(2, lesson.getCategory());
@@ -1113,6 +1125,7 @@ public class Database {
 			pstmt.setString(8, lesson.getHowItWasDone());
 			pstmt.setString(9, lesson.getTeamEffort());
 			pstmt.setBoolean(10, lesson.isLocked());
+			pstmt.setBoolean(11, lesson.isPublished());
 			int affected = pstmt.executeUpdate();
 			if (affected > 0) {
 				try (java.sql.ResultSet rs = pstmt.getGeneratedKeys()) {
@@ -1157,7 +1170,8 @@ public class Database {
 							rs.getString("whatWasDone"),
 							rs.getString("howItWasDone"),
 							rs.getString("teamEffort"),
-							rs.getBoolean("isLocked")
+							rs.getBoolean("isLocked"),
+							rs.getBoolean("published")
 					);
 				}
 			}
@@ -1194,7 +1208,8 @@ public class Database {
 							rs.getString("whatWasDone"),
 							rs.getString("howItWasDone"),
 							rs.getString("teamEffort"),
-							rs.getBoolean("isLocked")
+							rs.getBoolean("isLocked"),
+							rs.getBoolean("published")
 					));
 				}
 			}
@@ -1236,7 +1251,8 @@ public class Database {
 							rs.getString("whatWasDone"),
 							rs.getString("howItWasDone"),
 							rs.getString("teamEffort"),
-							rs.getBoolean("isLocked")
+							rs.getBoolean("isLocked"),
+							rs.getBoolean("published")
 					));
 				}
 			}
@@ -1244,6 +1260,179 @@ public class Database {
 			System.err.println("Database filter error: " + e.getMessage());
 		}
 		return list;
+	}
+
+	/******
+	 *
+	 * <p> Method: getAllLessons() </p>
+	 *
+	 * <p> Description: Retrieves every lesson so a Curator can review its current
+	 * publication status. </p>
+	 *
+	 * @return a LessonsLearnedList containing every stored lesson
+	 *
+	 */
+	public entityClasses.LessonsLearnedList getAllLessons() {
+
+		// Ensures the lesson table and publication column exist
+		createLessonsLearnedTable();
+
+		// Stores every lesson returned by the database
+		entityClasses.LessonsLearnedList list =
+				new entityClasses.LessonsLearnedList();
+
+		// Retrieves lessons in a consistent order for the Curator page
+		String sql = "SELECT * FROM lessons_learned ORDER BY lessonId";
+
+		try (
+				PreparedStatement statement = connection.prepareStatement(sql);
+				ResultSet results = statement.executeQuery()) {
+
+			// Converts every database record into a lesson entity
+			while (results.next()) {
+				list.addLesson(new entityClasses.LessonsLearned(
+						results.getInt("lessonId"),
+						results.getString("title"),
+						results.getString("category"),
+						results.getString("author"),
+						results.getString("problemDescription"),
+						results.getString("solution"),
+						results.getDouble("timeSpentHours"),
+						results.getString("whatWasDone"),
+						results.getString("howItWasDone"),
+						results.getString("teamEffort"),
+						results.getBoolean("isLocked"),
+						results.getBoolean("published")));
+			}
+		} catch (SQLException exception) {
+			System.err.println("Database lesson review query error: "
+					+ exception.getMessage());
+		}
+
+		return list;
+	}
+
+	/******
+	 *
+	 * <p> Method: getAllPublishedLessons() </p>
+	 *
+	 * <p> Description: Retrieves every published lesson for the Viewer role. An
+	 * unpublished lesson is not included in the returned list. </p>
+	 *
+	 * @return a LessonsLearnedList containing the published lessons
+	 *
+	 */
+	public entityClasses.LessonsLearnedList getAllPublishedLessons() {
+
+		// Ensures the lesson table and publication column exist
+		createLessonsLearnedTable();
+
+		// Stores the published lessons returned by the database
+		entityClasses.LessonsLearnedList list =
+				new entityClasses.LessonsLearnedList();
+
+		// Selects only lessons that a Curator has published
+		String sql = "SELECT * FROM lessons_learned "
+				+ "WHERE published = TRUE ORDER BY title";
+
+		try (
+				PreparedStatement statement = connection.prepareStatement(sql);
+				ResultSet results = statement.executeQuery()) {
+
+			// Converts every published database record into a lesson entity
+			while (results.next()) {
+				list.addLesson(new entityClasses.LessonsLearned(
+						results.getInt("lessonId"),
+						results.getString("title"),
+						results.getString("category"),
+						results.getString("author"),
+						results.getString("problemDescription"),
+						results.getString("solution"),
+						results.getDouble("timeSpentHours"),
+						results.getString("whatWasDone"),
+						results.getString("howItWasDone"),
+						results.getString("teamEffort"),
+						results.getBoolean("isLocked"),
+						results.getBoolean("published")));
+			}
+		} catch (SQLException exception) {
+			System.err.println("Database published lesson query error: "
+					+ exception.getMessage());
+		}
+
+		return list;
+	}
+
+	/******
+	 *
+	 * <p> Method: publishLesson() </p>
+	 *
+	 * <p> Description: Publishes one existing lesson so it can be displayed to
+	 * Viewers. The Curator controller is responsible for checking the active
+	 * user's role before calling this method. </p>
+	 *
+	 * @param lessonId specifies the lesson that should be published
+	 * @return true when the lesson exists and was updated; otherwise, false
+	 * @throws IllegalArgumentException when the Lesson ID is not positive
+	 *
+	 */
+	public boolean publishLesson(int lessonId) {
+		return setLessonPublished(lessonId, true);
+	}
+
+	/******
+	 *
+	 * <p> Method: unpublishLesson() </p>
+	 *
+	 * <p> Description: Removes one lesson from the published Viewer collection.
+	 * The lesson remains stored in the database. </p>
+	 *
+	 * @param lessonId specifies the lesson that should be unpublished
+	 * @return true when the lesson exists and was updated; otherwise, false
+	 * @throws IllegalArgumentException when the Lesson ID is not positive
+	 *
+	 */
+	public boolean unpublishLesson(int lessonId) {
+		return setLessonPublished(lessonId, false);
+	}
+
+	/******
+	 *
+	 * <p> Method: setLessonPublished() </p>
+	 *
+	 * <p> Description: Saves the requested publication status for one lesson.
+	 * This shared helper supports both the Publish and Unpublish actions. </p>
+	 *
+	 * @param lessonId specifies the lesson being updated
+	 * @param published specifies the new publication status
+	 * @return true when the lesson exists and was updated; otherwise, false
+	 * @throws IllegalArgumentException when the Lesson ID is not positive
+	 *
+	 */
+	private boolean setLessonPublished(int lessonId, boolean published) {
+
+		// Rejects invalid IDs before sending a database command
+		if (lessonId <= 0) {
+			throw new IllegalArgumentException(
+					"Lesson ID must be a positive integer.");
+		}
+
+		// Ensures the lesson table and publication column exist
+		createLessonsLearnedTable();
+
+		// Updates only the publication status of the selected lesson
+		String sql = "UPDATE lessons_learned SET published = ? "
+				+ "WHERE lessonId = ?";
+
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setBoolean(1, published);
+			statement.setInt(2, lessonId);
+			return statement.executeUpdate() > 0;
+		} catch (SQLException exception) {
+			System.err.println("Database publication update error: "
+					+ exception.getMessage());
+			return false;
+		}
 	}
 	
 	/**

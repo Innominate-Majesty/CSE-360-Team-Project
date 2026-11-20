@@ -16,7 +16,9 @@ package entityClasses;
  * 
  * @version 1.00	2026-10-03 Initial File
  * @version 1.1		2026-10-17 Updated Javadoc
- * @version 1.11	2026-10-22 Updated validateFields to trim title
+ * @version 1.2		2026-10-22 Updated validateFields to trim title
+ * 
+ * @version 1.3		2026-11-17 Added publication support for the Publish button
  */
 public class LessonsLearned {
 	
@@ -37,6 +39,7 @@ public class LessonsLearned {
 	private boolean problemDescriptionLocked;
 	private boolean solutionLocked;
 	private boolean lessonLocked; 		//Boolean for Locking Lesson
+	private boolean published;			//Whether the lesson is visible to Viewers
 
 	//Constructors
 	
@@ -63,6 +66,7 @@ public class LessonsLearned {
 		this.problemDescriptionLocked = false;
 		this.solutionLocked = false;
 		this.lessonLocked = false;
+		this.published = false;
 	}
 	
 	/**
@@ -79,6 +83,7 @@ public class LessonsLearned {
 	 * @param solution - the description of the solution (cannot be blank)
 	 * @param timeSpentHours - the numerical effort spent in hours (must be non-negative)
 	 */
+	
 	public LessonsLearned(int lessonId, String title, String category, String author, 
 			String problemDescription, String solution, double timeSpentHours) {
 		validateFields(title, category, problemDescription, solution);
@@ -99,6 +104,7 @@ public class LessonsLearned {
 		this.problemDescriptionLocked = false;
 		this.solutionLocked = false;
 		this.lessonLocked = false;
+		this.published = false;
 	}
 	
 	/**
@@ -128,6 +134,41 @@ public class LessonsLearned {
 		this.howItWasDone = howItWasDone != null ? howItWasDone : "";
 		this.teamEffort = teamEffort != null ? teamEffort : "";
 		this.lessonLocked = isLocked;
+	}
+
+	/******
+	 *
+	 * <p> Constructor: LessonsLearned(int lessonId, String title, String category,
+	 * String author, String problemDescription, String solution,
+	 * double timeSpentHours, String whatWasDone, String howItWasDone,
+	 * String teamEffort, boolean isLocked, boolean published) </p>
+	 *
+	 * <p> Description: Creates a complete lesson with its saved lock and
+	 * publication statuses. This constructor is used when a lesson is loaded
+	 * from the database. </p>
+	 *
+	 * @param lessonId specifies the unique identifier of the lesson
+	 * @param title specifies the title of the lesson
+	 * @param category specifies the category of the lesson
+	 * @param author specifies the contributor who created the lesson
+	 * @param problemDescription specifies the problem described by the lesson
+	 * @param solution specifies the solution described by the lesson
+	 * @param timeSpentHours specifies the time spent using the lesson
+	 * @param whatWasDone specifies what was done during the experience
+	 * @param howItWasDone specifies how the experience was completed
+	 * @param teamEffort specifies the team effort used during the experience
+	 * @param isLocked specifies whether the lesson is locked
+	 * @param published specifies whether Viewers can see the lesson
+	 *
+	 */
+	public LessonsLearned(int lessonId, String title, String category,
+			String author, String problemDescription, String solution,
+			double timeSpentHours, String whatWasDone, String howItWasDone,
+			String teamEffort, boolean isLocked, boolean published) {
+
+		this(lessonId, title, category, author, problemDescription, solution,
+				timeSpentHours, whatWasDone, howItWasDone, teamEffort, isLocked);
+		this.published = published;
 	}
 	
 	//Validation Methods
@@ -562,6 +603,34 @@ public class LessonsLearned {
 	 */
 	public void setSolutionLocked(boolean solutionLocked) { 
 		this.solutionLocked = solutionLocked; 
+	}
+
+	/******
+	 *
+	 * <p> Method: isPublished() </p>
+	 *
+	 * <p> Description: Gets whether the lesson has been published and can be
+	 * displayed to Viewers. </p>
+	 *
+	 * @return true when the lesson is published; otherwise, false
+	 *
+	 */
+	public boolean isPublished() {
+		return published;
+	}
+
+	/******
+	 *
+	 * <p> Method: setPublished() </p>
+	 *
+	 * <p> Description: Sets whether the lesson is published and available to
+	 * Viewers. The Curator Publish button will use this status. </p>
+	 *
+	 * @param published specifies whether the lesson should be visible to Viewers
+	 *
+	 */
+	public void setPublished(boolean published) {
+		this.published = published;
 	}
 	
 	//Overrides

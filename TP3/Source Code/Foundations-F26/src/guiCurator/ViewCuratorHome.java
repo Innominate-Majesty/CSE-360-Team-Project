@@ -1,16 +1,20 @@
 package guiCurator;
 
 import database.Database;
+import entityClasses.LessonsLearned;
+import entityClasses.LessonsLearnedList;
 import entityClasses.User;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.NumberBinding;
+import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -32,7 +36,19 @@ import javafx.stage.Stage;
  * 
  * @author Lynn Robert Carter
  * 
+ * @author Venus Ho
+ * @author Alexander Murray
+ * @author Alan Shimp
+ * @author Caleb Beaven
+ * @author Krithik Duraisamy
+ * 
  * @version 1.00		2025-04-20 Initial version
+ * 
+ * @version 2.0			2026-10-22 Refactored Role 2 to Curator
+ * @version 2.1			2026-10-22 Updated the Curator UI to use the shared sage theme
+ * @version 2.2			2026-10-22 Added responsive window sizing
+ * 
+ * @version 2.3			2026-11-17 Added the lesson publication interface
  *  
  */
 
@@ -98,10 +114,17 @@ public class ViewCuratorHome {
 	// This is a separator and it is used to partition the GUI for various tasks
 	protected static Line line_Separator1 = new Line(20, 95, width-20, 95);
 
-	// GUI ARea 2: This is a stub, so there are no widgets here.  For an actual role page, this are
-	// would contain the widgets needed for the user to play the assigned role.
-	
-	
+	// GUI Area 2: Displays every lesson and allows the Curator to publish one
+	protected static Label label_LessonsTitle = new Label("LESSONS TO REVIEW");
+	protected static Button button_RefreshLessons = new Button("Refresh");
+	protected static Button button_Publish = new Button("Publish");
+	protected static Label label_Status = new Label();
+	protected static VBox box_Lessons = new VBox(8);
+	protected static ScrollPane scroll_Lessons = new ScrollPane(box_Lessons);
+
+	// Stores the lesson and card currently selected by the Curator
+	private static LessonsLearned selectedLesson;
+	private static Button selectedLessonCard;
 	
 	// This is a separator and it is used to partition the GUI for various tasks
 	protected static Line line_Separator4 = new Line(20, 525, width-20,525);
@@ -197,6 +220,9 @@ public class ViewCuratorHome {
 		// Displays the personalized welcome message
 		label_Welcome.setText("Welcome, " + preferredName);
 
+		// Loads the current lesson collection whenever the page is displayed
+		ControllerCuratorHome.performRefreshLessons();
+
 		// Set the title for the window, display the page, and wait for the Admin to do something
 		theStage.setTitle("CSE 360 Foundations: Curator Home Page");
 		theStage.setScene(theCuratorHomeScene);						// Set this page onto the stage
@@ -266,8 +292,45 @@ public class ViewCuratorHome {
 		configureAccountMenu();
 		
 		// GUI Area 2
-		
-			// This is a stub, so this area is empty
+
+		// Displays the heading for the lesson review workspace
+		setupLabelUI(label_LessonsTitle, "Helvetica", 12, 260, Pos.BASELINE_LEFT, 30, 112);
+		label_LessonsTitle.setStyle(
+				"-fx-text-fill: " + ACCENT_COLOR + ";"
+				+ "-fx-font-weight: bold;");
+
+		// Refreshes the lesson collection from the database
+		setupButtonUI(button_RefreshLessons, "Helvetica", 12, 130, Pos.CENTER, 500, 105);
+		styleSecondaryButton(button_RefreshLessons);
+		button_RefreshLessons.setOnAction(
+				(_) -> ControllerCuratorHome.performRefreshLessons());
+
+		// Publishes or unpublishes the selected lesson
+		setupButtonUI(button_Publish, "Helvetica", 12, 130, Pos.CENTER, 640, 105);
+		stylePrimaryButton(button_Publish);
+		button_Publish.setDisable(true);
+		button_Publish.setOnAction(
+				(_) -> ControllerCuratorHome.performTogglePublication());
+
+		// Arranges the lesson cards inside the review list
+		box_Lessons.setPadding(new Insets(10));
+		box_Lessons.setStyle("-fx-background-color: " + SURFACE_COLOR + ";");
+
+		// Creates the scrollable white card containing the lesson collection
+		scroll_Lessons.setLayoutX(30);
+		scroll_Lessons.setLayoutY(145);
+		scroll_Lessons.setPrefSize(740, 315);
+		scroll_Lessons.setFitToWidth(true);
+		scroll_Lessons.setStyle(
+				"-fx-background-color: " + SURFACE_COLOR + ";"
+				+ "-fx-border-color: " + BORDER_COLOR + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-background-radius: 10;"
+				+ "-fx-border-radius: 10;");
+
+		// Displays selection, success, and error information below the list
+		setupLabelUI(label_Status, "Helvetica", 11, 740, Pos.BASELINE_LEFT, 32, 472);
+		label_Status.setStyle("-fx-text-fill: " + SECONDARY_TEXT + ";");
 		
 		
 		// Hides the original session buttons because their actions are in Account Settings
@@ -286,12 +349,220 @@ public class ViewCuratorHome {
 				label_UserDetails,
 				label_Welcome,
 				button_UpdateThisUser,
+				label_LessonsTitle,
+				button_RefreshLessons,
+				button_Publish,
+				scroll_Lessons,
+				label_Status,
 				line_Separator1,
 				line_Separator4,
 				button_Logout,
 				button_Quit);
 	}
 	
+	/******
+	 *
+	 * <p> Method: displayLessons() </p>
+	 *
+	 * <p> Description: Rebuilds the Curator lesson review list using the current
+	 * records returned by the Model. </p>
+	 *
+	 * @param lessons specifies the current lesson collection
+	 *
+	 */
+	protected static void displayLessons(LessonsLearnedList lessons) {
+
+		// Removes outdated lesson cards and selection state
+		box_Lessons.getChildren().clear();
+		selectedLesson = null;
+		selectedLessonCard = null;
+		button_Publish.setText("Publish");
+		button_Publish.setDisable(true);
+
+		// Displays an empty state when there are no lessons to review
+		if (lessons == null || lessons.isEmpty()) {
+			Label emptyMessage = new Label("No lessons are available for review.");
+			emptyMessage.setStyle(
+					"-fx-text-fill: " + SECONDARY_TEXT + ";"
+					+ "-fx-font-family: 'Helvetica';"
+					+ "-fx-font-size: 12;"
+					+ "-fx-padding: 14;");
+			box_Lessons.getChildren().add(emptyMessage);
+			return;
+		}
+
+		// Creates one selectable card for every lesson
+		for (LessonsLearned lesson : lessons.getLessons()) {
+			box_Lessons.getChildren().add(createLessonCard(lesson));
+		}
+	}
+
+	/******
+	 *
+	 * <p> Method: createLessonCard() </p>
+	 *
+	 * <p> Description: Creates one selectable lesson card showing its title,
+	 * author, and current publication status. </p>
+	 *
+	 * @param lesson specifies the lesson displayed by the card
+	 * @return the configured lesson card
+	 *
+	 */
+	private static Button createLessonCard(LessonsLearned lesson) {
+
+		// Creates the card text using the lesson's review information
+		String publicationStatus = lesson.isPublished() ? "Published" : "Unpublished";
+		Button lessonCard = new Button(
+				lesson.getTitle()
+				+ "\nBy " + lesson.getAuthor()
+				+ "  •  " + publicationStatus);
+
+		// Allows the card to fill the available list width
+		lessonCard.setMaxWidth(Double.MAX_VALUE);
+		lessonCard.setMinHeight(58);
+		lessonCard.setAlignment(Pos.CENTER_LEFT);
+		applyLessonCardStyle(lessonCard, false);
+
+		// Applies the soft sage hover color to an unselected card
+		lessonCard.setOnMouseEntered((_) -> {
+			if (lessonCard != selectedLessonCard) {
+				lessonCard.setStyle(getLessonCardStyle(HOVER_BACKGROUND, ACCENT_COLOR));
+			}
+		});
+
+		// Restores the white card after the pointer leaves
+		lessonCard.setOnMouseExited((_) -> {
+			if (lessonCard != selectedLessonCard) {
+				applyLessonCardStyle(lessonCard, false);
+			}
+		});
+
+		// Selects the lesson represented by this card
+		lessonCard.setOnAction((_) -> {
+			highlightLessonCard(lessonCard);
+			ControllerCuratorHome.performSelectLesson(lesson);
+		});
+
+		return lessonCard;
+	}
+
+	/******
+	 *
+	 * <p> Method: setSelectedLesson() </p>
+	 *
+	 * <p> Description: Stores the lesson selected by the Curator and updates the
+	 * publication action to match its current status. </p>
+	 *
+	 * @param lesson specifies the lesson selected for review
+	 *
+	 */
+	protected static void setSelectedLesson(LessonsLearned lesson) {
+		selectedLesson = lesson;
+		button_Publish.setDisable(lesson == null);
+
+		if (lesson == null) {
+			button_Publish.setText("Publish");
+			return;
+		}
+
+		button_Publish.setText(lesson.isPublished() ? "Unpublish" : "Publish");
+		showStatus("Selected: " + lesson.getTitle(), false);
+	}
+
+	/******
+	 *
+	 * <p> Method: getSelectedLesson() </p>
+	 *
+	 * <p> Description: Returns the lesson currently selected for a publication
+	 * action. </p>
+	 *
+	 * @return the selected lesson, or null when no lesson is selected
+	 *
+	 */
+	protected static LessonsLearned getSelectedLesson() {
+		return selectedLesson;
+	}
+
+	/******
+	 *
+	 * <p> Method: highlightLessonCard() </p>
+	 *
+	 * <p> Description: Applies the selected style to one lesson card and restores
+	 * the previous card's normal appearance. </p>
+	 *
+	 * @param lessonCard specifies the newly selected lesson card
+	 *
+	 */
+	private static void highlightLessonCard(Button lessonCard) {
+		if (selectedLessonCard != null) {
+			applyLessonCardStyle(selectedLessonCard, false);
+		}
+
+		selectedLessonCard = lessonCard;
+		applyLessonCardStyle(selectedLessonCard, true);
+	}
+
+	/******
+	 *
+	 * <p> Method: applyLessonCardStyle() </p>
+	 *
+	 * <p> Description: Applies either the normal or selected appearance to a
+	 * lesson card. </p>
+	 *
+	 * @param lessonCard specifies the lesson card being styled
+	 * @param selected specifies whether the card is currently selected
+	 *
+	 */
+	private static void applyLessonCardStyle(Button lessonCard, boolean selected) {
+		lessonCard.setStyle(selected
+				? getLessonCardStyle(HOVER_BACKGROUND, ACCENT_COLOR)
+				: getLessonCardStyle(SURFACE_COLOR, BORDER_COLOR));
+	}
+
+	/******
+	 *
+	 * <p> Method: getLessonCardStyle() </p>
+	 *
+	 * <p> Description: Builds a lesson card style using the requested background
+	 * and border colors. </p>
+	 *
+	 * @param backgroundColor specifies the card background color
+	 * @param borderColor specifies the card border color
+	 * @return the completed JavaFX style
+	 *
+	 */
+	private static String getLessonCardStyle(String backgroundColor, String borderColor) {
+		return "-fx-background-color: " + backgroundColor + ";"
+				+ "-fx-text-fill: " + PRIMARY_TEXT + ";"
+				+ "-fx-border-color: " + borderColor + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-font-family: 'Helvetica';"
+				+ "-fx-font-size: 12;"
+				+ "-fx-padding: 9 12 9 12;"
+				+ "-fx-cursor: hand;";
+	}
+
+	/******
+	 *
+	 * <p> Method: showStatus() </p>
+	 *
+	 * <p> Description: Displays a publication, selection, or error message beneath
+	 * the lesson review list. </p>
+	 *
+	 * @param message specifies the message displayed to the Curator
+	 * @param error specifies whether the message uses the error color
+	 *
+	 */
+	protected static void showStatus(String message, boolean error) {
+		label_Status.setText(message == null ? "" : message);
+		label_Status.setStyle(
+				"-fx-text-fill: " + (error ? "#B44747" : SECONDARY_TEXT) + ";"
+				+ "-fx-font-family: 'Helvetica';"
+				+ "-fx-font-size: 11;");
+	}
+
 	
 	/*-********************************************************************************************
 
@@ -338,6 +609,42 @@ public class ViewCuratorHome {
 		b.setAlignment(p);
 		b.setLayoutX(x);
 		b.setLayoutY(y);		
+	}
+
+	/******
+	 *
+	 * <p> Method: stylePrimaryButton() </p>
+	 *
+	 * <p> Description: Applies the dark sage appearance used by the primary
+	 * publication action. </p>
+	 *
+	 * @param button button receiving the primary style
+	 *
+	 */
+	private static void stylePrimaryButton(Button button) {
+
+		// Defines the primary action's normal appearance
+		String base = "-fx-background-color: " + ACCENT_COLOR + ";"
+				+ "-fx-text-fill: white;"
+				+ "-fx-border-color: " + ACCENT_COLOR + ";"
+				+ "-fx-border-width: 1;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-cursor: hand;";
+
+		// Defines the primary action's hover appearance
+		String hover = "-fx-background-color: #304A40;"
+				+ "-fx-text-fill: white;"
+				+ "-fx-border-color: #304A40;"
+				+ "-fx-border-width: 1;"
+				+ "-fx-background-radius: 8;"
+				+ "-fx-border-radius: 8;"
+				+ "-fx-cursor: hand;";
+
+		// Applies the normal and hover appearances
+		button.setStyle(base);
+		button.setOnMouseEntered((_) -> button.setStyle(hover));
+		button.setOnMouseExited((_) -> button.setStyle(base));
 	}
 
 	/******
