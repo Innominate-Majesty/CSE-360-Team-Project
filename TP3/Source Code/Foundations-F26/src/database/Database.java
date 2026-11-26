@@ -1615,7 +1615,8 @@ public class Database {
 		String sql = "INSERT INTO experiences(lessonId, author, timeSpentHours, whatWasDone, "
 				+ "howItWasDone, teamEffort, timeLocked, whatLocked, howLocked, "
 				+ "effortLocked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+		try (java.sql.PreparedStatement pstmt = connection.prepareStatement(sql,
+				java.sql.Statement.RETURN_GENERATED_KEYS)) {
 			pstmt.setInt(1, experience.getLessonId());
 			pstmt.setString(2, experience.getAuthor());
 			pstmt.setDouble(3, experience.getTime());
@@ -1663,11 +1664,11 @@ public class Database {
 							rs.getDouble("timeSpentHours"),
 							rs.getString("whatWasDone"),
 							rs.getString("howItWasDone"),
-							rs.getString("teamEffort")
-							// rs.getBoolean("timeLocked"),
-							// rs.getBoolean("whatLocked"),
-							// rs.getBoolean("howLocked"),
-							// rs.getBoolean("effortLocked")
+							rs.getString("teamEffort"),
+							rs.getBoolean("timeLocked"),
+							rs.getBoolean("whatLocked"),
+							rs.getBoolean("howLocked"),
+							rs.getBoolean("effortLocked")
 					);
 				}
 			}
@@ -1701,11 +1702,11 @@ public class Database {
 							rs.getDouble("timeSpentHours"),
 							rs.getString("whatWasDone"),
 							rs.getString("howItWasDone"),
-							rs.getString("teamEffort")
-							// rs.getBoolean("timeLocked"),
-							// rs.getBoolean("whatLocked"),
-							// rs.getBoolean("howLocked"),
-							// rs.getBoolean("effortLocked")
+							rs.getString("teamEffort"),
+							rs.getBoolean("timeLocked"),
+							rs.getBoolean("whatLocked"),
+							rs.getBoolean("howLocked"),
+							rs.getBoolean("effortLocked")
 					));
 				}
 			}
