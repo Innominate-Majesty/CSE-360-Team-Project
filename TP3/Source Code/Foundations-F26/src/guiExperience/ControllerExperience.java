@@ -151,7 +151,11 @@ public class ControllerExperience {
 				timeSpentHours,
 				whatWasDone == null ? "" : whatWasDone.trim(),
 				howItWasDone == null ? "" : howItWasDone.trim(),
-				teamEffort == null ? "" : teamEffort.trim());
+				teamEffort == null ? "" : teamEffort.trim(),
+				false,
+				false,
+				false,
+				false);
 
 		// Attempts to save the Experience
 		if (!ModelExperience.createExperience(experience)) {
