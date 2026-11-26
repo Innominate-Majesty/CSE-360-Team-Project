@@ -77,7 +77,11 @@ public class ModelCreateLesson {
 				timeSpentHours,
 				whatWasDone,
 				howItWasDone,
-				teamEffort);
+				teamEffort,
+				false,
+				false,
+				false,
+				false);
 
 		// Returns success when the initial Experience is saved
 		if (theDatabase.createExperience(experience)) {
