@@ -2,7 +2,11 @@ package guiCurator;
 
 import database.Database;
 import entityClasses.LessonsLearnedList;
+import entityClasses.LessonsLearned;
 import entityClasses.User;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class ModelCuratorHome {
 
@@ -46,6 +50,89 @@ public class ModelCuratorHome {
 	 */
 	protected static LessonsLearnedList getAllLessons() {
 		return theDatabase.getAllLessons();
+	}
+	
+	/******
+	 *
+	 * <p> Method: searchLessons() </p>
+	 *
+	 * <p> Description: Returns the lessons whose title, author, category, problem
+	 * description, or solution contains every word of the search text. A blank
+	 * search returns every lesson. </p>
+	 *
+	 * @param lessons specifies the lessons being searched
+	 * @param query specifies the search text entered by the Curator
+	 * @return the matching lessons
+	 *
+	 */
+	protected static LessonsLearnedList searchLessons(LessonsLearnedList lessons, String query) {
+
+		// Stores the lessons that match every search word
+		List<LessonsLearned> matches = new ArrayList<>();
+
+		// Splits the search text into lowercase words
+		String[] words = query == null || query.isBlank()
+				? new String[0]
+				: query.trim().toLowerCase(Locale.ROOT).split("\\s+");
+
+		for (LessonsLearned lesson : lessons.getLessons()) {
+
+			// Combines every searchable field into one lowercase string
+			String searchable = (nullToEmpty(lesson.getTitle()) + " "
+					+ nullToEmpty(lesson.getAuthor()) + " "
+					+ nullToEmpty(lesson.getCategory()) + " "
+					+ nullToEmpty(lesson.getProblemDescription()) + " "
+					+ nullToEmpty(lesson.getSolution())).toLowerCase(Locale.ROOT);
+
+			// Requires every search word to appear somewhere in the lesson
+			boolean matchesAll = true;
+			for (String word : words) {
+				if (!searchable.contains(word)) {
+					matchesAll = false;
+					break;
+				}
+			}
+
+			if (matchesAll) {
+				matches.add(lesson);
+			}
+		}
+
+		return new LessonsLearnedList(matches);
+	}
+
+	/******
+	 *
+	 * <p> Method: getLessonSummaries() </p>
+	 *
+	 * <p> Description: Builds a "Title (Category)" summary for every lesson so AI
+	 * search suggestions can relate to lessons that actually exist. </p>
+	 *
+	 * @param lessons specifies the lessons to summarize
+	 * @return one summary string for each lesson
+	 *
+	 */
+	protected static List<String> getLessonSummaries(LessonsLearnedList lessons) {
+		List<String> summaries = new ArrayList<>();
+		for (LessonsLearned lesson : lessons.getLessons()) {
+			summaries.add(lesson.getTitle() + " (" + lesson.getCategory() + ")");
+		}
+		return summaries;
+	}
+	
+	/******
+	 *
+	 * <p> Method: nullToEmpty() </p>
+	 *
+	 * <p> Description: Converts a missing text value into an empty string so a
+	 * search never matches the word "null". </p>
+	 *
+	 * @param value specifies the text being checked
+	 * @return the original text or an empty string
+	 *
+	 */
+	private static String nullToEmpty(String value) {
+		return value == null ? "" : value;
 	}
 
 	/******

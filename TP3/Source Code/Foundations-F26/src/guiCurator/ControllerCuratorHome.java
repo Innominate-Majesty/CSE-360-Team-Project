@@ -1,7 +1,11 @@
 package guiCurator;
 
+import java.util.List;
+
 import entityClasses.LessonsLearned;
 import entityClasses.LessonsLearnedList;
+import aiServices.SearchSuggestionService;
+import javafx.application.Platform;
 
 /*******
  * <p> Title: ControllerCuratorHome Class. </p>
@@ -43,6 +47,12 @@ public class ControllerCuratorHome {
 	the Model is often just a stub, or will be a singleton instantiated object.
 	
 	 */
+	
+	// Stores the search text currently applied to the lesson list
+	private static String currentQuery = "";
+
+	// Identifies the newest suggestion request so older replies are ignored
+	private static int suggestionRequestId = 0;
 
 	/**
 	 * Default constructor is not used.
@@ -59,16 +69,106 @@ public class ControllerCuratorHome {
 	 *
 	 */
 	protected static void performRefreshLessons() {
-		LessonsLearnedList lessons = ModelCuratorHome.getAllLessons();
-		ViewCuratorHome.displayLessons(lessons);
 
-		if (lessons.isEmpty()) {
+		// Loads every lesson, then keeps only the ones matching the current search
+		LessonsLearnedList allLessons = ModelCuratorHome.getAllLessons();
+		LessonsLearnedList matches = ModelCuratorHome.searchLessons(allLessons, currentQuery);
+		ViewCuratorHome.displayLessons(matches);
+
+		if (allLessons.isEmpty()) {
+
+			// The database has no lessons at all
 			ViewCuratorHome.showStatus(
 					"No lessons are currently available for review.", false);
+
+		} else if (!currentQuery.isEmpty()) {
+
+			// A search is active, so report how many lessons matched
+			if (matches.isEmpty()) {
+				ViewCuratorHome.showStatus(
+						"No lessons match \"" + currentQuery + "\".", false);
+			} else {
+				ViewCuratorHome.showStatus(
+						matches.size()
+								+ (matches.size() == 1 ? " lesson matches \"" : " lessons match \"")
+								+ currentQuery + "\".", false);
+			}
+
 		} else {
+
+			// No search is active, so show the original prompt
 			ViewCuratorHome.showStatus(
 					"Select a lesson to change its publication status.", false);
 		}
+	}
+	
+	/******
+	 *
+	 * <p> Method: performSearch() </p>
+	 *
+	 * <p> Description: Filters the lesson list using the search text and requests
+	 * three AI search suggestions related to that search. </p>
+	 *
+	 * @param query specifies the search text entered by the Curator
+	 *
+	 */
+	protected static void performSearch(String query) {
+		currentQuery = query == null ? "" : query.trim();
+		performRefreshLessons();
+		requestSuggestions();
+	}
+	
+	/******
+	 *
+	 * <p> Method: performClearSearch() </p>
+	 *
+	 * <p> Description: Clears the search text, shows every lesson again, and
+	 * requests generic search suggestions. </p>
+	 *
+	 */
+	protected static void performClearSearch() {
+		ViewCuratorHome.clearSearchField();
+		performSearch("");
+	}
+	
+	/******
+	 *
+	 * <p> Method: requestSuggestions() </p>
+	 *
+	 * <p> Description: Requests three suggested search terms on a background
+	 * thread so the window stays responsive, then displays them. The database is
+	 * read before the thread starts because the database connection is shared and
+	 * must only be used from the JavaFX thread. </p>
+	 *
+	 */
+	private static void requestSuggestions() {
+
+		// Marks this request as the newest one
+		final int requestId = ++suggestionRequestId;
+		final String query = currentQuery;
+
+		// Reads the database here on the JavaFX thread; the worker thread never touches it
+		final List<String> lessonSummaries = ModelCuratorHome.getLessonSummaries(
+				ModelCuratorHome.getAllLessons());
+
+		// Shows "Finding suggestions..." while the AI works
+		ViewCuratorHome.showSuggestionsLoading();
+
+		Thread worker = new Thread(() -> {
+
+			// Blocks for up to about a minute, so it must stay off the JavaFX thread
+			List<String> terms = SearchSuggestionService.suggest(query, lessonSummaries);
+
+			// Updates the screen on the JavaFX thread, unless a newer search replaced this one
+			Platform.runLater(() -> {
+				if (requestId == suggestionRequestId) {
+					ViewCuratorHome.displaySuggestions(terms);
+				}
+			});
+		}, "ai-search-suggestions");
+
+		worker.setDaemon(true);
+		worker.start();
 	}
 
 	/******

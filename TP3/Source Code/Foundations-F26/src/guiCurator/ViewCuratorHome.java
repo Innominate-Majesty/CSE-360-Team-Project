@@ -1,5 +1,7 @@
 package guiCurator;
 
+import java.util.List;
+
 import database.Database;
 import entityClasses.LessonsLearned;
 import entityClasses.LessonsLearnedList;
@@ -24,6 +26,8 @@ import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 
 
 /*******
@@ -49,6 +53,7 @@ import javafx.stage.Stage;
  * @version 2.2			2026-10-22 Added responsive window sizing
  * 
  * @version 2.3			2026-11-17 Added the lesson publication interface
+ * @version 2.4			2026-11-27 Added lesson search and AI search suggestions
  *  
  */
 
@@ -121,6 +126,13 @@ public class ViewCuratorHome {
 	protected static Label label_Status = new Label();
 	protected static VBox box_Lessons = new VBox(8);
 	protected static ScrollPane scroll_Lessons = new ScrollPane(box_Lessons);
+	
+	// Searches the lessons and displays AI-recommended search terms
+	protected static TextField field_Search = new TextField();
+	protected static Button button_Search = new Button("Search");
+	protected static Button button_ClearSearch = new Button("Clear");
+	private static Label label_Suggestions = new Label("Try:");
+	private static HBox box_Suggestions = new HBox(8);
 
 	// Stores the lesson and card currently selected by the Curator
 	private static LessonsLearned selectedLesson;
@@ -221,7 +233,7 @@ public class ViewCuratorHome {
 		label_Welcome.setText("Welcome, " + preferredName);
 
 		// Loads the current lesson collection whenever the page is displayed
-		ControllerCuratorHome.performRefreshLessons();
+		ControllerCuratorHome.performClearSearch();
 
 		// Set the title for the window, display the page, and wait for the Admin to do something
 		theStage.setTitle("CSE 360 Foundations: Curator Home Page");
@@ -300,7 +312,7 @@ public class ViewCuratorHome {
 				+ "-fx-font-weight: bold;");
 
 		// Refreshes the lesson collection from the database
-		setupButtonUI(button_RefreshLessons, "Helvetica", 12, 130, Pos.CENTER, 500, 105);
+		setupButtonUI(button_RefreshLessons, "Helvetica", 12, 130, Pos.CENTER, 500, 100);
 		styleSecondaryButton(button_RefreshLessons);
 		button_RefreshLessons.setOnAction(
 				(_) -> ControllerCuratorHome.performRefreshLessons());
@@ -311,6 +323,34 @@ public class ViewCuratorHome {
 		button_Publish.setDisable(true);
 		button_Publish.setOnAction(
 				(_) -> ControllerCuratorHome.performTogglePublication());
+		
+		// Configures the search field; pressing Enter runs the search
+		field_Search.setPromptText("Search lessons by title, author, or category");
+		field_Search.setLayoutX(30);
+		field_Search.setLayoutY(140);
+		field_Search.setPrefWidth(450);
+		field_Search.setOnAction(
+				(_) -> ControllerCuratorHome.performSearch(field_Search.getText()));
+
+		// Runs the search using the text in the search field
+		setupButtonUI(button_Search, "Helvetica", 12, 100, Pos.CENTER, 490, 140);
+		stylePrimaryButton(button_Search);
+		button_Search.setOnAction(
+				(_) -> ControllerCuratorHome.performSearch(field_Search.getText()));
+
+		// Clears the search and shows every lesson again
+		setupButtonUI(button_ClearSearch, "Helvetica", 12, 100, Pos.CENTER, 600, 140);
+		styleSecondaryButton(button_ClearSearch);
+		button_ClearSearch.setOnAction(
+				(_) -> ControllerCuratorHome.performClearSearch());
+
+		// Configures the row of AI-recommended search terms
+		label_Suggestions.setFont(Font.font("Helvetica", 12));
+		label_Suggestions.setStyle("-fx-text-fill: " + SECONDARY_TEXT + ";");
+		box_Suggestions.setAlignment(Pos.CENTER_LEFT);
+		box_Suggestions.setLayoutX(30);
+		box_Suggestions.setLayoutY(176);
+		box_Suggestions.getChildren().add(label_Suggestions);
 
 		// Arranges the lesson cards inside the review list
 		box_Lessons.setPadding(new Insets(10));
@@ -318,8 +358,8 @@ public class ViewCuratorHome {
 
 		// Creates the scrollable white card containing the lesson collection
 		scroll_Lessons.setLayoutX(30);
-		scroll_Lessons.setLayoutY(145);
-		scroll_Lessons.setPrefSize(740, 315);
+		scroll_Lessons.setLayoutY(210);
+		scroll_Lessons.setPrefSize(740, 250);
 		scroll_Lessons.setFitToWidth(true);
 		scroll_Lessons.setStyle(
 				"-fx-background-color: " + SURFACE_COLOR + ";"
@@ -352,6 +392,10 @@ public class ViewCuratorHome {
 				label_LessonsTitle,
 				button_RefreshLessons,
 				button_Publish,
+				field_Search,
+				button_Search,
+				button_ClearSearch,
+				box_Suggestions,
 				scroll_Lessons,
 				label_Status,
 				line_Separator1,
@@ -381,7 +425,7 @@ public class ViewCuratorHome {
 
 		// Displays an empty state when there are no lessons to review
 		if (lessons == null || lessons.isEmpty()) {
-			Label emptyMessage = new Label("No lessons are available for review.");
+			Label emptyMessage = new Label("No lessons to display.");
 			emptyMessage.setStyle(
 					"-fx-text-fill: " + SECONDARY_TEXT + ";"
 					+ "-fx-font-family: 'Helvetica';"
@@ -394,6 +438,56 @@ public class ViewCuratorHome {
 		// Creates one selectable card for every lesson
 		for (LessonsLearned lesson : lessons.getLessons()) {
 			box_Lessons.getChildren().add(createLessonCard(lesson));
+		}
+	}
+	
+	/******
+	 *
+	 * <p> Method: clearSearchField() </p>
+	 *
+	 * <p> Description: Removes the text from the search field. </p>
+	 *
+	 */
+	protected static void clearSearchField() {
+		field_Search.clear();
+	}
+
+	/******
+	 *
+	 * <p> Method: showSuggestionsLoading() </p>
+	 *
+	 * <p> Description: Replaces the suggestion chips with a loading message while
+	 * the AI service is working. </p>
+	 *
+	 */
+	protected static void showSuggestionsLoading() {
+		label_Suggestions.setText("Finding suggestions...");
+		box_Suggestions.getChildren().setAll(label_Suggestions);
+	}
+
+	/******
+	 *
+	 * <p> Method: displaySuggestions() </p>
+	 *
+	 * <p> Description: Displays one clickable chip for each suggested search term.
+	 * Clicking a chip fills the search field and runs that search. </p>
+	 *
+	 * @param terms specifies the suggested search terms
+	 *
+	 */
+	protected static void displaySuggestions(List<String> terms) {
+		label_Suggestions.setText("Try:");
+		box_Suggestions.getChildren().setAll(label_Suggestions);
+
+		for (String term : terms) {
+			Button chip = new Button(term);
+			chip.setFont(Font.font("Helvetica", 11));
+			styleSecondaryButton(chip);
+			chip.setOnAction((_) -> {
+				field_Search.setText(term);
+				ControllerCuratorHome.performSearch(term);
+			});
+			box_Suggestions.getChildren().add(chip);
 		}
 	}
 
@@ -415,6 +509,7 @@ public class ViewCuratorHome {
 		Button lessonCard = new Button(
 				lesson.getTitle()
 				+ "\nBy " + lesson.getAuthor()
+				+ "  •  " + lesson.getCategory()
 				+ "  •  " + publicationStatus);
 
 		// Allows the card to fill the available list width

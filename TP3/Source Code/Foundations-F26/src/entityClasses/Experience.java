@@ -71,7 +71,7 @@ public class Experience {
 	 * 
 	 */
 	public Experience(int experienceId, int lessonId, String author, double timeSpentHours,
-			String whatWasDone, String howItWasDone, String teamEffort) {
+			String whatWasDone, String howItWasDone, String teamEffort, boolean timeLocked, boolean whatLocked, boolean howLocked, boolean effortLocked) {
 
 		this.experienceId = experienceId;
 		this.lessonId = lessonId;
