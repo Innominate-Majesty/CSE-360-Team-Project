@@ -107,14 +107,45 @@ public class ViewCuratorFunctions {
 				+ "-fx-font-weight: bold;"
 				+ "-fx-text-fill: " + PRIMARY_TEXT + ";");
 
+		// Creates and styles the lock/unlock buttons and labels
+		Label lessonLockedLabel = new Label("Lock/Unlock Lesson:");
+		lessonLockedLabel.setStyle(
+				"-fx-font-family: 'Helvetica';"
+				+ "-fx-font-size: 10;"
+				+ "-fx-font-weight: bold;"
+				+ "-fx-text-fill: " + ACCENT_COLOR + ";");
+		
+		Button lessonLockButton = setupLessonLockButton(lesson, "lesson", lesson.isLocked());
+		
+		Label titleLockedLabel = new Label("Lock/Unlock Title:");
+		titleLockedLabel.setStyle(
+				"-fx-font-family: 'Helvetica';"
+				+ "-fx-font-size: 10;"
+				+ "-fx-font-weight: bold;"
+				+ "-fx-text-fill: " + ACCENT_COLOR + ";");
+		
+		Button titleLockButton = setupLessonLockButton(lesson, "title", lesson.isTitleLocked());
+		
+		Button categoryLockButton = setupLessonLockButton(lesson, "category",
+				lesson.isCategoryLocked());
+		
+		Button problemLockButton = setupLessonLockButton(lesson, "problem",
+				lesson.isProblemDescriptionLocked());
+		
+		Button solutionLockButton = setupLessonLockButton(lesson, "solution",
+				lesson.isSolutionLocked());
+		
 		// Creates the Lesson Details section
 		VBox lessonDetails = new VBox(
 				11,
 				createDetailLabel("Lesson ID", String.valueOf(lesson.getLessonId())),
 				createDetailLabel("Category", lesson.getCategory()),
+				categoryLockButton,
 				createDetailLabel("Author", lesson.getAuthor()),
 				createDetailLabel("Problem Description", lesson.getProblemDescription()),
-				createDetailLabel("Solution", lesson.getSolution()));
+				problemLockButton,
+				createDetailLabel("Solution", lesson.getSolution()),
+				solutionLockButton);
 
 		// Creates the complete Experience-history section
 		VBox experienceHistory = createExperienceHistory(experiences);
@@ -162,6 +193,10 @@ public class ViewCuratorFunctions {
 		VBox content = new VBox(
 				16,
 				header,
+				lessonLockedLabel,
+				lessonLockButton,
+				titleLockedLabel,
+				titleLockButton,
 				lessonDetails,
 				experienceHistory,
 				closeAction);
@@ -217,15 +252,35 @@ public class ViewCuratorFunctions {
 						+ "-fx-font-size: 14;"
 						+ "-fx-font-weight: bold;"
 						+ "-fx-text-fill: " + PRIMARY_TEXT + ";");
+				
+				Button expLockButton = setupExperienceLockButton(experience, "experience",
+						experience.getExpLocked());
+				
+				Button timeLockButton = setupExperienceLockButton(experience, "time",
+						experience.getTimeLocked());
+				
+				Button whatLockButton = setupExperienceLockButton(experience, "what",
+						experience.getWhatLocked());
+				
+				Button howLockButton = setupExperienceLockButton(experience, "how",
+						experience.getHowLocked());
+				
+				Button effortLockButton = setupExperienceLockButton(experience, "effort",
+						experience.getEffortLocked());
 
 				VBox card = new VBox(
 						9,
 						experienceHeading,
+						expLockButton,
 						createDetailLabel("Author", experience.getAuthor()),
 						createDetailLabel("Time Spent", experience.getTime() + " hours"),
+						timeLockButton,
 						createDetailLabel("What Was Done", experience.getWhat()),
+						whatLockButton,
 						createDetailLabel("How It Was Done", experience.getHow()),
-						createDetailLabel("Team Effort", experience.getEffort()));
+						howLockButton,
+						createDetailLabel("Team Effort", experience.getEffort()),
+						effortLockButton);
 				card.setPadding(new Insets(16));
 				card.setStyle(
 						"-fx-background-color: " + SURFACE_COLOR + ";"
@@ -249,6 +304,7 @@ public class ViewCuratorFunctions {
 	 *
 	 * @param name field name displayed above the value
 	 * @param value information displayed beneath the field name
+	 * @param locked lock status of the field
 	 * @return vertically arranged field name and value
 	 *
 	 */
@@ -454,5 +510,91 @@ public class ViewCuratorFunctions {
 		messageStage.setScene(new Scene(content, 460, 185));
 		messageStage.setResizable(false);
 		messageStage.showAndWait();
+	}
+	
+	/******
+	 * 
+	 * <p> Method: protected static Button setupLessonLockButton(LessonsLearned lesson, String
+	 * field, boolean currentStatus) </p>
+	 * 
+	 * <p> Description: Creates a button that toggles the lock status of the selected field and
+	 * changes appearance to indicate its current status. </p>
+	 * 
+	 * @param lesson the lesson the field belongs to
+	 * @param field the field to update
+	 * @param currentStatus the current lock status
+	 * @return a button
+	 * 
+	 */
+	protected static Button setupLessonLockButton(LessonsLearned lesson, String field,
+			boolean currentStatus) {
+		Button resultButton = new Button("");
+		
+		if (currentStatus) {
+			resultButton.setText("Unlock");
+			stylePrimaryButton(resultButton);
+		}
+		else {
+			resultButton.setText("Lock");
+			styleSecondaryButton(resultButton);
+		}
+		
+		resultButton.setOnAction((_) -> {
+			ControllerCuratorFunctions.handleLockUnlockLesson(lesson, field);
+			
+			if (resultButton.getText().compareTo("Unlock") == 0) {
+				resultButton.setText("Lock");
+				styleSecondaryButton(resultButton);
+			}
+			else {
+				resultButton.setText("Unlock");
+				stylePrimaryButton(resultButton);
+			}
+		});
+		
+		return resultButton;
+	}
+	
+	/******
+	 * 
+	 * <p> Method: protected static Button setupExperienceLockButton(LessonsLearned lesson, String
+	 * field, boolean currentStatus) </p>
+	 * 
+	 * <p> Description: Creates a button that toggles the lock status of the selected field and
+	 * changes appearance to indicate its current status. </p>
+	 * 
+	 * @param experience the experience the field belongs to
+	 * @param field the field to update
+	 * @param currentStatus the current lock status
+	 * @return a button
+	 * 
+	 */
+	protected static Button setupExperienceLockButton(Experience experience, String field,
+			boolean currentStatus) {
+		Button resultButton = new Button("");
+		
+		if (currentStatus) {
+			resultButton.setText("Unlock");
+			stylePrimaryButton(resultButton);
+		}
+		else {
+			resultButton.setText("Lock");
+			styleSecondaryButton(resultButton);
+		}
+		
+		resultButton.setOnAction((_) -> {
+			ControllerCuratorFunctions.handleLockUnlockExperience(experience, field);
+			
+			if (resultButton.getText().compareTo("Unlock") == 0) {
+				resultButton.setText("Lock");
+				styleSecondaryButton(resultButton);
+			}
+			else {
+				resultButton.setText("Unlock");
+				stylePrimaryButton(resultButton);
+			}
+		});
+		
+		return resultButton;
 	}
 }
