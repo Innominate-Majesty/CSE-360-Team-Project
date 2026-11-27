@@ -1,5 +1,6 @@
 package guiCuratorFunctions;
 
+import entityClasses.Experience;
 import entityClasses.ExperiencesList;
 import entityClasses.LessonsLearned;
 import entityClasses.User;
@@ -58,7 +59,7 @@ public class ControllerCuratorFunctions {
 			Runnable onDeleted) {
 
 		// Reads the active contributor's username
-		String author = user == null ? "" : user.getUserName();
+		//String author = user == null ? "" : user.getUserName();
 
 		// Retrieves the contributor-owned lesson
 		LessonsLearned lesson = ModelCuratorFunctions.getLessonById(
@@ -130,6 +131,80 @@ public class ControllerCuratorFunctions {
 		// Refreshes the calling page when a callback is available
 		if (onDeleted != null) {
 			onDeleted.run();
+		}
+	}
+	
+	/******
+	 * 
+	 * <p> Method: handleLockUnlockLesson(LessonsLearned lesson, String field) </p>
+	 * 
+	 * <p> Description: Locks or unlocks the fields of a lesson based on input from the View. </p>
+	 * 
+	 * @param lesson The lesson to perform the operation on
+	 * @param field The field to be updated
+	 * 
+	 */
+	protected static void handleLockUnlockLesson(LessonsLearned lesson, String field) {
+		switch (field) {
+		case "lesson":
+			lesson.setLocked(!lesson.isLocked());
+			break;
+			
+		case "title":
+			lesson.setTitleLocked(!lesson.isTitleLocked());
+			break;
+			
+		case "category":
+			lesson.setCategoryLocked(!lesson.isCategoryLocked());
+			break;
+			
+		case "problem":
+			lesson.setProblemDescriptionLocked(!lesson.isProblemDescriptionLocked());
+			break;
+			
+		case "solution":
+			lesson.setSolutionLocked(!lesson.isSolutionLocked());
+			break;
+			
+		default:
+			throw new IllegalArgumentException("Attempted to toggle lock of invalid field");
+		}
+	}
+	
+	/******
+	 * 
+	 * <p> Method: handleLockUnlockExperience(Experience experience, String field) </p>
+	 * 
+	 * <p> Description: Locks or unlocks the fields of an experienced based on input from the View. </p>
+	 * 
+	 * @param experience The experience to perform the operation on
+	 * @param field The field to be updated
+	 * 
+	 */
+	protected static void handleLockUnlockExperience(Experience experience, String field) {
+		switch (field) {
+		case "experience":
+			experience.lockUnlockExperience();
+			break;
+			
+		case "time":
+			experience.lockUnlockTime(!experience.getTimeLocked());
+			break;
+			
+		case "what":
+			experience.lockUnlockWhat(!experience.getWhatLocked());
+			break;
+			
+		case "how":
+			experience.lockUnlockHow(!experience.getHowLocked());
+			break;
+			
+		case "effort":
+			experience.lockUnlockEffort(!experience.getEffortLocked());
+			break;
+			
+		default:
+			throw new IllegalArgumentException("Attempted to toggle lock of invalid field");
 		}
 	}
 }
