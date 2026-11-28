@@ -3,12 +3,15 @@ package guiCuratorFunctions;
 import entityClasses.Experience;
 import entityClasses.ExperiencesList;
 import entityClasses.LessonsLearned;
+import aiServices.ExperienceInsightService;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -55,6 +58,9 @@ public class ViewCuratorFunctions {
 
 	// Defines the form border color
 	private static final String BORDER_COLOR = "#CAD7D0";
+	
+	// Popup: This prepares a popup that will appear to display experience insights.
+    protected static Alert alertInsights = new Alert(AlertType.INFORMATION);
 
 	/******
 	 *
@@ -106,6 +112,18 @@ public class ViewCuratorFunctions {
 				+ "-fx-font-size: 22;"
 				+ "-fx-font-weight: bold;"
 				+ "-fx-text-fill: " + PRIMARY_TEXT + ";");
+		
+		// Creates and styles the insight button and alert
+		alertInsights.setTitle("Insights");
+		alertInsights.setContentText("Check again as more experience data is added.");
+		
+		Button insightButton = new Button("Insights");
+		stylePrimaryButton(insightButton);
+		insightButton.setOnAction((_) -> {
+			String aiResponse = ExperienceInsightService.analyze(lesson, experiences);
+			alertInsights.setHeaderText(aiResponse);
+			alertInsights.showAndWait();
+		});
 
 		// Creates and styles the lock/unlock buttons and labels
 		Label lessonLockedLabel = new Label("Lock/Unlock Lesson:");
